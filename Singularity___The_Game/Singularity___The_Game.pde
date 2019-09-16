@@ -7,12 +7,9 @@
 ///NOTES: Add different surfboards with different mass and allow people to change the color 
 //Variable Declarations
 Star[] stars = new Star[800];
-Surfer[] Surfers = new Surfer[1];
+Surfer[] Surfers = new Surfer[4];
 BH[] OneBH = new BH[10];
 Asteroid[] OneAsteroid = new Asteroid[15];
-float t = 0;
-float u = 0;
-int z = 0;
 float speed;
 PImage img;
 float s=0;
@@ -91,6 +88,12 @@ float prevyy=0;
     float Asteroidy=height/2;
     float initialAsteroid=0;
     float AsteroidDestroyed=0;
+    
+//Surfer variables
+    float surfRed;
+    float surfBlue;
+    float surfGreen;
+    float surfType;
 //Create bolt objects to use throughout the sequence
 //Bolt[] bolts = new Bolt[150];
 //Setup function to establis the frame color and size 
@@ -111,14 +114,15 @@ void setup() {
   for (int i = 0; i < OneAsteroid.length; i++) {
     OneAsteroid[i] = new Asteroid(15); 
   }
+  for (int i = 0; i < Surfers.length; i++) {
+    Surfers[i] = new Surfer();
+  }
 }
 //The draw function runs through the actions contained in a loop
 void draw() {
   delay=delay+1;
   if(GameOver==0){
-   if(keyPressed){
-   sinOne=1; 
-  }
+   
   if(sinOne==0){
   background(0);
   title = createFont("volt.ttf", 32);
@@ -142,57 +146,101 @@ void draw() {
   if(delay>30){
     textSize(height/10.5);
     text("Press Any Key To Begin",width/6,height-height/4);
+    if(keyPressed){
+   sinOne=2; 
+  }
   }
   
   speed = map(10+delay/200, 0, width, 0, 50); 
   
   prevx=width/15;
   prevy=height/2;
-  Surfers[0] = new Surfer();
+  //Surfers[0] = new Surfer();
   }
   else if(sinOne==2){
+    background(0);
+    for (int i = 0; i < stars.length; i++) {
+    stars[i].show(255,255,255,255);
+   }
     textSize(height/8.5);
-    text("Select A Surfer",width/6,height-height/4);
+    fill(255,240,0,255);
+    text("Select A Surfer",width/5,height/6);
+    stroke(255,240,0,255);
+    line(width/7,height/5.5,width-width/7,height/5.5);
     //Display the surfers here
-    if(keyPressed){
-      if(key=='x'){
-        //
+    stroke(255,255);
+    fill(255,150);
+    if(mouseY<height && mouseY>height-2*height/10){
+      quad(0,height-2*height/10,0,height,width,height,width,height-2*height/10);
+    }
+    if(mouseY<height-2*height/10 && mouseY>height-4*height/10){
+      quad(0,height-2*height/10,0,height-4*height/10,width,height-4*height/10,width,height-2*height/10);
+    }
+    if(mouseY<height-4*height/10 && mouseY>height-6*height/10){
+      quad(0,height-4*height/10,0,height-6*height/10,width,height-6*height/10,width,height-4*height/10);
+    }
+    if(mouseY<height-6*height/10 && mouseY>height-8*height/10){
+      quad(0,height-6*height/10,0,height-8*height/10,width,height-8*height/10,width,height-6*height/10);
+    }
+    textSize(height/14.5);
+    fill(255,255,255,255);
+    text("Tripod Trekker",width/4,height-height/10);
+    text("Psych Bike",width/4,height-3*height/10);
+    text("The Compiler",width/4,height-5*height/10);
+    text("Entangled Species",width/4,height-7*height/10);
+    Surfers[0].render(width/8,height-height/10,10,0,255,255,255); 
+    Surfers[1].render(width/8,height-3*height/10,10,1,255,255,255); 
+    Surfers[2].render(width/8,height-5*height/10,10,2,255,255,255); 
+    Surfers[3].render(width/8,height-7*height/10,10,3,255,255,255); 
+    //Display stats for each of the vehicles. Speed and Mass 
+    if(mousePressed){
+      if((mouseY<height && mouseY>height-2*height/10)){
+        //maybe use mousepressed location so people can play with a wireless mouse
+        sinOne=4;
+        surfType=0;
+      }
+      else if((mouseY<height-2*height/10 && mouseY>height-4*height/10)){
+        sinOne=4;
+        surfType=1;
+      }
+      else if((mouseY<height-4*height/10 && mouseY>height-6*height/10)){
+        sinOne=4;
+        surfType=2;
+      }
+      else if((mouseY<height-6*height/10 && mouseY>height-8*height/10)){
+        sinOne=4;
+        surfType=3;
       }
     }
    // Surfers[0].render(width/8,3*height/10,10,0);  
-    text("Color Selection",width/6,height-height/4);
-    //Pick the color of the surfers 
-    //Maybe make a different surfer class for each of the 4 available boards. 
+   
+  }
+  else if(sinOne==3){
+    //Color selection happens here
+    text("Color Selection",width/6,height-height/4);    
+    text("Photovoltaic",width/3,height-height/10);
+    text("Gamma-Ray Burst",width/3,height-3*height/10);
+    text("Cosmic ",width/3,height-5*height/10); //Midnight Blue
+    text("Pulsar",width/3,height-7*height/10); //WhitishBlue
   }
   else{
     
    background(0,0,0,255); 
    translate(width/2,height/2);
    for (int i = 0; i < stars.length; i++) {
-    //Update the location of each star in the array
-   // stars[i].update();
-    //Pass in the color and opacity values for the stars in the array
     stars[i].show(255,255,255,255);
-  }
-  translate(-width/2,-height/2);
+   }
+   translate(-width/2,-height/2);
    //Level 1   
    //Galaxy Start
    fill(255,255,255,255);
    noStroke();
-  // translate(width/2,height/2);
-  // rotate(delay/500);
-   
- // if(delay%4!=0){ 
-   // translate(width/2,height/2);
     scale(1.8);
-    translate(-30,-height/4.3);
+   translate(-30,-height/4.3);
    quad(width/15+height/100,height/2+height/100,width/15+height/100,height/2-height/100,width/15-height/100,height/2-height/100,width/15-height/100,height/2+height/100);
-  // ellipse(width/15,height/2,height/100,height/100);
    fill(255,255,255,235);
-   //ellipse(width/15,height/2,height/35,height/35);
    quad(width/15+height/75,height/2+height/75,width/15+height/75,height/2-height/75,width/15-height/75,height/2-height/75,width/15-height/75,height/2+height/75);
-   float galaxSize=width/450;
-  
+   float galaxSize=width/450;  
    for(float j = 350;j>6;j=j-.5)
    {
    sinx=(j*.15)*cos(radians(sinAngle+j*15))+width/15;
@@ -201,7 +249,6 @@ void draw() {
    noStroke();
    fill(255,174,206,105);
    quad(sinx+(galaxSize),siny+galaxSize,sinx+galaxSize,siny-galaxSize,sinx-galaxSize,siny-galaxSize,sinx-galaxSize,siny+galaxSize);
-  // fill(235,100,255,105);
   fill(255,210,30,105);
    sinx=(j*.15)*cos(radians(sinAngle+j*15+90))+width/15;
    siny=(j*.05)*sin(radians(sinAngle+j*15+90))+height/2;
@@ -213,8 +260,7 @@ void draw() {
    siny=siny+(sinx-width/15)*.25;
    noStroke();
    fill(255,240,100,105);
-   //fill(155,174,246,105);
-  quad(sinx+(galaxSize),siny+galaxSize,sinx+galaxSize,siny-galaxSize,sinx-galaxSize,siny-galaxSize,sinx-galaxSize,siny+galaxSize);
+   quad(sinx+(galaxSize),siny+galaxSize,sinx+galaxSize,siny-galaxSize,sinx-galaxSize,siny-galaxSize,sinx-galaxSize,siny+galaxSize);
    fill(255,255,255,105);
    sinx=sinx*cos(radians(j));
    sinx=(j*.15)*cos(radians(sinAngle+j*15+270))+width/15;
@@ -224,12 +270,10 @@ void draw() {
    noStroke(); 
    }
    translate(30,height/4.3);
-  scale((1/1.8));
-    
-  
-  
+   scale((1/1.8));
+     
      //Black Holes/Asteroids Level One
-     float Asteroiddistance;
+    float Asteroiddistance;
     float Asteroidmass=30;
     float AsteroidInitialSpeed=21;
     float BHdistance;
@@ -241,8 +285,7 @@ void draw() {
     float yGravityAsteroid= 0;
     xGravity=0;
     yGravity=0;
-    float denom;
-    
+    float denom;    
     surfergravity = 0; //Do the surfers relation to the black holes only once
     for (int j = 0; j < OneAsteroid.length; j++) { 
       if(initialAsteroid==0){
@@ -253,7 +296,7 @@ void draw() {
       }
       else{
       Asteroidx=OneAsteroid[j].xx;
-  Asteroidy=OneAsteroid[j].yy;
+      Asteroidy=OneAsteroid[j].yy;
       }
    // if(surfergravity==0)
     Asteroidmass=5;
@@ -310,11 +353,8 @@ void draw() {
     }else{
   OneAsteroid[j].render(Asteroidmass,Asteroidx+xGravityAsteroid+OneAsteroid[j].priorx,Asteroidy+yGravityAsteroid+OneAsteroid[j].priory,Asteroidx,Asteroidy,1,1);
     }
-    //OneAsteroid[j].render(Asteroidmass,Asteroidx+xGravityAsteroid,Asteroidy+yGravityAsteroid,Asteroidx,Asteroidy,1,1);
   OneAsteroid[j].priorx=((Asteroidx+xGravityAsteroid+OneAsteroid[j].priorx)-Asteroidx)*.99;
   OneAsteroid[j].priory=((Asteroidy+yGravityAsteroid+OneAsteroid[j].priory)-Asteroidy)*.99;
-    //Asteroidx=Asteroidx+xGravityAsteroid;
-    //Asteroidy=Asteroidy+yGravityAsteroid;
   if((abs(prevx-Asteroidx)<(Asteroidmass*2))&&(abs(Asteroidy-prevy)<(Asteroidmass*2))){
       GameOver=1;      
     }
@@ -349,7 +389,7 @@ ellipse(47*width/50,height/2,height/20,height/5);
 
 if(47*width/50<prevx && prevy<(height/2+height/10) && prevy>(height/2-height/10)){
   textSize(height/4.5);
-  text("YOU WIN",width/9,height/2.5);
+  text("Level Complete",width/9,height/2.5);
 }
   
   //Surfer
@@ -363,11 +403,11 @@ if(47*width/50<prevx && prevy<(height/2+height/10) && prevy>(height/2-height/10)
     ysurf=ratiotwo*distance;
    
     if(((abs(mousex-prevx)+abs(prevxx))<3.5)&&((abs(mousey-prevy)+abs(prevyy))<3.5)){
-      Surfers[0].render(prevx,prevy,10,0);  
+      Surfers[0].render(prevx,prevy,10,surfType,surfRed,surfBlue,surfGreen);  
     //  prevx=prevx;      
     }
     else{
-    Surfers[0].render(prevx+xsurf+xGravity+prevxx,prevy+ysurf+yGravity+prevyy,10,0);
+    Surfers[0].render(prevx+xsurf+xGravity+prevxx,prevy+ysurf+yGravity+prevyy,10,surfType,surfRed,surfBlue,surfGreen);
       prevx=prevx+xsurf+xGravity+prevxx;
     prevy=prevy+ysurf+yGravity+prevyy;
     prevxx=xsurf+xGravity;
@@ -380,9 +420,12 @@ if(47*width/50<prevx && prevy<(height/2+height/10) && prevy>(height/2-height/10)
    else{
     //background(0);
     textSize(height/4.5);
-  text("GAME OVER",width/9,height/2.5);
+    fill(255,250,0,255);
+  text("Craft Lost",width/9,height/2.5);
   if(keyPressed){
     GameOver=0;
+    sinOne=0;
+    delay=0;
   }
 }
   
@@ -417,25 +460,19 @@ class Star {
   void show(float uno, float dos, float tres, float quatro) {
     fill(uno,dos,tres,quatro);
     noStroke();
-    //noFill();
-    //stroke(255,255,255,20);
     float sx = map(x / z, 0, 1, 0, width/2);
     float sy = map(y / z, 0, 1, 0, height/2);;
-
     // I use the z value to increase the star size between a range from 0 to 16.
     float r = map(z, 0, width/2, 3, 0);
     ellipse(sx, sy, r-.8, r-.8);
-
     // Here i use the "pz" valute to get the previous position of the stars,
     // so I can draw a line from the previous position to the new (current) one.
     float px = map(x / pz, 0, 1, 0, width/2);
     float py = map(y / pz, 0, 1, 0, height/2);
-
     // Placing here this line of code, I'm sure the "pz" value are updated after the
     // coordinates are already calculated; in this way the "pz" value is always equals
     // to the "z" value of the previous frame.
     pz = z;
-
     stroke(uno,dos,tres,quatro);
     strokeWeight(1);
     line(px, py, sx, sy);
@@ -449,7 +486,9 @@ class Surfer {
   void update() { 
       pz = 6;
     }
-    void render(float x, float y, float len, float quatro) {
+    void render(float x, float y, float len, float quatro, float red, float blue, float green) {
+      //Three color tints, A yellow, pink, and midnight blue
+    if(quatro==0){
     fill(255,240,130,255);
     noStroke();
     stroke(255);
@@ -459,7 +498,24 @@ class Surfer {
     line(x+len,y+len,x+len*2,y+len*2);
     noFill();
     stroke(255,240,130,255);
-    triangle(x+len*2,y+len*2,x,y-len*2,x-len*2,y+len*2);
+    triangle(x+len*2,y+len*2,x,y-len*2,x-len*2,y+len*2);   
+    }
+    else if(quatro==1){
+      stroke(255);
+      fill(255,174,204,255);
+      quad(x-len,y-len,x+len,y-len,x+len,y+len,x-len,y+len);
+    }
+   else if(quatro==2){
+      stroke(255);
+      fill(50,50,200,255);
+      ellipse(x,y,len*2,len*2);
+   }
+   else{
+      stroke(255);
+      fill(170,190,255,255);
+      triangle(x,y,x-len,y+len,x+len,y+len);
+      triangle(x,y,x-len,y-len,x+len,y-len);
+   }
   }
 }
 
@@ -469,10 +525,6 @@ class BH {
   float xx;
   float yy;
   BH(float constant) {  
-    // I place values in the variables
- 
-    // I set the previous position of "z" in the same position of "z",
-    // which it's like to say that the stars are not moving during the first frame.
   gravity = constant;
   }
   void applyForce() {      
@@ -499,7 +551,6 @@ class BH {
     strokeWeight(0.5);
     stroke(255);
     fill(0);
-   // ellipse(x,y,radius,radius);
     noStroke();
     quad(x+radius*.2/2,y+radius/2,x-radius*.2/2,y+radius/2,x-radius*.2/2,y-radius/2,x+radius*.2/2,y-radius/2);
     quad(x+radius*.35/2,y+radius*.95/2,x-radius*.35/2,y+radius*.95/2,x-radius*.35/2,y-radius*.95/2,x+radius*.35/2,y-radius*.95/2);
@@ -509,10 +560,7 @@ class BH {
     quad(x+radius*.82/2,y+radius*.6/2,x-radius*.82/2,y+radius*.6/2,x-radius*.82/2,y-radius*.6/2,x+radius*.82/2,y-radius*.6/2);
     quad(x+radius*.89/2,y+radius*.5/2,x-radius*.89/2,y+radius*.5/2,x-radius*.89/2,y-radius*.5/2,x+radius*.89/2,y-radius*.5/2);
     quad(x+radius*.95/2,y+radius*.35/2,x-radius*.95/2,y+radius*.35/2,x-radius*.95/2,y-radius*.35/2,x+radius*.95/2,y-radius*.35/2);
-    quad(x+radius*1/2,y+radius*.2/2,x-radius*1/2,y+radius*.2/2,x-radius*1/2,y-radius*.2/2,x+radius*1/2,y-radius*.2/2);
-   
-  
-    //Draw it 8 Bit quad(    
+    quad(x+radius*1/2,y+radius*.2/2,x-radius*1/2,y+radius*.2/2,x-radius*1/2,y-radius*.2/2,x+radius*1/2,y-radius*.2/2); 
   }
 }
 class Asteroid {
@@ -528,10 +576,6 @@ class Asteroid {
   float ratio;
   float ratioy;
   Asteroid(float constant) {  
-    // I place values in the variables
- 
-    // I set the previous position of "z" in the same position of "z",
-    // which it's like to say that the stars are not moving during the first frame.
   gravity = constant;
   }
   void applyForce() {      
@@ -569,12 +613,7 @@ class Asteroid {
     quad(x+radius*2,y+radius,x+radius*2,y-radius,x-radius*2,y-radius,x-radius*2,y+radius);
     quad(x+radius,y-radius*2,x+radius,y+radius*2, x-radius,y+radius*2,x-radius,y-radius*2);    
     quad(x+radius*1.5,y-radius*1.5,x-radius*1.5,y-radius*1.5, x-radius*1.5,y+radius*1.5,x+radius*1.5,y+radius*1.5); 
-    //the asteroid tail 
     stroke(255,0,0,255);
-  //  line(x,y,prevx,prevy);
-   // line(secondpriorx,secondpriory,prevx,prevy);
-   
-   // line(x,y,prevx,prevy);
     secondpriorx=prevx;
   secondpriory=prevy;;
     
