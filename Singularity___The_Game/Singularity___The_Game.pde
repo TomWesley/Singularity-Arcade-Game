@@ -69,7 +69,7 @@ float siny = 0;
 float prevx=0;
 float prevy=0;
 float baseSpeed =.01;
-float distance=2.8;
+
 float mousex;
 float mousey;
 int GameOver=0;
@@ -90,10 +90,13 @@ float prevyy=0;
     float AsteroidDestroyed=0;
     
 //Surfer variables
+    float Craftselectioncount;
+    float distance=4;
     float surfRed;
     float surfBlue;
     float surfGreen;
     float surfType;
+    float surfMass; //Make sure this goes into the gravity equation
 //Create bolt objects to use throughout the sequence
 //Bolt[] bolts = new Bolt[150];
 //Setup function to establis the frame color and size 
@@ -146,8 +149,9 @@ void draw() {
   if(delay>30){
     textSize(height/10.5);
     text("Press Any Key To Begin",width/6,height-height/4);
-    if(keyPressed){
+    if(keyPressed || mousePressed){
    sinOne=2; 
+   Craftselectioncount=5;
   }
   }
   
@@ -184,33 +188,69 @@ void draw() {
     }
     textSize(height/14.5);
     fill(255,255,255,255);
-    text("Tripod Trekker",width/4,height-height/10);
-    text("Psych Bike",width/4,height-3*height/10);
-    text("The Compiler",width/4,height-5*height/10);
-    text("Entangled Species",width/4,height-7*height/10);
+    text("Tripod Trekker",width/4,height-1*height/13);
+    text("Psych Bike",width/4,height-3.6*height/13);
+    text("The Compiler",width/4,height-6.2*height/13);
+    text("Superbug",width/4,height-8.8*height/13);
+    textSize(height/19.5);
+    text("Speed",width-width/3.5,height-1.5*height/13);
+    text("Mass",width-width/3.5,height-0.7*height/13);
+    translate(0,-(height/13)*2.6);
+    text("Speed",width-width/3.5,height-1.5*height/13);
+    text("Mass",width-width/3.5,height-0.7*height/13);
+    translate(0,(height/13)*2.6);
+    //Yellow Player Stats
+    rectangle(width-width/6,height-0.915*height/13,height/60,height/30,255,240,0,255);
+    rectangle(width-width/6.5,height-0.915*height/13,height/60,height/30,255,240,0,255);
+    rectangle(width-width/6.5+abs(width/6.5-width/6),height-0.915*height/13,height/60,height/30,255,240,0,255);
+    rectangle(width-width/6.5+2*abs(width/6.5-width/6),height-0.915*height/13,height/60,height/30,255,240,0,255);   
+    rectangle(width-width/6,height-1.715*height/13,height/60,height/30,255,240,0,255);
+    rectangle(width-width/6.5,height-1.715*height/13,height/60,height/30,255,240,0,255);
+    rectangle(width-width/6.5+abs(width/6.5-width/6),height-1.715*height/13,height/60,height/30,255,240,0,255);
+    
+    //Pink Player Stats
+    rectangle(width-width/6,height-3.415*height/13,height/60,height/30,255,174,204,255);
+    
+    rectangle(width-width/6,height-4.315*height/13,height/60,height/30,255,174,204,255);
+    rectangle(width-width/6.5,height-4.315*height/13,height/60,height/30,255,174,204,255);
+    rectangle(width-width/6.5+abs(width/6.5-width/6),height-4.315*height/13,height/60,height/30,255,174,204,255);
+    
     Surfers[0].render(width/8,height-height/10,10,0,255,255,255); 
     Surfers[1].render(width/8,height-3*height/10,10,1,255,255,255); 
     Surfers[2].render(width/8,height-5*height/10,10,2,255,255,255); 
     Surfers[3].render(width/8,height-7*height/10,10,3,255,255,255); 
+    
     //Display stats for each of the vehicles. Speed and Mass 
+    if(Craftselectioncount<0){
     if(mousePressed){
       if((mouseY<height && mouseY>height-2*height/10)){
+        //Tripod Trekker
         //maybe use mousepressed location so people can play with a wireless mouse
+        distance=4.5;
         sinOne=4;
         surfType=0;
       }
       else if((mouseY<height-2*height/10 && mouseY>height-4*height/10)){
+        //Psych Bike
+        distance=5;
         sinOne=4;
         surfType=1;
       }
       else if((mouseY<height-4*height/10 && mouseY>height-6*height/10)){
+        //The Compiler
+        distance=5.5;
         sinOne=4;
         surfType=2;
       }
       else if((mouseY<height-6*height/10 && mouseY>height-8*height/10)){
+        distance=3.5;
         sinOne=4;
         surfType=3;
       }
+    }
+    }
+    if(Craftselectioncount!=-5){
+    Craftselectioncount=Craftselectioncount-1;
     }
    // Surfers[0].render(width/8,3*height/10,10,0);  
    
@@ -233,6 +273,7 @@ void draw() {
    translate(-width/2,-height/2);
    //Level 1   
    //Galaxy Start
+   if(delay%5!=0){
    fill(255,255,255,255);
    noStroke();
     scale(1.8);
@@ -240,9 +281,9 @@ void draw() {
    quad(width/15+height/100,height/2+height/100,width/15+height/100,height/2-height/100,width/15-height/100,height/2-height/100,width/15-height/100,height/2+height/100);
    fill(255,255,255,235);
    quad(width/15+height/75,height/2+height/75,width/15+height/75,height/2-height/75,width/15-height/75,height/2-height/75,width/15-height/75,height/2+height/75);
-   float galaxSize=width/450;  
+   float galaxSize=width/450;     
    for(float j = 350;j>6;j=j-.5)
-   {
+   {   
    sinx=(j*.15)*cos(radians(sinAngle+j*15))+width/15;
    siny=(j*.05)*sin(radians(sinAngle+j*15))+height/2;
    siny=siny+(sinx-width/15)*.25;
@@ -262,16 +303,17 @@ void draw() {
    fill(255,240,100,105);
    quad(sinx+(galaxSize),siny+galaxSize,sinx+galaxSize,siny-galaxSize,sinx-galaxSize,siny-galaxSize,sinx-galaxSize,siny+galaxSize);
    fill(255,255,255,105);
-   sinx=sinx*cos(radians(j));
    sinx=(j*.15)*cos(radians(sinAngle+j*15+270))+width/15;
    siny=(j*.05)*sin(radians(sinAngle+j*15+270))+height/2;
    siny=siny+(sinx-width/15)*.25;
    quad(sinx+galaxSize,siny+galaxSize,sinx+galaxSize,siny-galaxSize,sinx-galaxSize,siny-galaxSize,sinx-galaxSize,siny+galaxSize);
    noStroke(); 
+   
    }
+   
    translate(30,height/4.3);
    scale((1/1.8));
-     
+   } 
      //Black Holes/Asteroids Level One
     float Asteroiddistance;
     float Asteroidmass=30;
@@ -534,19 +576,19 @@ class BH {
     xx= x;
     yy=y;
     noStroke();
-    fill(255,9);
-    ellipse(x,y,radius*1.22,radius*1.2);
     fill(255,10);
-    ellipse(x,y,radius*1.17,radius*1.17);
+    ellipse(x,y,radius*1.22,radius*1.2);
     fill(255,11);
-    ellipse(x,y,radius*1.14,radius*1.14);
+    ellipse(x,y,radius*1.17,radius*1.17);
     fill(255,12);
-    ellipse(x,y,radius*1.11,radius*1.11);
+    ellipse(x,y,radius*1.14,radius*1.14);
     fill(255,13);
-    ellipse(x,y,radius*1.08,radius*1.08);
+    ellipse(x,y,radius*1.11,radius*1.11);
     fill(255,14);
-    ellipse(x,y,radius*1.05,radius*1.05);
+    ellipse(x,y,radius*1.08,radius*1.08);
     fill(255,15);
+    ellipse(x,y,radius*1.05,radius*1.05);
+    fill(255,16);
     ellipse(x,y,radius*1.03,radius*1.03);
     strokeWeight(0.5);
     stroke(255);
@@ -618,4 +660,12 @@ class Asteroid {
   secondpriory=prevy;;
     
   }
+}
+
+void rectangle(float x, float y, float w, float h, float r, float g, float b, float o){
+  noStroke();
+  strokeWeight(0.1);
+  stroke(255,255);
+  fill(r,g,b,o);
+quad(x-w/2,y-h/2,x-w/2,y+h/2,x+w/2,y+h/2,x+w/2,y-h/2); 
 }
