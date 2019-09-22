@@ -32,7 +32,7 @@ float varryable =1;
 int doors=0;
 int check =0;
 float setoff=0;
-static final int LINE_C =100;
+static final int LINE_C =80;
 static final int LINE_O =360;
 float numb=0;
 float er=0;
@@ -41,12 +41,7 @@ float gen =0;
 float open;
 float fire;
 float ball;
-float checkpoint=0;
-float meh;
-int diag=0;
-float corners=0;
-int wave=int(random(10,20));
-int lightning = 15;
+
 int ning = 0;
 int xx = 0;
 int yy = 0;
@@ -89,14 +84,19 @@ float prevyy=0;
     float initialAsteroid=0;
     float AsteroidDestroyed=0;
     
-//Surfer variables
-    float Craftselectioncount;
+//Surfer/Player variables
+    float Craftselectioncount;//Helps so a mouse click on the opening screen doesn't also select your craft
+    float lifeCount=1;
     float distance=4;
     float surfRed;
     float surfBlue;
     float surfGreen;
     float surfType;
     float surfMass; //Make sure this goes into the gravity equation
+    float levelTimer=0;
+    
+//Game Over Sequence    
+    float craftLost=0;//counter to ensure the craft lost sequences are timed correctly before resetting
 //Create bolt objects to use throughout the sequence
 //Bolt[] bolts = new Bolt[150];
 //Setup function to establis the frame color and size 
@@ -123,6 +123,7 @@ void setup() {
 }
 //The draw function runs through the actions contained in a loop
 void draw() {
+  cursor(CROSS);
   delay=delay+1;
   if(GameOver==0){
    
@@ -138,6 +139,7 @@ void draw() {
     stars[i].show(255,255,255,255);
   }
   translate(-width/2,-height/2);
+  lifeCount=3; //Reset the number of lives each time the game is restarted
   for(int i=20;i>0;i=i-1){
     fill(255,255,255,255-i*16);
     textSize(height/(4.5+i/16));
@@ -163,9 +165,13 @@ void draw() {
   }
   else if(sinOne==2){
     background(0);
+    translate(width/2,height/2);
+    rotate(PI*delay/900);
     for (int i = 0; i < stars.length; i++) {
     stars[i].show(255,255,255,255);
    }
+   rotate(-PI*delay/900);
+   translate(-width/2,-height/2);
     textSize(height/8.5);
     fill(255,240,0,255);
     text("Select A Surfer",width/5,height/6);
@@ -188,17 +194,21 @@ void draw() {
     }
     textSize(height/14.5);
     fill(255,255,255,255);
-    text("Tripod Trekker",width/4,height-1*height/13);
+    text("Superbug",width/4,height-1*height/13);
     text("Psych Bike",width/4,height-3.6*height/13);
     text("The Compiler",width/4,height-6.2*height/13);
-    text("Superbug",width/4,height-8.8*height/13);
+    text("Tron",width/4,height-8.8*height/13);
     textSize(height/19.5);
-    text("Speed",width-width/3.5,height-1.5*height/13);
-    text("Mass",width-width/3.5,height-0.7*height/13);
+    text("Speed",width-width/3.5,height-1.5*height/13);text("Mass",width-width/3.5,height-0.7*height/13);
     translate(0,-(height/13)*2.6);
-    text("Speed",width-width/3.5,height-1.5*height/13);
-    text("Mass",width-width/3.5,height-0.7*height/13);
+    text("Speed",width-width/3.5,height-1.5*height/13);text("Mass",width-width/3.5,height-0.7*height/13);
     translate(0,(height/13)*2.6);
+    translate(0,-(height/13)*2.6*2);
+    text("Speed",width-width/3.5,height-1.5*height/13);text("Mass",width-width/3.5,height-0.7*height/13);
+    translate(0,(height/13)*2.6*2);
+    translate(0,-(height/13)*2.6*3);
+    text("Speed",width-width/3.5,height-1.5*height/13);text("Mass",width-width/3.5,height-0.7*height/13);
+    translate(0,(height/13)*2.6*3);
     //Yellow Player Stats
     rectangle(width-width/6,height-0.915*height/13,height/60,height/30,255,240,0,255);
     rectangle(width-width/6.5,height-0.915*height/13,height/60,height/30,255,240,0,255);
@@ -206,15 +216,34 @@ void draw() {
     rectangle(width-width/6.5+2*abs(width/6.5-width/6),height-0.915*height/13,height/60,height/30,255,240,0,255);   
     rectangle(width-width/6,height-1.715*height/13,height/60,height/30,255,240,0,255);
     rectangle(width-width/6.5,height-1.715*height/13,height/60,height/30,255,240,0,255);
-    rectangle(width-width/6.5+abs(width/6.5-width/6),height-1.715*height/13,height/60,height/30,255,240,0,255);
-    
+    rectangle(width-width/6.5+abs(width/6.5-width/6),height-1.715*height/13,height/60,height/30,255,240,0,255);    
     //Pink Player Stats
-    rectangle(width-width/6,height-3.415*height/13,height/60,height/30,255,174,204,255);
-    
-    rectangle(width-width/6,height-4.315*height/13,height/60,height/30,255,174,204,255);
-    rectangle(width-width/6.5,height-4.315*height/13,height/60,height/30,255,174,204,255);
-    rectangle(width-width/6.5+abs(width/6.5-width/6),height-4.315*height/13,height/60,height/30,255,174,204,255);
-    
+    rectangle(width-width/6,height-3.505*height/13,height/60,height/30,255,174,204,255);    
+    rectangle(width-width/6,height-3.505*height/13-abs(1.715*height/13-0.915*height/13),height/60,height/30,255,174,204,255);
+    rectangle(width-width/6.5,height-3.505*height/13-abs(1.715*height/13-0.915*height/13),height/60,height/30,255,174,204,255);
+    rectangle(width-width/6.5+abs(width/6.5-width/6),height-3.505*height/13-abs(1.715*height/13-0.915*height/13),height/60,height/30,255,174,204,255);
+    rectangle(width-width/6.5+2*abs(width/6.5-width/6),height-3.505*height/13-abs(1.715*height/13-0.915*height/13),height/60,height/30,255,174,204,255);    
+    //Green Player Stats
+    translate(0,-(height/13)*2.6);
+    rectangle(width-width/6,height-3.505*height/13,height/60,height/30,80,230,130,255);    
+    rectangle(width-width/6+abs(width/6.5-width/6),height-3.505*height/13,height/60,height/30,80,230,130,255);  
+    rectangle(width-width/6+2*abs(width/6.5-width/6),height-3.505*height/13,height/60,height/30,80,230,130,255); 
+    rectangle(width-width/6+3*abs(width/6.5-width/6),height-3.505*height/13,height/60,height/30,80,230,130,255); 
+    rectangle(width-width/6+4*abs(width/6.5-width/6),height-3.505*height/13,height/60,height/30,80,230,130,255); 
+    rectangle(width-width/6,height-3.505*height/13-abs(1.715*height/13-0.915*height/13),height/60,height/30,80,230,130,255);
+    rectangle(width-width/6.5,height-3.505*height/13-abs(1.715*height/13-0.915*height/13),height/60,height/30,80,230,130,255);
+    rectangle(width-width/6.5+abs(width/6.5-width/6),height-3.505*height/13-abs(1.715*height/13-0.915*height/13),height/60,height/30,80,230,130,255);
+    rectangle(width-width/6.5+2*abs(width/6.5-width/6),height-3.505*height/13-abs(1.715*height/13-0.915*height/13),height/60,height/30,80,230,130,255); 
+    rectangle(width-width/6.5+3*abs(width/6.5-width/6),height-3.505*height/13-abs(1.715*height/13-0.915*height/13),height/60,height/30,80,230,130,255);
+    translate(0,(height/13)*2.6);
+    //Blue Player Stats
+    translate(0,-(height/13)*2.6*2);
+       rectangle(width-width/6,height-3.505*height/13,height/60,height/30,100,14,237,255); 
+       rectangle(width-width/6+abs(width/6.5-width/6),height-3.505*height/13,height/60,height/30,100,14,237,255);  
+    rectangle(width-width/6+2*abs(width/6.5-width/6),height-3.505*height/13,height/60,height/30,100,14,237,255); 
+    rectangle(width-width/6,height-3.505*height/13-abs(1.715*height/13-0.915*height/13),height/60,height/30,100,14,237,255);
+ 
+     translate(0,(height/13)*2.6*2);
     Surfers[0].render(width/8,height-height/10,10,0,255,255,255); 
     Surfers[1].render(width/8,height-3*height/10,10,1,255,255,255); 
     Surfers[2].render(width/8,height-5*height/10,10,2,255,255,255); 
@@ -224,26 +253,27 @@ void draw() {
     if(Craftselectioncount<0){
     if(mousePressed){
       if((mouseY<height && mouseY>height-2*height/10)){
-        //Tripod Trekker
+        //SuperBug
         //maybe use mousepressed location so people can play with a wireless mouse
-        distance=4.5;
+        distance=6;
         sinOne=4;
         surfType=0;
       }
       else if((mouseY<height-2*height/10 && mouseY>height-4*height/10)){
         //Psych Bike
-        distance=5;
+        distance=7;
         sinOne=4;
         surfType=1;
       }
       else if((mouseY<height-4*height/10 && mouseY>height-6*height/10)){
         //The Compiler
-        distance=5.5;
+        distance=8;
         sinOne=4;
         surfType=2;
       }
       else if((mouseY<height-6*height/10 && mouseY>height-8*height/10)){
-        distance=3.5;
+        //Tron
+        distance=4;
         sinOne=4;
         surfType=3;
       }
@@ -251,20 +281,16 @@ void draw() {
     }
     if(Craftselectioncount!=-5){
     Craftselectioncount=Craftselectioncount-1;
+    } 
+  }
+  else if(sinOne>=4){
+    if(sinOne==4){
+   prevx=width/15;
+  prevy=height/2;
+  levelTimer=0;
+  initialAsteroid=0;
     }
-   // Surfers[0].render(width/8,3*height/10,10,0);  
-   
-  }
-  else if(sinOne==3){
-    //Color selection happens here
-    text("Color Selection",width/6,height-height/4);    
-    text("Photovoltaic",width/3,height-height/10);
-    text("Gamma-Ray Burst",width/3,height-3*height/10);
-    text("Cosmic ",width/3,height-5*height/10); //Midnight Blue
-    text("Pulsar",width/3,height-7*height/10); //WhitishBlue
-  }
-  else{
-    
+    sinOne=5;
    background(0,0,0,255); 
    translate(width/2,height/2);
    for (int i = 0; i < stars.length; i++) {
@@ -439,14 +465,29 @@ if(47*width/50<prevx && prevy<(height/2+height/10) && prevy>(height/2-height/10)
     float mousey=mouseY;  
     float xsurf=mousex-prevx;
     float ysurf=mousey-prevy;
+    levelTimer=levelTimer+1;
+    if(levelTimer>55){
     ratio = xsurf/(abs(xsurf)+abs(ysurf));
     ratiotwo = ysurf/(abs(xsurf)+abs(ysurf));
     xsurf=ratio*distance;
     ysurf=ratiotwo*distance;
+    
+    }
+    else{
+      fill(255,240,0,255);
+      textSize(height/7.5);
+      text("Engage Thrusters!",width/9,height/3.5);
+      xsurf=0;
+    ysurf=0;
+    xGravity=0;
+    yGravity=0;
+    prevx=width/15;
+  prevy=height/2;
+    }
    
     if(((abs(mousex-prevx)+abs(prevxx))<3.5)&&((abs(mousey-prevy)+abs(prevyy))<3.5)){
       Surfers[0].render(prevx,prevy,10,surfType,surfRed,surfBlue,surfGreen);  
-    //  prevx=prevx;      
+    
     }
     else{
     Surfers[0].render(prevx+xsurf+xGravity+prevxx,prevy+ysurf+yGravity+prevyy,10,surfType,surfRed,surfBlue,surfGreen);
@@ -457,17 +498,54 @@ if(47*width/50<prevx && prevy<(height/2+height/10) && prevy>(height/2-height/10)
     }
      
   } 
+  craftLost=0;
 } 
   //What happens after being eaten by a black hole or destroyed by an asteroid, have different sequences that occur
    else{
-    //background(0);
+   if(lifeCount>0){ //background(0);
     textSize(height/4.5);
-    fill(255,250,0,255);
+    fill(255,0,0,255);
   text("Craft Lost",width/9,height/2.5);
-  if(keyPressed){
+  if(craftLost>50){
+  lifeCount=lifeCount-1;
+  if(lifeCount>0){
+  sinOne=4;
+  GameOver=0;
+  }
+  }
+  craftLost=craftLost+1;
+  
+   }
+  //If the lifeCount is at 0, then begin the Game Over sequence where any key or mouse press will return to the home screen
+  if(lifeCount==0){
+    delay=delay+1;
+    if(delay%5==0){
+    background(255,240,0,255);
+    }
+    else if(delay%4==0){
+      background(255,0,0,255);
+    }
+    else if(delay%3==0){
+      background(180,200,255,255);
+    }
+    else{
+      background(100,255,120,255);
+    }
+    fill(255,255,255,255);
+    text("Game Over",width/9,3*height/4);
+    translate(width/2,height/3);
+    for(float i = 0;i<LINE_C;i=i+.2){
+      fill(0);
+    
+      stroke(0);
+      point(x(i+delay),y(i+delay));point(z(i+delay),w(i+delay));
+    }
+    translate(-width/2,-height/3);
+  if(keyPressed || mousePressed){
     GameOver=0;
     sinOne=0;
     delay=0;
+  }
   }
 }
   
@@ -668,4 +746,25 @@ void rectangle(float x, float y, float w, float h, float r, float g, float b, fl
   stroke(255,255);
   fill(r,g,b,o);
 quad(x-w/2,y-h/2,x-w/2,y+h/2,x+w/2,y+h/2,x+w/2,y-h/2); 
+}
+
+
+
+//Parametric Equations
+
+float x(float t){
+    return cos(sqrt(t))*PI*25/(sin(t)+2);
+  
+}
+float y(float t){
+    return sin(sqrt(t))*PI*25/(cos(t)+2);
+  
+}
+float z(float t){
+    return cos(t*t)*160-sin(t);
+  
+}
+float w(float t){
+    return sin(t*t)*150+cos(t*sin(t));
+  
 }
