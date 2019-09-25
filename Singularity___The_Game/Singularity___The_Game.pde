@@ -11,32 +11,16 @@ Surfer[] Surfers = new Surfer[4];
 BH[] OneBH = new BH[10];
 Asteroid[] OneAsteroid = new Asteroid[15];
 float speed;
-PImage img;
+//PImage img;
 float s=0;
 float w;
-float time;
-float osx;
-float osy;
 float theta;
-float size =0;
-float sizer=0;
-float rando;
 float m;
-float phase;
-float phasee;
 float delay=0;
-float flareon=0;
-float jolteon=0;
-float varry =1;
-float varryable =1;
-int doors=0;
-int check =0;
-float setoff=0;
-static final int LINE_C =80;
+static final int LINE_C =200;
 static final int LINE_O =360;
 float numb=0;
 float er=0;
-float umbreon=0;
 float gen =0;
 float open;
 float fire;
@@ -71,7 +55,7 @@ int GameOver=0;
 
 float xGravity=0;
 float yGravity=0;
-float gConstant=180;
+float gConstant=190;
 float ratio=0;
 float ratiotwo=0;
 float prevxx=0;
@@ -238,12 +222,12 @@ void draw() {
     translate(0,(height/13)*2.6);
     //Blue Player Stats
     translate(0,-(height/13)*2.6*2);
-       rectangle(width-width/6,height-3.505*height/13,height/60,height/30,100,14,237,255); 
-       rectangle(width-width/6+abs(width/6.5-width/6),height-3.505*height/13,height/60,height/30,100,14,237,255);  
+    rectangle(width-width/6,height-3.505*height/13,height/60,height/30,100,14,237,255); 
+    rectangle(width-width/6+abs(width/6.5-width/6),height-3.505*height/13,height/60,height/30,100,14,237,255);  
     rectangle(width-width/6+2*abs(width/6.5-width/6),height-3.505*height/13,height/60,height/30,100,14,237,255); 
     rectangle(width-width/6,height-3.505*height/13-abs(1.715*height/13-0.915*height/13),height/60,height/30,100,14,237,255);
  
-     translate(0,(height/13)*2.6*2);
+    translate(0,(height/13)*2.6*2);
     Surfers[0].render(width/8,height-height/10,10,0,255,255,255); 
     Surfers[1].render(width/8,height-3*height/10,10,1,255,255,255); 
     Surfers[2].render(width/8,height-5*height/10,10,2,255,255,255); 
@@ -254,26 +238,29 @@ void draw() {
     if(mousePressed){
       if((mouseY<height && mouseY>height-2*height/10)){
         //SuperBug
-        //maybe use mousepressed location so people can play with a wireless mouse
-        distance=6;
+        surfMass=2.6;
+        distance=5;
         sinOne=4;
         surfType=0;
       }
       else if((mouseY<height-2*height/10 && mouseY>height-4*height/10)){
         //Psych Bike
-        distance=7;
+        surfMass=1.4;
+        distance=6;
         sinOne=4;
         surfType=1;
       }
       else if((mouseY<height-4*height/10 && mouseY>height-6*height/10)){
         //The Compiler
-        distance=8;
+        surfMass=3;
+        distance=7;
         sinOne=4;
         surfType=2;
       }
       else if((mouseY<height-6*height/10 && mouseY>height-8*height/10)){
         //Tron
-        distance=4;
+        surfMass=2.2;
+        distance=3;
         sinOne=4;
         surfType=3;
       }
@@ -302,7 +289,7 @@ void draw() {
    if(delay%5!=0){
    fill(255,255,255,255);
    noStroke();
-    scale(1.8);
+   scale(1.8);
    translate(-30,-height/4.3);
    quad(width/15+height/100,height/2+height/100,width/15+height/100,height/2-height/100,width/15-height/100,height/2-height/100,width/15-height/100,height/2+height/100);
    fill(255,255,255,235);
@@ -316,7 +303,7 @@ void draw() {
    noStroke();
    fill(255,174,206,105);
    quad(sinx+(galaxSize),siny+galaxSize,sinx+galaxSize,siny-galaxSize,sinx-galaxSize,siny-galaxSize,sinx-galaxSize,siny+galaxSize);
-  fill(255,210,30,105);
+   fill(255,210,30,105);
    sinx=(j*.15)*cos(radians(sinAngle+j*15+90))+width/15;
    siny=(j*.05)*sin(radians(sinAngle+j*15+90))+height/2;
    siny=siny+(sinx-width/15)*.25;
@@ -366,20 +353,20 @@ void draw() {
       Asteroidx=OneAsteroid[j].xx;
       Asteroidy=OneAsteroid[j].yy;
       }
-   // if(surfergravity==0)
-    Asteroidmass=5;
+    Asteroidmass=5+j%3;
     xGravityAsteroid=0;
     yGravityAsteroid=0;
     for (int i = 0; i < OneBH.length; i++) {    
-   BHmass=40+(i*50)%200;
-   if(surfergravity==0){
-    if((abs(BHx-prevx)<(BHmass/4))&&(abs(BHy-prevy)<(BHmass/4))){
-      GameOver=1;      
-    }   
-    
+    BHmass=40+(i*50)%200;
+    //Calculate the surfer's gravity & corresponding motion only once when this loop is run against all of the asteroids
+    if(surfergravity==0){
+      if((abs(BHx-prevx)<(BHmass/4))&&(abs(BHy-prevy)<(BHmass/4))){
+        GameOver=1;      
+      }       
     OneBH[i].render(BHmass,BHx,BHy,255);
     BHdistance=sqrt((BHx-prevx)*(BHx-prevx)+(BHy-prevy)*(BHy-prevy));
-    gforce= (1.2*gConstant*BHmass)/(BHdistance*BHdistance+1);
+    //insert the surfer mass and BH mass into the equation
+    gforce= (surfMass*gConstant*BHmass)/(BHdistance*BHdistance+1);
     denom=abs(prevx-BHx)+abs(prevy-BHy);
     ratio = (BHx-prevx)/denom;
     ratiotwo = (BHy-prevy)/denom;
@@ -402,7 +389,7 @@ void draw() {
     }
     
     Asteroiddistance=sqrt((BHx-Asteroidx)*(BHx-Asteroidx)+(BHy-Asteroidy)*(BHy-Asteroidy));
-    gforce= (.09*gConstant*BHmass)/(Asteroiddistance*Asteroiddistance+1);
+    gforce= (.01*Asteroidmass*gConstant*BHmass)/(Asteroiddistance*Asteroiddistance+1);
     denom=abs(Asteroidx-BHx)+abs(Asteroidy-BHy);
     ratio = (BHx-Asteroidx)/denom;
     ratiotwo = (BHy-Asteroidy)/denom;
@@ -423,7 +410,7 @@ void draw() {
     }
   OneAsteroid[j].priorx=((Asteroidx+xGravityAsteroid+OneAsteroid[j].priorx)-Asteroidx)*.99;
   OneAsteroid[j].priory=((Asteroidy+yGravityAsteroid+OneAsteroid[j].priory)-Asteroidy)*.99;
-  if((abs(prevx-Asteroidx)<(Asteroidmass*2))&&(abs(Asteroidy-prevy)<(Asteroidmass*2))){
+  if((abs(prevx-Asteroidx)<(Asteroidmass*2.5))&&(abs(Asteroidy-prevy)<(Asteroidmass*2.5))){
       GameOver=1;      
     }
     surfergravity=surfergravity+1; 
@@ -482,21 +469,18 @@ if(47*width/50<prevx && prevy<(height/2+height/10) && prevy>(height/2-height/10)
     xGravity=0;
     yGravity=0;
     prevx=width/15;
-  prevy=height/2;
-    }
-   
-    if(((abs(mousex-prevx)+abs(prevxx))<3.5)&&((abs(mousey-prevy)+abs(prevyy))<3.5)){
-      Surfers[0].render(prevx,prevy,10,surfType,surfRed,surfBlue,surfGreen);  
-    
+    prevy=height/2;
+    }   
+    if(((abs(mousex-prevx)+abs(prevxx))<6.5)&&((abs(mousey-prevy)+abs(prevyy))<6.5)){
+      Surfers[int(surfType)].render(int(prevx),int(prevy),10,surfType,surfRed,surfBlue,surfGreen);  
     }
     else{
-    Surfers[0].render(prevx+xsurf+xGravity+prevxx,prevy+ysurf+yGravity+prevyy,10,surfType,surfRed,surfBlue,surfGreen);
+      Surfers[int(surfType)].render(int(prevx+xsurf+xGravity+prevxx),int(prevy+ysurf+yGravity+prevyy),10,surfType,surfRed,surfBlue,surfGreen);
       prevx=prevx+xsurf+xGravity+prevxx;
-    prevy=prevy+ysurf+yGravity+prevyy;
-    prevxx=xsurf+xGravity;
-    prevyy=ysurf+yGravity;
-    }
-     
+      prevy=prevy+ysurf+yGravity+prevyy;
+      prevxx=xsurf+xGravity;
+      prevyy=ysurf+yGravity;
+    }     
   } 
   craftLost=0;
 } 
@@ -523,7 +507,7 @@ if(47*width/50<prevx && prevy<(height/2+height/10) && prevy>(height/2-height/10)
     background(255,240,0,255);
     }
     else if(delay%4==0){
-      background(255,0,0,255);
+      background(224,255,250,255);
     }
     else if(delay%3==0){
       background(180,200,255,255);
@@ -550,6 +534,9 @@ if(47*width/50<prevx && prevy<(height/2+height/10) && prevy>(height/2-height/10)
 }
   
 }
+
+
+
 
 //Class Documentation
  
@@ -601,29 +588,129 @@ class Star {
 class Surfer {
   float pz;
   Surfer() {  
-    pz = 7;
+   
   }
   void update() { 
-      pz = 6;
+   
     }
     void render(float x, float y, float len, float quatro, float red, float blue, float green) {
-      //Three color tints, A yellow, pink, and midnight blue
+      //Color parameters are not yet utilized
+      noStroke();
     if(quatro==0){
-    fill(255,240,130,255);
-    noStroke();
-    stroke(255);
-    triangle(x-len,y+len,x,y-len,x+len,y+len);
-    line(x-len*2,y+len*2,x-len,y+len);
-    line(x,y-len*2,x,y-len);
-    line(x+len,y+len,x+len*2,y+len*2);
-    noFill();
-    stroke(255,240,130,255);
-    triangle(x+len*2,y+len*2,x,y-len*2,x-len*2,y+len*2);   
+      //Superbug
+      len=4;
+    fill(255,240,0,255);
+    
+    square(x-len,y+3*len,len);
+    square(x+len,y+3*len,len);
+    square(x,y+3*len,len);
+    square(x-len*2,y+6*len,len);
+    square(x+len*2,y+6*len,len);
+    
+    square(x+len*2,y+len,len);
+    square(x+len*2,y,len);
+    square(x+len*2,y-len,len);
+    square(x+len*2,y-len*2,len);
+    square(x+len*3,y-len*3,len);
+    square(x+len*3,y-len*4,len);
+    square(x+len*4,y-len*4,len);
+    square(x+len*4,y-len*5,len);
+    square(x+len*5,y-len*5,len);
+    square(x+len*3,y+len,len);
+    
+    square(x-len*2,y+len,len);
+    square(x-len*2,y,len);
+    square(x-len*2,y-len,len);
+    square(x-len*2,y-len*2,len);
+    square(x-len*3,y-len*3,len);
+    square(x-len*3,y-len*4,len);
+    square(x-len*4,y-len*4,len);
+    square(x-len*4,y-len*5,len);
+    square(x-len*5,y-len*5,len);
+    square(x-len*3,y+len,len);
+    
+    square(x-len*5,y+len,len);
+    square(x-len*5,y+len*2,len);
+    square(x+len*5,y+len,len);
+    square(x+len*5,y+len*2,len);
+    fill(200,255,230,255);
+    square(x-len,y,len*3);
+    square(x,y+4*len,len);
+    square(x,y+4*len,len);
+    square(x+len,y+4*len,len);
+    square(x-len,y+4*len,len);
+    square(x+len,y+5*len,len);
+    square(x,y+5*len,len);
+    square(x-len,y+5*len,len);
+    
+    square(x+4*len,y,len);
+    square(x+4*len,y+len,len);
+    square(x-4*len,y,len);
+    square(x-4*len,y+len,len);
+    
+    square(x+6*len,y+len*3,len);
+    square(x+6*len,y+len*2,len);
+    square(x-6*len,y+len*3,len);
+    square(x-6*len,y+len*2,len);
+    square(x-5*len,y+len*4,len);
+    square(x+5*len,y+len*4,len);
     }
     else if(quatro==1){
-      stroke(255);
+      //Psych Bike
+     noStroke();
       fill(255,174,204,255);
-      quad(x-len,y-len,x+len,y-len,x+len,y+len,x-len,y+len);
+      //quad(x-len,y-len,x+len,y-len,x+len,y+len,x-len,y+len);
+      len=4;
+      square(x,y,len);
+      square(x+len,y,len);
+      square(x+len*2,y,len);
+      square(x+len*2,y+len,len);
+      square(x+len*2,y-len,len);
+      square(x+len*2,y-len*2,len);
+      square(x+len,y-len*2,len);
+      square(x,y-len*2,len);
+      square(x-len,y,len);
+      square(x-len*2,y,len);
+      square(x-len*2,y+len,len);
+      square(x-len*2,y-len,len);
+      square(x-len*2,y-len*2,len);
+      square(x-len,y-len*2,len);
+      square(x,y-len*2,len);      
+      square(x,y+len*2,len);
+      square(x-len,y+len*2,len);
+      square(x+len,y+len*2,len);
+      square(x-len*2,y+len*3,len);
+      square(x+len*2,y+len*3,len);
+      square(x-len*3,y+len*3,len);
+      square(x+len*3,y+len*3,len);
+      square(x-len*4,y+len*4,len);
+      square(x+len*4,y+len*4,len);      
+      square(x-len*3,y-len*2,len);
+      square(x+len*3,y-len*2,len);
+      square(x-len*4,y-len*2,len);
+      square(x+len*4,y-len*2,len);
+      square(x-len*5,y-len*2,len);
+      square(x+len*5,y-len*2,len);
+      square(x-len*5,y-len*3,len);
+      square(x+len*5,y-len*3,len);
+      square(x-len*5,y-len,len);
+      square(x+len*5,y-len,len);
+      fill(198,220,255,255);
+      square(x,y+len,len);
+      square(x-len,y+len,len);
+      square(x+len,y+len,len);
+      square(x,y+len*3,len);
+      square(x-len,y+len*3,len);
+      square(x+len,y+len*3,len);
+      square(x,y+len*4,len);
+      square(x-len*5,y,len);
+      square(x+len*5,y,len);
+      square(x-len*4,y,len);
+      square(x+len*4,y,len);
+      square(x-len*5,y-len*4,len);
+      square(x+len*5,y-len*4,len);
+      square(x-len*4,y-len*4,len);
+      square(x+len*4,y-len*4,len);
     }
    else if(quatro==2){
       stroke(255);
