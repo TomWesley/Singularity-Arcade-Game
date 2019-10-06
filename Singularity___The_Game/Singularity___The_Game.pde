@@ -1,10 +1,8 @@
-//Visual sequence consisting of various changing colors and shapes for a music video
+//Copyright © 2019 TomWesley
+//SINGULARITY: This novelty arcade game allows users pilot a Spacecraft which surfs on the gravitational waves of black holes to explore various galaxies. 
 //Coder: Thomas Wesley 
-//Last Edit 9/28/2018
-//Title: Eyelids Sequence
+//Last Edit 10/5/2019
 
-
-///NOTES: Add different surfboards with different mass and allow people to change the color 
 //Variable Declarations
 Star[] stars = new Star[800];
 Surfer[] Surfers = new Surfer[4];
@@ -55,7 +53,7 @@ int GameOver=0;
 
 float xGravity=0;
 float yGravity=0;
-float gConstant=190;
+float gConstant=200;
 float ratio=0;
 float ratiotwo=0;
 float prevxx=0;
@@ -78,6 +76,7 @@ float prevyy=0;
     float surfType;
     float surfMass; //Make sure this goes into the gravity equation
     float levelTimer=0;
+    float level=1;
     
 //Game Over Sequence    
     float craftLost=0;//counter to ensure the craft lost sequences are timed correctly before resetting
@@ -124,7 +123,7 @@ void draw() {
   }
   translate(-width/2,-height/2);
   lifeCount=3; //Reset the number of lives each time the game is restarted\
-  
+  level=1; 
   
   textSize(height/4.5);
   if(delay<255){
@@ -287,7 +286,7 @@ void draw() {
     stars[i].show(255,255,255,255);
    }
    translate(-width/2,-height/2);
-   //Level 1   
+    
    //Galaxy Start
    if(delay%5!=0){
    fill(255,255,255,255);
@@ -330,7 +329,7 @@ void draw() {
    translate(30,height/4.3);
    scale((1/1.8));
    } 
-     //Black Holes/Asteroids Level One
+     //Black Holes/Asteroids 
     float Asteroiddistance;
     float Asteroidmass=30;
     float AsteroidInitialSpeed=21;
@@ -356,11 +355,20 @@ void draw() {
       Asteroidx=OneAsteroid[j].xx;
       Asteroidy=OneAsteroid[j].yy;
       }
-    Asteroidmass=5+j%3;
+    Asteroidmass=5+j%4;
     xGravityAsteroid=0;
     yGravityAsteroid=0;
     for (int i = 0; i < OneBH.length; i++) {    
-    BHmass=90+(i*20)%150;
+    if(level==1){
+    BHmass=100+(i*20)%150;}
+    else if(level==2){
+      if(i==2){
+        BHmass=500;
+      }
+      else{
+        BHmass=110+(i*30)%160;
+      }
+    }
     //Calculate the surfer's gravity & corresponding motion only once when this loop is run against all of the asteroids
     if(surfergravity==0){
       if((abs(BHx-prevx)<(BHmass/4))&&(abs(BHy-prevy)<(BHmass/4))){
@@ -382,10 +390,53 @@ void draw() {
       BHy=BHy-i*75;
     }
     else{
-      BHy=BHy+i*20*sqrt(i);
+      BHy=BHy+i*30*sqrt(i);
     } 
-   
+   if(level==1){
     BHx =BHx + width/12-i;
+   }
+   else if(level==2){
+     if(i==1){
+       BHx=width/2;
+       BHy=height/2;
+     }
+     if(i==2){
+       BHx=width/2+width/12;
+       BHy=height/100;
+     }
+     if(i==3){
+       BHx=width/2+width/12;
+       BHy=height-height/100;
+     }
+     if(i==4){
+       BHx=width/2+width/10;
+       BHy=height/3;
+     }
+     if(i==4){
+       BHx=width/2+width/4;
+       BHy=1.5*height/4;
+     }
+     if(i==5){
+       BHx=width-width/50;
+       BHy=height/4;
+     }
+     if(i==6){
+       BHx=width-width/40;
+       BHy=height-height/5;
+     }
+     if(i==7){
+       BHx=width/30;
+       BHy=height/1.5;
+     }
+     if(i==8){
+       BHx=width/4;
+       BHy=height/8;
+     }
+     if(i==9){
+       BHx=width-width/10;
+       BHy=height/2.2;
+     }
+   }
     
    }
    else{
@@ -407,7 +458,12 @@ void draw() {
     }
     if(AsteroidDestroyed==1 || Asteroidx+xGravityAsteroid+OneAsteroid[j].priorx<0 || Asteroidx+xGravityAsteroid+OneAsteroid[j].priorx>width*1.2 ||Asteroidy+yGravityAsteroid+OneAsteroid[j].priory<0|| Asteroidy+yGravityAsteroid+OneAsteroid[j].priory>height){
       AsteroidDestroyed=0; 
-      OneAsteroid[j].priorx=-int(random(5,21));
+      if(level==1){
+      OneAsteroid[j].priorx=-int(random(6,25));
+      }
+      else if(level==2){
+        OneAsteroid[j].priorx=-int(random(7,30));
+      }
        OneAsteroid[j].priory=0;
        Asteroidx=width*1.1;
        Asteroidy=random(height/6,5*height/6);
@@ -450,9 +506,13 @@ ellipse(49*width/50,height/2,height/20,height/7);
 ellipse(48*width/50,height/2,height/20,height/6);
 ellipse(47*width/50,height/2,height/20,height/5);
 
+//The trigger for beating the level
 if(47*width/50<prevx && prevy<(height/2+height/10) && prevy>(height/2-height/10)){
-  textSize(height/4.5);
+  textSize(height/5.5);
+  fill(255,240,0,255);
   text("Level Complete",width/9,height/2.5);
+  sinOne=4;
+  level=2;
 }
   
   //Surfer
