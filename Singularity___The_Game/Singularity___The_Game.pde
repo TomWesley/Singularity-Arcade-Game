@@ -2,13 +2,23 @@
 //SINGULARITY: This novelty arcade game allows users pilot a Spacecraft which surfs on the gravitational waves of black holes to explore various galaxies. 
 //Coder: Thomas Wesley 
 //Last Edit 10/5/2019
+//Notes - Add some aliens in the top left corner that shoots every 3 seconds
 
 //Variable Declarations
 Star[] stars = new Star[800];
 Surfer[] Surfers = new Surfer[4];
 BH[] OneBH = new BH[10];
-Asteroid[] OneAsteroid = new Asteroid[15];
+Asteroid[] OneAsteroid = new Asteroid[17];
 float speed;
+//Victory Sequence
+float wave;
+float phase;
+float meh;
+float flareon=0;
+float jolteon=0;
+float osx;
+float osy;
+
 //PImage img;
 float s=0;
 float w;
@@ -53,7 +63,7 @@ int GameOver=0;
 
 float xGravity=0;
 float yGravity=0;
-float gConstant=200;
+float gConstant=180;
 float ratio=0;
 float ratiotwo=0;
 float prevxx=0;
@@ -77,6 +87,7 @@ float prevyy=0;
     float surfMass; //Make sure this goes into the gravity equation
     float levelTimer=0;
     float level=1;
+    float victory=0;
     
 //Game Over Sequence    
     float craftLost=0;//counter to ensure the craft lost sequences are timed correctly before resetting
@@ -98,7 +109,7 @@ void setup() {
     OneBH[i] = new BH(10); 
   }
   for (int i = 0; i < OneAsteroid.length; i++) {
-    OneAsteroid[i] = new Asteroid(15); 
+    OneAsteroid[i] = new Asteroid(17); 
   }
   for (int i = 0; i < Surfers.length; i++) {
     Surfers[i] = new Surfer();
@@ -125,16 +136,16 @@ void draw() {
   lifeCount=3; //Reset the number of lives each time the game is restarted\
   level=1; 
   
-  textSize(height/4.5);
+  textSize((width)/7.2);
   if(delay<255){
   fill(255,240,0,255-(255-delay));
   }
   else{fill(255,240,0,255);}
   text("SINGULARITY",width/13.3,height/2);
   if(delay>280){
-    textSize(height/14);
+    textSize((width)/23.5);
   
-    text("Press Any Key To Begin",width/4.17,height-height/4);
+    text("Press Any Key To Begin",width/3.8,height-height/4);
   }
   if(delay>30){
     if(keyPressed || mousePressed){
@@ -183,7 +194,7 @@ void draw() {
     text("Superbug",width/4,height-1*height/13);
     text("Psych Bike",width/4,height-3.6*height/13);
     text("The Compiler",width/4,height-6.2*height/13);
-    text("Tron",width/4,height-8.8*height/13);
+    text("Voidwalker",width/4,height-8.8*height/13);
     textSize(height/19.5);
     text("Speed",width-width/3.5,height-1.5*height/13);text("Mass",width-width/3.5,height-0.7*height/13);
     translate(0,-(height/13)*2.6);
@@ -240,29 +251,29 @@ void draw() {
     if(mousePressed){
       if((mouseY<height && mouseY>height-2*height/10)){
         //SuperBug
-        surfMass=2.6;
-        distance=7;
+        surfMass=2.9;
+        distance=9.5;
         sinOne=4;
         surfType=0;
       }
       else if((mouseY<height-2*height/10 && mouseY>height-4*height/10)){
         //Psych Bike
-        surfMass=1.4;
-        distance=8;
+        surfMass=2.3;
+        distance=10.25;
         sinOne=4;
         surfType=1;
       }
       else if((mouseY<height-4*height/10 && mouseY>height-6*height/10)){
         //The Compiler
-        surfMass=3;
-        distance=9;
+        surfMass=3.1;
+        distance=11;
         sinOne=4;
         surfType=2;
       }
       else if((mouseY<height-6*height/10 && mouseY>height-8*height/10)){
-        //Tron
-        surfMass=2.2;
-        distance=5;
+        //Voidwalker
+        surfMass=2.7;
+        distance=8;
         sinOne=4;
         surfType=3;
       }
@@ -334,15 +345,19 @@ void draw() {
     float Asteroidmass=30;
     float AsteroidInitialSpeed=21;
     float BHdistance;
-    float BHx =width/5;
-    float BHy=height/2-height/4;
+    float BHx =width/6;
+    float BHy=height/6;
     float gforce;
     float BHmass=0;
     float xGravityAsteroid= 0;
     float yGravityAsteroid= 0;
     xGravity=0;
     yGravity=0;
-    float denom;    
+    float denom;   
+    if(level==3){
+      BHy=height/3.5; 
+      BHx =width/5.5;
+    }
     surfergravity = 0; //Do the surfers relation to the black holes only once
     for (int j = 0; j < OneAsteroid.length; j++) { 
       if(initialAsteroid==0){
@@ -355,7 +370,7 @@ void draw() {
       Asteroidx=OneAsteroid[j].xx;
       Asteroidy=OneAsteroid[j].yy;
       }
-    Asteroidmass=5+j%4;
+    Asteroidmass=5+j%3;
     xGravityAsteroid=0;
     yGravityAsteroid=0;
     for (int i = 0; i < OneBH.length; i++) {    
@@ -363,10 +378,18 @@ void draw() {
     BHmass=100+(i*20)%150;}
     else if(level==2){
       if(i==2){
-        BHmass=500;
+        BHmass=550;
       }
       else{
-        BHmass=110+(i*30)%160;
+        BHmass=150+(i*30)%160;
+      }
+    }
+    else if(level==3){
+      if(i==0){
+        BHmass=50;
+      }
+      else{
+      BHmass=250;
       }
     }
     //Calculate the surfer's gravity & corresponding motion only once when this loop is run against all of the asteroids
@@ -377,23 +400,23 @@ void draw() {
     OneBH[i].render(BHmass,BHx,BHy,255);
     BHdistance=sqrt((BHx-prevx)*(BHx-prevx)+(BHy-prevy)*(BHy-prevy));
     //insert the surfer mass and BH mass into the equation
-    gforce= (surfMass*gConstant*BHmass)/(BHdistance*BHdistance+1);
+    gforce= (surfMass*gConstant*(BHmass*.8+BHmass*BHmass*.0011))/(BHdistance*BHdistance+1);
     denom=abs(prevx-BHx)+abs(prevy-BHy);
     ratio = (BHx-prevx)/denom;
     ratiotwo = (BHy-prevy)/denom;
     xGravity = xGravity + ratio*gforce;
     yGravity = yGravity + ratiotwo*gforce;
     if(i==0){
-    BHy=height/2+height/5;
+    BHy=height/2-height/5;
     }
     else if(i%2==0){
-      BHy=BHy-i*75;
+      BHy=BHy-sqrt(i)*170+i%40;
     }
     else{
-      BHy=BHy+i*30*sqrt(i);
+      BHy=BHy+95*i;
     } 
    if(level==1){
-    BHx =BHx + width/12-i;
+    BHx =BHx + width/13;
    }
    else if(level==2){
      if(i==1){
@@ -402,15 +425,11 @@ void draw() {
      }
      if(i==2){
        BHx=width/2+width/12;
-       BHy=height/100;
+       BHy=height/12;
      }
      if(i==3){
-       BHx=width/2+width/12;
-       BHy=height-height/100;
-     }
-     if(i==4){
-       BHx=width/2+width/10;
-       BHy=height/3;
+       BHx=width/2+width/9;
+       BHy=height-height/12;
      }
      if(i==4){
        BHx=width/2+width/4;
@@ -425,7 +444,7 @@ void draw() {
        BHy=height-height/5;
      }
      if(i==7){
-       BHx=width/30;
+       BHx=width/70;
        BHy=height/1.5;
      }
      if(i==8){
@@ -437,8 +456,21 @@ void draw() {
        BHy=height/2.2;
      }
    }
-    
+   else if(level==3){
+    if(i<3){
+      BHx=((i+2)*width)/5;
+      BHy=height/9;    
    }
+   else if(i<6){
+     BHx=((i-2+1)*width)/5;
+      BHy=height/2; 
+   }
+   else{
+     BHx=((i-5+1)*width)/5;
+      BHy=height-height/9;   
+   }    
+   }
+    } 
    else{
    BHx=OneBH[i].xx;
    BHy=OneBH[i].yy;
@@ -448,7 +480,7 @@ void draw() {
     }
     
     Asteroiddistance=sqrt((BHx-Asteroidx)*(BHx-Asteroidx)+(BHy-Asteroidy)*(BHy-Asteroidy));
-    gforce= (.01*Asteroidmass*gConstant*BHmass)/(Asteroiddistance*Asteroiddistance+1);
+    gforce= (.02*Asteroidmass*gConstant*BHmass)/(Asteroiddistance*Asteroiddistance+1);
     denom=abs(Asteroidx-BHx)+abs(Asteroidy-BHy);
     ratio = (BHx-Asteroidx)/denom;
     ratiotwo = (BHy-Asteroidy)/denom;
@@ -464,9 +496,20 @@ void draw() {
       else if(level==2){
         OneAsteroid[j].priorx=-int(random(7,30));
       }
+      else if(level==3){
+        OneAsteroid[j].priorx=-int(random(20,45));
+      }
        OneAsteroid[j].priory=0;
        Asteroidx=width*1.1;
        Asteroidy=random(height/6,5*height/6);
+       if(Asteroidy>(height/2-(height/16)) && Asteroidy<(height/2+(height/16))){
+         if(delay%2==0){
+           Asteroidy=random(0,2*height/6);
+         }
+         else{
+           Asteroidy=random(4*height/6,height);
+         }       
+       }
         OneAsteroid[j].render(Asteroidmass,Asteroidx+OneAsteroid[j].priorx,Asteroidy+OneAsteroid[j].priory,Asteroidx,Asteroidy,1,1);
 
     }else{
@@ -512,7 +555,10 @@ if(47*width/50<prevx && prevy<(height/2+height/10) && prevy>(height/2-height/10)
   fill(255,240,0,255);
   text("Level Complete",width/9,height/2.5);
   sinOne=4;
-  level=2;
+  level=level+1;
+  if(level==4){
+    GameOver=2;
+  }
 }
   
   //Surfer
@@ -534,7 +580,7 @@ if(47*width/50<prevx && prevy<(height/2+height/10) && prevy>(height/2-height/10)
       String myText="Lives: "+lifeCount;
       text("Engage Thrusters!",width/9,height/3.5);
       fill(255,0,0,255);
-      text(myText,width/3.5,height/1.8);
+      text(myText,width/3.7,height/1.8);
       xsurf=0;
     ysurf=0;
     xGravity=0;
@@ -542,7 +588,7 @@ if(47*width/50<prevx && prevy<(height/2+height/10) && prevy>(height/2-height/10)
     prevx=width/15;
     prevy=height/2;
     }   
-    if(((abs(mousex-prevx)+abs(prevxx))<6.5)&&((abs(mousey-prevy)+abs(prevyy))<6.5)){
+    if(((abs(mousex-prevx)+abs(prevxx))<10.5)&&((abs(mousey-prevy)+abs(prevyy))<10.5)){
       Surfers[int(surfType)].render(int(prevx),int(prevy),10,surfType,surfRed,surfBlue,surfGreen);  
     }
     else{
@@ -556,7 +602,7 @@ if(47*width/50<prevx && prevy<(height/2+height/10) && prevy>(height/2-height/10)
   craftLost=0;
 } 
   //What happens after being eaten by a black hole or destroyed by an asteroid, have different sequences that occur
-   else{
+   else if(GameOver==1){
    if(lifeCount>0){ //background(0);
     textSize(height/4.5);
     fill(255,0,0,255);
@@ -602,7 +648,72 @@ if(47*width/50<prevx && prevy<(height/2+height/10) && prevy>(height/2-height/10)
     delay=0;
   }
   }
-}
+   }
+   else{
+     background(0);
+     for (int i = 0; i < stars.length; i++) {
+    stars[i].show(255,255,255,255);
+   }
+    if(mousePressed || keyPressed){
+      GameOver=0;
+      sinOne=0;
+      delay=0;
+    }
+    
+    fill(255,240,0,255);
+    textSize(height/5);
+    text("Victory",width/4,height/4);
+     translate(width/2, height/2);
+    for (float i = 0; i < LINE_O; i = i +.1){
+         wave=35;
+         theta = i*(360/LINE_O);
+         phase=((PI)/LINE_O);
+         meh = ((flareon*.5))*sin(wave*theta+phase)*cos(phase);
+         osx=(meh+flareon+140)*tan(theta);
+         osy=(meh+flareon+140)*sin(theta);
+         strokeWeight(0.1);
+        
+         strokeWeight(1);
+         stroke(255,240,0,1);
+         strokeWeight(15);
+         point(osx,osy);
+         stroke(255,240,0,2);
+         strokeWeight(12);
+         point(osx,osy);
+         stroke(255,240,0,3);
+         strokeWeight(9);
+         point(osx,osy);
+         stroke(255,240,0,4);
+         strokeWeight(6);
+         point(osx,osy);
+         stroke(255,240,0,5);
+         strokeWeight(3);
+         point(osx,osy);
+         stroke(255,240,0,255);
+         strokeWeight(1.5);
+         point(osx,osy);
+         
+       }
+      translate(-width/2, -height/2);
+      
+       if(jolteon<850){
+    
+      jolteon = jolteon+1;
+    }
+    else{
+      jolteon=0;
+  }
+
+  if(flareon<850){
+    
+      flareon = flareon+1;
+    }
+    else{
+      flareon=0;
+  }
+    
+  }
+
   
 }
 
@@ -895,10 +1006,95 @@ class Surfer {
       
    }
    else{
+     len=4;
+     //VoidWalker
       stroke(255);
-      fill(170,190,255,255);
-      triangle(x,y,x-len,y+len,x+len,y+len);
-      triangle(x,y,x-len,y-len,x+len,y-len);
+      fill(100,14,237,255);
+      noStroke();
+      square(x,y,len);
+      square(x,y-len,len);
+      square(x,y-len*2,len);
+      square(x,y-len*3,len);
+      square(x,y-len*4,len);
+      square(x,y-len*5,len);
+      square(x,y+len,len);
+      square(x,y+len*2,len);
+      square(x,y+len*3,len);
+      square(x,y+len*4,len);
+      square(x,y+len*5,len);
+      square(x,y+len*6,len);
+      square(x-len,y,len);
+      square(x+len,y,len);
+      square(x-len,y+len,len);
+      square(x+len,y+len,len);
+      
+      square(x-len,y+len*4,len);
+      square(x+len,y+len*4,len);
+      square(x-len,y+len*5,len);
+      square(x+len,y+len*5,len);
+      square(x-len,y-len*3,len);
+      square(x+len,y-len*3,len);
+      square(x-len,y-len*4,len);
+      square(x+len,y-len*4,len);
+      
+      square(x-len*3,y-len,len);
+      square(x+len*3,y-len,len);
+      square(x-len*4,y-len,len);
+      square(x+len*4,y-len,len);
+      square(x-len*5,y-len*2,len);
+      square(x+len*5,y-len*2,len);
+      square(x-len*6,y-len*3,len);
+      square(x+len*6,y-len*3,len);
+      square(x-len*6,y-len*2,len);
+      square(x+len*6,y-len*2,len);
+      square(x-len*6,y-len*1,len);
+      square(x+len*6,y-len*1,len);
+      square(x-len*6,y,len);
+      square(x+len*6,y,len);
+      square(x-len*6,y+len,len);
+      square(x+len*6,y+len,len);
+      
+      square(x-len*7,y,len);
+      square(x+len*7,y,len);
+      square(x-len*7,y+len,len);
+      square(x+len*7,y+len,len);
+      square(x-len*7,y+len*2,len);
+      square(x+len*7,y+len*2,len);
+      square(x-len*7,y-len,len);
+      square(x+len*7,y-len,len);
+      square(x-len*7,y-len*2,len);
+      square(x+len*7,y-len*2,len);
+      square(x-len*7,y-len*3,len);
+      square(x+len*7,y-len*3,len);
+      square(x-len*7,y-len*4,len);
+      square(x+len*7,y-len*4,len);
+      fill(255,255,255,255);
+      square(x+len,y-len,len);
+      square(x-len,y-len,len);
+      square(x+len*2,y,len);
+      square(x-len*2,y,len);
+      square(x+len*3,y+len,len);
+      square(x-len*3,y+len,len);
+      square(x+len*3,y+len*2,len);
+      square(x-len*3,y+len*2,len);
+      
+      square(x+len,y-len*5,len);
+      square(x-len,y-len*5,len);
+      square(x+len*2,y-len*4,len);
+      square(x-len*2,y-len*4,len);
+      square(x+len*3,y-len*3,len);
+      square(x-len*3,y-len*3,len);
+      square(x+len*3,y-len*2,len);
+      square(x-len*3,y-len*2,len);
+      
+      square(x+len,y+len*3,len);
+      square(x-len,y+len*3,len);
+      square(x+len*2,y+len*4,len);
+      square(x-len*2,y+len*4,len);
+      square(x+len*3,y+len*5,len);
+      square(x-len*3,y+len*5,len);
+      square(x+len*3,y+len*6,len);
+      square(x-len*3,y+len*6,len);
    }
   }
 }
