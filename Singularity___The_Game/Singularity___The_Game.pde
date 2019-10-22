@@ -1,8 +1,8 @@
 //Copyright © 2019 TomWesley
 //SINGULARITY: This novelty arcade game allows users pilot a Spacecraft which surfs on the gravitational waves of black holes to explore various galaxies. 
 //Coder: Thomas Wesley 
-//Last Edit 10/5/2019
-//Notes - Add some aliens in the top left corner that shoots every 3 seconds
+//Last Edit 10/22/2019
+//Notes - Add some aliens in the top left corner that shoots every 3 seconds, on levels 9 & ten
 
 //Variable Declarations
 Star[] stars = new Star[800];
@@ -14,11 +14,9 @@ float speed;
 float wave;
 float phase;
 float meh;
-float flareon=0;
-float jolteon=0;
 float osx;
 float osy;
-
+float flareon =0;
 //PImage img;
 float s=0;
 float w;
@@ -63,7 +61,7 @@ int GameOver=0;
 
 float xGravity=0;
 float yGravity=0;
-float gConstant=180;
+float gConstant=185;
 float ratio=0;
 float ratiotwo=0;
 float prevxx=0;
@@ -639,7 +637,8 @@ if(47*width/50<prevx && prevy<(height/2+height/10) && prevy>(height/2-height/10)
       fill(0);
     
       stroke(0);
-      point(x(i+delay),y(i+delay));point(z(i+delay),w(i+delay));
+      point(x(i+delay),y(i+delay));
+      point(z(i+delay),w(i+delay));
     }
     translate(-width/2,-height/3);
   if(keyPressed || mousePressed){
@@ -696,21 +695,7 @@ if(47*width/50<prevx && prevy<(height/2+height/10) && prevy>(height/2-height/10)
        }
       translate(-width/2, -height/2);
       
-       if(jolteon<850){
-    
-      jolteon = jolteon+1;
-    }
-    else{
-      jolteon=0;
-  }
-
-  if(flareon<850){
-    
-      flareon = flareon+1;
-    }
-    else{
-      flareon=0;
-  }
+     
     
   }
 
