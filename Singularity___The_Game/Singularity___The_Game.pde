@@ -1,10 +1,11 @@
 //Copyright © 2019 TomWesley
-//SINGULARITY: This novelty arcade game allows users pilot a Spacecraft which surfs on the gravitational waves of black holes to explore various galaxies. 
+//SINGULARITY: This original novelty arcade game allows users pilot a Spacecraft which surfs on the gravitational waves of black holes to explore various galaxies. 
 //Coder: Thomas Wesley 
-//Last Edit 10/22/2019
+//Last Edit 10/28/2019
 //Notes - Add some aliens in the top left corner that shoots every 3 seconds, on levels 9 & ten
+//Current Level Count - 3
 
-//Variable Declarations
+//Variable Declarations - Need Cleaned Up
 Star[] stars = new Star[800];
 Surfer[] Surfers = new Surfer[4];
 BH[] OneBH = new BH[10];
@@ -61,7 +62,7 @@ int GameOver=0;
 
 float xGravity=0;
 float yGravity=0;
-float gConstant=185;
+float gConstant=190;
 float ratio=0;
 float ratiotwo=0;
 float prevxx=0;
@@ -89,17 +90,13 @@ float prevyy=0;
     
 //Game Over Sequence    
     float craftLost=0;//counter to ensure the craft lost sequences are timed correctly before resetting
-//Create bolt objects to use throughout the sequence
-//Bolt[] bolts = new Bolt[150];
-//Setup function to establis the frame color and size 
 
 void setup() {
   //The initial background is black
   background(0);
-  //Size the frame in HD proportions
- // size(1280,720);
+  //Size the frame to the fullscreen of where it is being deployed
   fullScreen();
-  //Create an array of stars to be utilized in the draw phase
+  //Create arrays of the class objects to be utilized in the draw phase
   for (int i = 0; i < stars.length; i++) {
     stars[i] = new Star(); 
   }
@@ -113,174 +110,176 @@ void setup() {
     Surfers[i] = new Surfer();
   }
 }
+
 //The draw function runs through the actions contained in a loop
 void draw() {
-  cursor(CROSS);
+  cursor(CROSS); //Possibly insert a custom cursor eventually
   delay=delay+1;
   if(GameOver==0){
-   
-  if(sinOne==0){
-  background(0);
-  title = createFont("volt.ttf", 32);
-  textFont(title);
-  translate(width/2,height/2);
-  for (int i = 0; i < stars.length; i++) {
-    //Update the location of each star in the array
-    stars[i].update();
-    //Pass in the color and opacity values for the stars in the array
-    stars[i].show(255,255,255,255);
-  }
-  translate(-width/2,-height/2);
-  lifeCount=3; //Reset the number of lives each time the game is restarted\
-  level=1; 
-  
-  textSize((width)/7.2);
-  if(delay<255){
-  fill(255,240,0,255-(255-delay));
-  }
-  else{fill(255,240,0,255);}
-  text("SINGULARITY",width/13.3,height/2);
-  if(delay>280){
-    textSize((width)/23.5);
-  
-    text("Press Any Key To Begin",width/3.8,height-height/4);
-  }
-  if(delay>30){
-    if(keyPressed || mousePressed){
-   sinOne=2; 
-   Craftselectioncount=5;
-  }
-  }
-  
-  speed = map(10+delay/200, 0, width, 0, 50); 
-  
-  prevx=width/15;
-  prevy=height/2;
-  //Surfers[0] = new Surfer();
-  }
-  else if(sinOne==2){
-    background(0);
-    translate(width/2,height/2);
-    rotate(PI*delay/900);
-    for (int i = 0; i < stars.length; i++) {
-    stars[i].show(255,255,255,255);
-   }
-   rotate(-PI*delay/900);
-   translate(-width/2,-height/2);
-    textSize(height/8.5);
-    fill(255,240,0,255);
-    text("Select A Surfer",width/5,height/6);
-    stroke(255,240,0,255);
-    line(width/7,height/5.5,width-width/7,height/5.5);
-    //Display the surfers here
-    stroke(255,255);
-    fill(255,150);
-    if(mouseY<height && mouseY>height-2*height/10){
-      quad(0,height-2*height/10,0,height,width,height,width,height-2*height/10);
-    }
-    if(mouseY<height-2*height/10 && mouseY>height-4*height/10){
-      quad(0,height-2*height/10,0,height-4*height/10,width,height-4*height/10,width,height-2*height/10);
-    }
-    if(mouseY<height-4*height/10 && mouseY>height-6*height/10){
-      quad(0,height-4*height/10,0,height-6*height/10,width,height-6*height/10,width,height-4*height/10);
-    }
-    if(mouseY<height-6*height/10 && mouseY>height-8*height/10){
-      quad(0,height-6*height/10,0,height-8*height/10,width,height-8*height/10,width,height-6*height/10);
-    }
-    textSize(height/14.5);
-    fill(255,255,255,255);
-    text("Superbug",width/4,height-1*height/13);
-    text("Psych Bike",width/4,height-3.6*height/13);
-    text("The Compiler",width/4,height-6.2*height/13);
-    text("Voidwalker",width/4,height-8.8*height/13);
-    textSize(height/19.5);
-    text("Speed",width-width/3.5,height-1.5*height/13);text("Mass",width-width/3.5,height-0.7*height/13);
-    translate(0,-(height/13)*2.6);
-    text("Speed",width-width/3.5,height-1.5*height/13);text("Mass",width-width/3.5,height-0.7*height/13);
-    translate(0,(height/13)*2.6);
-    translate(0,-(height/13)*2.6*2);
-    text("Speed",width-width/3.5,height-1.5*height/13);text("Mass",width-width/3.5,height-0.7*height/13);
-    translate(0,(height/13)*2.6*2);
-    translate(0,-(height/13)*2.6*3);
-    text("Speed",width-width/3.5,height-1.5*height/13);text("Mass",width-width/3.5,height-0.7*height/13);
-    translate(0,(height/13)*2.6*3);
-    //Yellow Player Stats
-    rectangle(width-width/6,height-0.915*height/13,height/60,height/30,255,240,0,255);
-    rectangle(width-width/6.5,height-0.915*height/13,height/60,height/30,255,240,0,255);
-    rectangle(width-width/6.5+abs(width/6.5-width/6),height-0.915*height/13,height/60,height/30,255,240,0,255);
-    rectangle(width-width/6.5+2*abs(width/6.5-width/6),height-0.915*height/13,height/60,height/30,255,240,0,255);   
-    rectangle(width-width/6,height-1.715*height/13,height/60,height/30,255,240,0,255);
-    rectangle(width-width/6.5,height-1.715*height/13,height/60,height/30,255,240,0,255);
-    rectangle(width-width/6.5+abs(width/6.5-width/6),height-1.715*height/13,height/60,height/30,255,240,0,255);    
-    //Pink Player Stats
-    rectangle(width-width/6,height-3.505*height/13,height/60,height/30,255,174,204,255);    
-    rectangle(width-width/6,height-3.505*height/13-abs(1.715*height/13-0.915*height/13),height/60,height/30,255,174,204,255);
-    rectangle(width-width/6.5,height-3.505*height/13-abs(1.715*height/13-0.915*height/13),height/60,height/30,255,174,204,255);
-    rectangle(width-width/6.5+abs(width/6.5-width/6),height-3.505*height/13-abs(1.715*height/13-0.915*height/13),height/60,height/30,255,174,204,255);
-    rectangle(width-width/6.5+2*abs(width/6.5-width/6),height-3.505*height/13-abs(1.715*height/13-0.915*height/13),height/60,height/30,255,174,204,255);    
-    //Green Player Stats
-    translate(0,-(height/13)*2.6);
-    rectangle(width-width/6,height-3.505*height/13,height/60,height/30,80,230,130,255);    
-    rectangle(width-width/6+abs(width/6.5-width/6),height-3.505*height/13,height/60,height/30,80,230,130,255);  
-    rectangle(width-width/6+2*abs(width/6.5-width/6),height-3.505*height/13,height/60,height/30,80,230,130,255); 
-    rectangle(width-width/6+3*abs(width/6.5-width/6),height-3.505*height/13,height/60,height/30,80,230,130,255); 
-    rectangle(width-width/6+4*abs(width/6.5-width/6),height-3.505*height/13,height/60,height/30,80,230,130,255); 
-    rectangle(width-width/6,height-3.505*height/13-abs(1.715*height/13-0.915*height/13),height/60,height/30,80,230,130,255);
-    rectangle(width-width/6.5,height-3.505*height/13-abs(1.715*height/13-0.915*height/13),height/60,height/30,80,230,130,255);
-    rectangle(width-width/6.5+abs(width/6.5-width/6),height-3.505*height/13-abs(1.715*height/13-0.915*height/13),height/60,height/30,80,230,130,255);
-    rectangle(width-width/6.5+2*abs(width/6.5-width/6),height-3.505*height/13-abs(1.715*height/13-0.915*height/13),height/60,height/30,80,230,130,255); 
-    rectangle(width-width/6.5+3*abs(width/6.5-width/6),height-3.505*height/13-abs(1.715*height/13-0.915*height/13),height/60,height/30,80,230,130,255);
-    translate(0,(height/13)*2.6);
-    //Blue Player Stats
-    translate(0,-(height/13)*2.6*2);
-    rectangle(width-width/6,height-3.505*height/13,height/60,height/30,100,14,237,255); 
-    rectangle(width-width/6+abs(width/6.5-width/6),height-3.505*height/13,height/60,height/30,100,14,237,255);  
-    rectangle(width-width/6+2*abs(width/6.5-width/6),height-3.505*height/13,height/60,height/30,100,14,237,255); 
-    rectangle(width-width/6,height-3.505*height/13-abs(1.715*height/13-0.915*height/13),height/60,height/30,100,14,237,255);
- 
-    translate(0,(height/13)*2.6*2);
-    Surfers[0].render(width/8,height-height/10,10,0,255,255,255); 
-    Surfers[1].render(width/8,height-3*height/10,10,1,255,255,255); 
-    Surfers[2].render(width/8,height-5*height/10,10,2,255,255,255); 
-    Surfers[3].render(width/8,height-7*height/10,10,3,255,255,255); 
-    
-    //Display stats for each of the vehicles. Speed and Mass 
-    if(Craftselectioncount<0){
-    if(mousePressed){
-      if((mouseY<height && mouseY>height-2*height/10)){
-        //SuperBug
-        surfMass=2.9;
-        distance=9.5;
-        sinOne=4;
-        surfType=0;
+    if(sinOne==0){
+      background(0);
+      title = createFont("volt.ttf", 32);
+      textFont(title);
+      translate(width/2,height/2);
+      for (int i = 0; i < stars.length; i++) {
+        //Update the location of each star in the array
+        stars[i].update();
+        //Pass in the color and opacity values for the stars in the array
+        stars[i].show(255,255,255,255);
       }
-      else if((mouseY<height-2*height/10 && mouseY>height-4*height/10)){
-        //Psych Bike
-        surfMass=2.3;
-        distance=10.25;
-        sinOne=4;
-        surfType=1;
+      translate(-width/2,-height/2);
+      lifeCount=3; //Reset the number of lives each time the game is restarted\
+      level=1; //Reset the level to the beginning
+      textSize((width)/7.2);
+      if(delay<255){
+        fill(255,240,0,255-(255-delay));
       }
-      else if((mouseY<height-4*height/10 && mouseY>height-6*height/10)){
-        //The Compiler
-        surfMass=3.1;
-        distance=11;
-        sinOne=4;
-        surfType=2;
+      else{
+        fill(255,240,0,255);
       }
-      else if((mouseY<height-6*height/10 && mouseY>height-8*height/10)){
-        //Voidwalker
-        surfMass=2.7;
-        distance=8;
-        sinOne=4;
-        surfType=3;
+      text("SINGULARITY",width/13.3,height/2);
+      if(delay>250){
+        textSize((width)/23.5);
+        text("Press Any Key To Begin",width/3.8,height-height/4);
       }
+      if(delay>30){ //Delay the ability to exit this screen so the previous click does not trigger it accidentally
+        if(keyPressed || mousePressed){
+          sinOne=2;
+          Craftselectioncount=5;
+        }
+      }
+      if((10+delay/220)<10000){
+        speed = map(10+delay/220, 0, width, 0, 50); //The stars speed will increase over time
+      }
+      else{
+        speed = map(10000, 0, width, 0, 50);
+      }
+      prevx=width/15;
+      prevy=height/2;
     }
+    else if(sinOne==2){
+      //Surfer Selection Page
+      background(0);
+      translate(width/2,height/2);
+      rotate(PI*delay/900);
+      for (int i = 0; i < stars.length; i++) {
+        stars[i].show(255,255,255,255);
+      }
+      rotate(-PI*delay/900);
+      translate(-width/2,-height/2);
+      textSize(height/8.5);
+      fill(255,240,0,255);
+      text("Select A Surfer",width/5,height/6);
+      stroke(255,240,0,255);
+      line(width/7,height/5.5,width-width/7,height/5.5); //Underline
+      //Display the surfer sprites and stats here
+      stroke(255,255);
+      fill(255,150);
+      if(mouseY<height && mouseY>height-2*height/10){
+        quad(0,height-2*height/10,0,height,width,height,width,height-2*height/10);
+      }
+      if(mouseY<height-2*height/10 && mouseY>height-4*height/10){
+        quad(0,height-2*height/10,0,height-4*height/10,width,height-4*height/10,width,height-2*height/10);
+      }
+      if(mouseY<height-4*height/10 && mouseY>height-6*height/10){
+        quad(0,height-4*height/10,0,height-6*height/10,width,height-6*height/10,width,height-4*height/10);
+      }
+      if(mouseY<height-6*height/10 && mouseY>height-8*height/10){
+        quad(0,height-6*height/10,0,height-8*height/10,width,height-8*height/10,width,height-6*height/10);
+      }
+      textSize(height/14.5);
+      fill(255,255,255,255);
+      text("Superbug",width/4,height-1*height/13);
+      text("Psych Bike",width/4,height-3.6*height/13);
+      text("The Compiler",width/4,height-6.2*height/13);
+      text("Voidwalker",width/4,height-8.8*height/13);
+      textSize(height/19.5);
+      text("Speed",width-width/3.5,height-1.5*height/13);text("Mass",width-width/3.5,height-0.7*height/13);
+      translate(0,-(height/13)*2.6);
+      text("Speed",width-width/3.5,height-1.5*height/13);text("Mass",width-width/3.5,height-0.7*height/13);
+      translate(0,(height/13)*2.6);
+      translate(0,-(height/13)*2.6*2);
+      text("Speed",width-width/3.5,height-1.5*height/13);text("Mass",width-width/3.5,height-0.7*height/13);
+      translate(0,(height/13)*2.6*2);
+      translate(0,-(height/13)*2.6*3);
+      text("Speed",width-width/3.5,height-1.5*height/13);text("Mass",width-width/3.5,height-0.7*height/13);
+      translate(0,(height/13)*2.6*3);
+      //Superbug Stats
+      rectangle(width-width/6,height-0.915*height/13,height/60,height/30,255,240,0,255);
+      rectangle(width-width/6.5,height-0.915*height/13,height/60,height/30,255,240,0,255);
+      rectangle(width-width/6.5+abs(width/6.5-width/6),height-0.915*height/13,height/60,height/30,255,240,0,255);
+      rectangle(width-width/6.5+2*abs(width/6.5-width/6),height-0.915*height/13,height/60,height/30,255,240,0,255);   
+      rectangle(width-width/6,height-1.715*height/13,height/60,height/30,255,240,0,255);
+      rectangle(width-width/6.5,height-1.715*height/13,height/60,height/30,255,240,0,255);
+      rectangle(width-width/6.5+abs(width/6.5-width/6),height-1.715*height/13,height/60,height/30,255,240,0,255);    
+      //Psych Bike Stats
+      rectangle(width-width/6,height-3.505*height/13,height/60,height/30,255,174,204,255);    
+      rectangle(width-width/6,height-3.505*height/13-abs(1.715*height/13-0.915*height/13),height/60,height/30,255,174,204,255);
+      rectangle(width-width/6.5,height-3.505*height/13-abs(1.715*height/13-0.915*height/13),height/60,height/30,255,174,204,255);
+      rectangle(width-width/6.5+abs(width/6.5-width/6),height-3.505*height/13-abs(1.715*height/13-0.915*height/13),height/60,height/30,255,174,204,255);
+      rectangle(width-width/6.5+2*abs(width/6.5-width/6),height-3.505*height/13-abs(1.715*height/13-0.915*height/13),height/60,height/30,255,174,204,255);    
+      //Compiler Stats
+      translate(0,-(height/13)*2.6);
+      rectangle(width-width/6,height-3.505*height/13,height/60,height/30,80,230,130,255);    
+      rectangle(width-width/6+abs(width/6.5-width/6),height-3.505*height/13,height/60,height/30,80,230,130,255);  
+      rectangle(width-width/6+2*abs(width/6.5-width/6),height-3.505*height/13,height/60,height/30,80,230,130,255); 
+      rectangle(width-width/6+3*abs(width/6.5-width/6),height-3.505*height/13,height/60,height/30,80,230,130,255); 
+      rectangle(width-width/6+4*abs(width/6.5-width/6),height-3.505*height/13,height/60,height/30,80,230,130,255); 
+      rectangle(width-width/6,height-3.505*height/13-abs(1.715*height/13-0.915*height/13),height/60,height/30,80,230,130,255);
+      rectangle(width-width/6.5,height-3.505*height/13-abs(1.715*height/13-0.915*height/13),height/60,height/30,80,230,130,255);
+      rectangle(width-width/6.5+abs(width/6.5-width/6),height-3.505*height/13-abs(1.715*height/13-0.915*height/13),height/60,height/30,80,230,130,255);
+      rectangle(width-width/6.5+2*abs(width/6.5-width/6),height-3.505*height/13-abs(1.715*height/13-0.915*height/13),height/60,height/30,80,230,130,255); 
+      rectangle(width-width/6.5+3*abs(width/6.5-width/6),height-3.505*height/13-abs(1.715*height/13-0.915*height/13),height/60,height/30,80,230,130,255);
+      translate(0,(height/13)*2.6);
+      //VoidWalker Stats
+      translate(0,-(height/13)*2.6*2);
+      rectangle(width-width/6,height-3.505*height/13,height/60,height/30,100,14,237,255); 
+      rectangle(width-width/6+abs(width/6.5-width/6),height-3.505*height/13,height/60,height/30,100,14,237,255);  
+      rectangle(width-width/6+2*abs(width/6.5-width/6),height-3.505*height/13,height/60,height/30,100,14,237,255); 
+      rectangle(width-width/6,height-3.505*height/13-abs(1.715*height/13-0.915*height/13),height/60,height/30,100,14,237,255);
+      //Render the Sprites
+      translate(0,(height/13)*2.6*2);
+      Surfers[0].render(width/8,height-height/10,10,0,255,255,255); 
+      Surfers[1].render(width/8,height-3*height/10,10,1,255,255,255); 
+      Surfers[2].render(width/8,height-5*height/10,10,2,255,255,255); 
+      Surfers[3].render(width/8,height-7*height/10,10,3,255,255,255); 
+      if(Craftselectioncount<0){
+        if(mousePressed){
+          if((mouseY<height && mouseY>height-2*height/10)){
+            //SuperBug
+            surfMass=2.9;
+            distance=9.5;
+            sinOne=4;
+            surfType=0;
+          }
+          else if((mouseY<height-2*height/10 && mouseY>height-4*height/10)){
+            //Psych Bike
+            surfMass=2.3;
+            distance=10.25;
+            sinOne=4;
+            surfType=1;
+          }
+          else if((mouseY<height-4*height/10 && mouseY>height-6*height/10)){
+            //The Compiler
+            surfMass=3.1;
+            distance=11;
+            sinOne=4;
+            surfType=2;
+          }
+          else if((mouseY<height-6*height/10 && mouseY>height-8*height/10)){
+            //Voidwalker
+            surfMass=2.7;
+            distance=8;
+            sinOne=4;
+            surfType=3;
+          }
+        }
+      }
+      if(Craftselectioncount!=-5){ //Use this to prevent an immediate selection by not accepting clicks in the first moments after entering the Surfer Selection Page
+        Craftselectioncount=Craftselectioncount-1;
+      } 
     }
-    if(Craftselectioncount!=-5){
-    Craftselectioncount=Craftselectioncount-1;
-    } 
-  }
+//Cleanup Point  
   else if(sinOne>=4){
     if(sinOne==4){
    prevx=width/15;
@@ -430,8 +429,8 @@ void draw() {
        BHy=height-height/12;
      }
      if(i==4){
-       BHx=width/2+width/4;
-       BHy=1.5*height/4;
+       BHx=width/2+width/3.9;
+       BHy=height/1.85;
      }
      if(i==5){
        BHx=width-width/50;
@@ -475,16 +474,14 @@ void draw() {
    }
    if((abs(Asteroidx-BHx)<(BHmass/4))&&(abs(BHy-Asteroidy)<BHmass/4)){
       AsteroidDestroyed=1;
-    }
-    
+    }    
     Asteroiddistance=sqrt((BHx-Asteroidx)*(BHx-Asteroidx)+(BHy-Asteroidy)*(BHy-Asteroidy));
     gforce= (.02*Asteroidmass*gConstant*BHmass)/(Asteroiddistance*Asteroiddistance+1);
     denom=abs(Asteroidx-BHx)+abs(Asteroidy-BHy);
     ratio = (BHx-Asteroidx)/denom;
     ratiotwo = (BHy-Asteroidy)/denom;
     xGravityAsteroid = xGravityAsteroid + ratio*gforce;
-    yGravityAsteroid = yGravityAsteroid + ratiotwo*gforce; 
-    
+    yGravityAsteroid = yGravityAsteroid + ratiotwo*gforce;     
     }
     if(AsteroidDestroyed==1 || Asteroidx+xGravityAsteroid+OneAsteroid[j].priorx<0 || Asteroidx+xGravityAsteroid+OneAsteroid[j].priorx>width*1.2 ||Asteroidy+yGravityAsteroid+OneAsteroid[j].priory<0|| Asteroidy+yGravityAsteroid+OneAsteroid[j].priory>height){
       AsteroidDestroyed=0; 
@@ -500,7 +497,7 @@ void draw() {
        OneAsteroid[j].priory=0;
        Asteroidx=width*1.1;
        Asteroidy=random(height/6,5*height/6);
-       if(Asteroidy>(height/2-(height/16)) && Asteroidy<(height/2+(height/16))){
+       if(Asteroidy>(height/2-(height/11)) && Asteroidy<(height/2+(height/11))){
          if(delay%2==0){
            Asteroidy=random(0,2*height/6);
          }
@@ -634,8 +631,7 @@ if(47*width/50<prevx && prevy<(height/2+height/10) && prevy>(height/2-height/10)
     text("Game Over",width/9,3*height/4);
     translate(width/2,height/3);
     for(float i = 0;i<LINE_C;i=i+.2){
-      fill(0);
-    
+      fill(0);   
       stroke(0);
       point(x(i+delay),y(i+delay));
       point(z(i+delay),w(i+delay));
@@ -648,6 +644,7 @@ if(47*width/50<prevx && prevy<(height/2+height/10) && prevy>(height/2-height/10)
   }
   }
    }
+   //Set Gameover to 2 in order to reach the victory sequence, do this after the level reaches one over the total number
    else{
      background(0);
      for (int i = 0; i < stars.length; i++) {
