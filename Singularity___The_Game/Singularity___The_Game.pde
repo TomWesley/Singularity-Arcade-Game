@@ -2,7 +2,7 @@
 //SINGULARITY: This original novelty arcade game allows users pilot a Spacecraft which surfs on the gravitational waves of black holes to explore various galaxies. 
 //Coder: Thomas Wesley 
 //Last Edit 10/28/2019
-//Notes - Add some aliens in the top left corner that shoots every 3 seconds, on levels 9 & ten
+//Notes - Add some aliens in the top left corner that shoots every 3 seconds, on levels 9 & ten Singularity: Add an extra life(Green diamond in a spot on level 5). More Levels In General. And, the Victory Screen!
 //Current Level Count - 3
 
 //Variable Declarations - Need Cleaned Up
@@ -10,33 +10,27 @@ Star[] stars = new Star[800];
 Surfer[] Surfers = new Surfer[4];
 BH[] OneBH = new BH[10];
 Asteroid[] OneAsteroid = new Asteroid[17];
+//Control the star speed
 float speed;
 //Victory Sequence
-float wave;
+float wave=35;
 float phase;
 float meh;
 float osx;
 float osy;
-float flareon =0;
-//PImage img;
+float flareon =140;
+float jolteon =0;
 float s=0;
 float w;
 float theta;
 float m;
+
+
 float delay=0;
 static final int LINE_C =200;
 static final int LINE_O =360;
-float numb=0;
-float er=0;
 float gen =0;
-float open;
-float fire;
-float ball;
 
-int ning = 0;
-int xx = 0;
-int yy = 0;
-int zz = 0;
 int colorr;
 
 float pick;
@@ -59,6 +53,8 @@ float baseSpeed =.01;
 float mousex;
 float mousey;
 int GameOver=0;
+float LevelChangeCount=0;
+float LevelChangeTrigger=0;
 
 float xGravity=0;
 float yGravity=0;
@@ -78,6 +74,8 @@ float prevyy=0;
 //Surfer/Player variables
     float Craftselectioncount;//Helps so a mouse click on the opening screen doesn't also select your craft
     float lifeCount=1;
+    float extraLife=1;
+    float displayExtraLife=0;
     float distance=4;
     float surfRed;
     float surfBlue;
@@ -117,6 +115,7 @@ void draw() {
   delay=delay+1;
   if(GameOver==0){
     if(sinOne==0){
+      //Title Screen when sinOne =0
       background(0);
       title = createFont("volt.ttf", 32);
       textFont(title);
@@ -128,8 +127,8 @@ void draw() {
         stars[i].show(255,255,255,255);
       }
       translate(-width/2,-height/2);
-      lifeCount=3; //Reset the number of lives each time the game is restarted\
-      level=1; //Reset the level to the beginning
+      lifeCount=3; //Reset the number of lives each time the game is restarted
+      level=1; //Reset the game to level 1(Change for debugging)
       textSize((width)/7.2);
       if(delay<255){
         fill(255,240,0,255-(255-delay));
@@ -142,10 +141,11 @@ void draw() {
         textSize((width)/23.5);
         text("Press Any Key To Begin",width/3.8,height-height/4);
       }
-      if(delay>30){ //Delay the ability to exit this screen so the previous click does not trigger it accidentally
+      if(delay>30){ //Delay the ability to exit the selection screen so the previous click does not trigger it accidentally
         if(keyPressed || mousePressed){
           sinOne=2;
-          Craftselectioncount=5;
+          Craftselectioncount=15;
+          extraLife=1;
         }
       }
       if((10+delay/220)<10000){
@@ -154,11 +154,11 @@ void draw() {
       else{
         speed = map(10000, 0, width, 0, 50);
       }
-      prevx=width/15;
-      prevy=height/2;
+      prevx=width/13;
+      prevy=height/2.1;
     }
     else if(sinOne==2){
-      //Surfer Selection Page
+      //Surfer Selection Page when sinOne=2
       background(0);
       translate(width/2,height/2);
       rotate(PI*delay/900);
@@ -279,68 +279,61 @@ void draw() {
         Craftselectioncount=Craftselectioncount-1;
       } 
     }
-//Cleanup Point  
-  else if(sinOne>=4){
-    if(sinOne==4){
-   prevx=width/15;
-  prevy=height/2;
-  levelTimer=0;
-  initialAsteroid=0;
-    }
-    sinOne=5;
-   background(0,0,0,255); 
-   translate(width/2,height/2);
-   for (int i = 0; i < stars.length; i++) {
-    stars[i].show(255,255,255,255);
-   }
-   translate(-width/2,-height/2);
-    
-   //Galaxy Start
-   if(delay%5!=0){
-   fill(255,255,255,255);
-   noStroke();
-   scale(1.8);
-   translate(-30,-height/4.3);
-   quad(width/15+height/100,height/2+height/100,width/15+height/100,height/2-height/100,width/15-height/100,height/2-height/100,width/15-height/100,height/2+height/100);
-   fill(255,255,255,235);
-   quad(width/15+height/75,height/2+height/75,width/15+height/75,height/2-height/75,width/15-height/75,height/2-height/75,width/15-height/75,height/2+height/75);
-   float galaxSize=width/450;     
-   for(float j = 350;j>6;j=j-.5)
-   {   
-   sinx=(j*.15)*cos(radians(sinAngle+j*15))+width/15;
-   siny=(j*.05)*sin(radians(sinAngle+j*15))+height/2;
-   siny=siny+(sinx-width/15)*.25;
-   noStroke();
-   fill(255,174,206,105);
-   quad(sinx+(galaxSize),siny+galaxSize,sinx+galaxSize,siny-galaxSize,sinx-galaxSize,siny-galaxSize,sinx-galaxSize,siny+galaxSize);
-   fill(255,210,30,105);
-   sinx=(j*.15)*cos(radians(sinAngle+j*15+90))+width/15;
-   siny=(j*.05)*sin(radians(sinAngle+j*15+90))+height/2;
-   siny=siny+(sinx-width/15)*.25;
-   quad(sinx+galaxSize,siny+galaxSize,sinx+galaxSize,siny-galaxSize,sinx-galaxSize,siny-galaxSize,sinx-galaxSize,siny+galaxSize);
-   noStroke();
-   sinx=(j*.15)*cos(radians(sinAngle+j*15+180))+width/15;
-   siny=(j*.05)*sin(radians(sinAngle+j*15+180))+height/2;
-   siny=siny+(sinx-width/15)*.25;
-   noStroke();
-   fill(255,240,100,105);
-   quad(sinx+(galaxSize),siny+galaxSize,sinx+galaxSize,siny-galaxSize,sinx-galaxSize,siny-galaxSize,sinx-galaxSize,siny+galaxSize);
-   fill(255,255,255,105);
-   sinx=(j*.15)*cos(radians(sinAngle+j*15+270))+width/15;
-   siny=(j*.05)*sin(radians(sinAngle+j*15+270))+height/2;
-   siny=siny+(sinx-width/15)*.25;
-   quad(sinx+galaxSize,siny+galaxSize,sinx+galaxSize,siny-galaxSize,sinx-galaxSize,siny-galaxSize,sinx-galaxSize,siny+galaxSize);
-   noStroke(); 
-   
-   }
-   
-   translate(30,height/4.3);
-   scale((1/1.8));
-   } 
+    else if(sinOne>=4){
+      if(sinOne==4){
+        prevx=width/13;
+        prevy=height/2.1;
+        levelTimer=0;
+        initialAsteroid=0;
+      }
+      sinOne=5;
+      background(0,0,0,255); 
+      translate(width/2,height/2);
+      for (int i = 0; i < stars.length; i++) {
+        stars[i].show(255,255,255,255);
+      }
+      translate(-width/2,-height/2);
+      //Galaxy Start
+      if(delay%5!=0){
+        fill(255,255,255,255);
+        noStroke();
+        scale(1.8);
+        translate(-30,-height/4.3);
+        quad(width/15+height/100,height/2+height/100,width/15+height/100,height/2-height/100,width/15-height/100,height/2-height/100,width/15-height/100,height/2+height/100);
+        fill(255,255,255,235);
+        quad(width/15+height/75,height/2+height/75,width/15+height/75,height/2-height/75,width/15-height/75,height/2-height/75,width/15-height/75,height/2+height/75);
+        float galaxSize=width/450;
+        for(float j = 350;j>6;j=j-.5){   
+          sinx=(j*.15)*cos(radians(sinAngle+j*15))+width/15;
+          siny=(j*.05)*sin(radians(sinAngle+j*15))+height/2;
+          siny=siny+(sinx-width/15)*.25;
+          noStroke();
+          fill(255,174,206,105);
+          quad(sinx+(galaxSize),siny+galaxSize,sinx+galaxSize,siny-galaxSize,sinx-galaxSize,siny-galaxSize,sinx-galaxSize,siny+galaxSize);
+          fill(255,0,128,105);
+          sinx=(j*.15)*cos(radians(sinAngle+j*15+90))+width/15;
+          siny=(j*.05)*sin(radians(sinAngle+j*15+90))+height/2;
+          siny=siny+(sinx-width/15)*.25;
+          quad(sinx+galaxSize,siny+galaxSize,sinx+galaxSize,siny-galaxSize,sinx-galaxSize,siny-galaxSize,sinx-galaxSize,siny+galaxSize);
+          sinx=(j*.15)*cos(radians(sinAngle+j*15+180))+width/15;
+          siny=(j*.05)*sin(radians(sinAngle+j*15+180))+height/2;
+          siny=siny+(sinx-width/15)*.25;
+          fill(255,0,128,105);
+          quad(sinx+(galaxSize),siny+galaxSize,sinx+galaxSize,siny-galaxSize,sinx-galaxSize,siny-galaxSize,sinx-galaxSize,siny+galaxSize);
+          fill(255,255,255,105);
+          sinx=(j*.15)*cos(radians(sinAngle+j*15+270))+width/15;
+          siny=(j*.05)*sin(radians(sinAngle+j*15+270))+height/2;
+          siny=siny+(sinx-width/15)*.25;
+          quad(sinx+galaxSize,siny+galaxSize,sinx+galaxSize,siny-galaxSize,sinx-galaxSize,siny-galaxSize,sinx-galaxSize,siny+galaxSize);
+        }   
+        translate(30,height/4.3);
+        scale((1/1.8));
+      }
+      //Cleanup Point
      //Black Holes/Asteroids 
     float Asteroiddistance;
     float Asteroidmass=30;
-    float AsteroidInitialSpeed=21;
+    float AsteroidInitialSpeed=10;
     float BHdistance;
     float BHx =width/6;
     float BHy=height/6;
@@ -370,23 +363,126 @@ void draw() {
     Asteroidmass=5+j%3;
     xGravityAsteroid=0;
     yGravityAsteroid=0;
-    for (int i = 0; i < OneBH.length; i++) {    
+    for (int i = 0; i < OneBH.length; i++) {       
+    //Black Hole Masses Depending on the Level
     if(level==1){
-    BHmass=100+(i*20)%150;}
-    else if(level==2){
+      if(i==0){
+        BHmass=350;
+        BHx=width/2;
+        BHy=height/2;
+      }
+      else if(i==1){
+        BHmass=100;
+        BHx=(8)*width/12;
+        BHy=height-height/9;
+      }
+    else if(i==2){
+      BHmass=100;
+      BHx=(8)*width/12;
+    BHy=height/9;
+  }
+  else{BHmass=1;
+  BHx=-width;
+  BHy=height/2;
+  }
+  }
+    if(level==2){
+    BHmass=60+(i*20)%150;
+  }
+    else if(level==3){
       if(i==2){
-        BHmass=550;
+        BHmass=500;
       }
       else{
-        BHmass=150+(i*30)%160;
+        BHmass=140+(i*30)%160;
       }
+     if(i==2){
+       BHx=width/2;
+       BHy=height/2;
+     }
+     if(i==0){
+       BHx=width/2+width/12;
+       BHy=height/12;
+     }
+     if(i==1){
+       BHx=width/2+width/9;
+       BHy=height-height/12;
+     }
+     if(i==3){
+       BHx=width/2+width/3.9;
+       BHy=height/1.85;
+     }
+     if(i==4){
+       BHx=width-width/50;
+       BHy=height/4;
+     }
+     if(i==5){
+       BHx=width-width/40;
+       BHy=height-height/5;
+     }
+     if(i==6){
+       BHx=width/70;
+       BHy=height/1.5;
+     }
+     if(i==7){
+       BHx=width/4;
+       BHy=height/8;
+     }
+     if(i==8){
+       BHx=width/4;
+       BHy=height-height/5;
+     }
+     if(i==9){
+       BHx=width;
+       BHy=height/90;
+     }
+   
+      
+      
     }
-    else if(level==3){
+    else if(level==4){
       if(i==0){
         BHmass=50;
       }
       else{
-      BHmass=250;
+      BHmass=210;
+      }
+    }
+    else if(level==5){
+      if(i==0){
+        BHmass=250;
+        BHx=width/4;
+        BHy=height/2;
+      }
+      else if(i==1){
+        BHmass=100;
+        BHx=width/2;
+        BHy=height-height/4;
+      }
+      else if(i==2){
+        BHmass=100;
+        BHx=width/2;
+        BHy=height/4;
+      }
+      else if(i==3){
+        BHmass=50;
+        BHx=width/10;
+        BHy=height-height/8;
+      }
+      else if(i==4){
+        BHmass=50;
+        BHx=width-width/9;
+        BHy=height/10;
+      }
+      else if(i==5){
+        BHmass=50;
+        BHx=width/3;
+        BHy=height/7;
+      }
+      else{
+        BHmass=50+i*30;
+        BHx=width/2+i*width/20;
+        BHy=height-height/15;
       }
     }
     //Calculate the surfer's gravity & corresponding motion only once when this loop is run against all of the asteroids
@@ -407,53 +503,15 @@ void draw() {
     BHy=height/2-height/5;
     }
     else if(i%2==0){
-      BHy=BHy-sqrt(i)*170+i%40;
+      BHy=BHy-2*180-i%40;
     }
     else{
-      BHy=BHy+95*i;
+      BHy=BHy+95*4+20*cos(radians(i));
     } 
-   if(level==1){
+   if(level==2){
     BHx =BHx + width/13;
    }
-   else if(level==2){
-     if(i==1){
-       BHx=width/2;
-       BHy=height/2;
-     }
-     if(i==2){
-       BHx=width/2+width/12;
-       BHy=height/12;
-     }
-     if(i==3){
-       BHx=width/2+width/9;
-       BHy=height-height/12;
-     }
-     if(i==4){
-       BHx=width/2+width/3.9;
-       BHy=height/1.85;
-     }
-     if(i==5){
-       BHx=width-width/50;
-       BHy=height/4;
-     }
-     if(i==6){
-       BHx=width-width/40;
-       BHy=height-height/5;
-     }
-     if(i==7){
-       BHx=width/70;
-       BHy=height/1.5;
-     }
-     if(i==8){
-       BHx=width/4;
-       BHy=height/8;
-     }
-     if(i==9){
-       BHx=width-width/10;
-       BHy=height/2.2;
-     }
-   }
-   else if(level==3){
+   else if(level==4){
     if(i<3){
       BHx=((i+2)*width)/5;
       BHy=height/9;    
@@ -486,13 +544,19 @@ void draw() {
     if(AsteroidDestroyed==1 || Asteroidx+xGravityAsteroid+OneAsteroid[j].priorx<0 || Asteroidx+xGravityAsteroid+OneAsteroid[j].priorx>width*1.2 ||Asteroidy+yGravityAsteroid+OneAsteroid[j].priory<0|| Asteroidy+yGravityAsteroid+OneAsteroid[j].priory>height){
       AsteroidDestroyed=0; 
       if(level==1){
-      OneAsteroid[j].priorx=-int(random(6,25));
+      OneAsteroid[j].priorx=-int(random(1,3));
       }
-      else if(level==2){
-        OneAsteroid[j].priorx=-int(random(7,30));
+      if(level==2){
+      OneAsteroid[j].priorx=-int(random(6,12));
       }
       else if(level==3){
-        OneAsteroid[j].priorx=-int(random(20,45));
+        OneAsteroid[j].priorx=-int(random(7,20));
+      }
+      else if(level==4){
+        OneAsteroid[j].priorx=-int(random(20,35));
+      }
+      else if(level==5){
+        OneAsteroid[j].priorx=-int(31);
       }
        OneAsteroid[j].priory=0;
        Asteroidx=width*1.1;
@@ -518,8 +582,7 @@ void draw() {
     surfergravity=surfergravity+1; 
   }
   initialAsteroid=1;
-//Finish Line Wormhole
-
+//Finish Line Wormhole - Make this into Quads
 stroke(255,240,0,45);
 noFill();
 strokeWeight(10);
@@ -544,17 +607,53 @@ ellipse(49*width/50,height/2,height/20,height/7);
 ellipse(48*width/50,height/2,height/20,height/6);
 ellipse(47*width/50,height/2,height/20,height/5);
 
-//The trigger for beating the level
-if(47*width/50<prevx && prevy<(height/2+height/10) && prevy>(height/2-height/10)){
-  textSize(height/5.5);
-  fill(255,240,0,255);
-  text("Level Complete",width/9,height/2.5);
+
+//The trigger for beating the level, indicate the level completion and have brief break
+if(LevelChangeTrigger==0 && GameOver==0 && 47*width/50<prevx && prevy<(height/2+height/10) && prevy>(height/2-height/10)){
+  LevelChangeCount=0;
+  LevelChangeTrigger=1;
+}
+if(LevelChangeTrigger==1){
+  GameOver=0;
+  textSize(height/6.3);
+  fill(255,240,0,255);  
+  if(LevelChangeCount<50){
+    text("Level Complete",width/9,height/2.8);
+    noStroke();
+    fill(150,250,180,35);
+    quad(0,0,width,0,width,height,0,height);
+  } 
+  else{
+  LevelChangeTrigger=0;
   sinOne=4;
   level=level+1;
-  if(level==4){
+  //Change the next value here to reflect the last level which will trigger the victory sequence
+  if(level==6){
     GameOver=2;
-  }
+  } 
 }
+LevelChangeCount=LevelChangeCount+1;
+}
+//Extra Life Section(Only on level 5)
+  if(level==5){
+    if(extraLife==1){
+    float len=4;
+    extraLife(len);
+    }
+    
+    if(prevx<(width/2+39) && prevx>(width/2-35) && prevy<(height/2+39) && prevy>(height/2-35) && extraLife==1){
+      lifeCount=lifeCount+1;
+      extraLife=0; 
+      displayExtraLife=25;
+      
+    }
+    if(displayExtraLife>0){
+      fill(120,255,140,255);
+      textSize(height/7.5);
+      text("Extra Life +", width/4.2,height/3.5);
+      displayExtraLife=displayExtraLife-1;
+    }
+  }
   
   //Surfer
     float mousex=mouseX;
@@ -562,7 +661,7 @@ if(47*width/50<prevx && prevy<(height/2+height/10) && prevy>(height/2-height/10)
     float xsurf=mousex-prevx;
     float ysurf=mousey-prevy;
     levelTimer=levelTimer+1;
-    if(levelTimer>55){
+    if(levelTimer>75){
     ratio = xsurf/(abs(xsurf)+abs(ysurf));
     ratiotwo = ysurf/(abs(xsurf)+abs(ysurf));
     xsurf=ratio*distance;
@@ -580,8 +679,9 @@ if(47*width/50<prevx && prevy<(height/2+height/10) && prevy>(height/2-height/10)
     ysurf=0;
     xGravity=0;
     yGravity=0;
-    prevx=width/15;
-    prevy=height/2;
+    prevx=width/13;
+    prevy=height/2.1;
+    GameOver=0;
     }   
     if(((abs(mousex-prevx)+abs(prevxx))<10.5)&&((abs(mousey-prevy)+abs(prevyy))<10.5)){
       Surfers[int(surfType)].render(int(prevx),int(prevy),10,surfType,surfRed,surfBlue,surfGreen);  
@@ -592,25 +692,33 @@ if(47*width/50<prevx && prevy<(height/2+height/10) && prevy>(height/2-height/10)
       prevy=prevy+ysurf+yGravity+prevyy;
       prevxx=xsurf+xGravity;
       prevyy=ysurf+yGravity;
-    }     
+    }  
+    //Display what level it is
+  fill(255,240,0,255);
+  textSize(height/20);
+  text(int(level),width/40,height/20);
   } 
-  craftLost=0;
+  craftLost=0;  
 } 
   //What happens after being eaten by a black hole or destroyed by an asteroid, have different sequences that occur
    else if(GameOver==1){
-   if(lifeCount>0){ //background(0);
-    textSize(height/4.5);
-    fill(255,0,0,255);
-  text("Craft Lost",width/9,height/2.5);
-  if(craftLost>50){
-  lifeCount=lifeCount-1;
-  if(lifeCount>0){
-  sinOne=4;
-  GameOver=0;
-  }
-  }
-  craftLost=craftLost+1;
-  
+     if(lifeCount>0){
+     textSize(height/4.5);
+     fill(255,0,0,255);
+     text("Craft Lost",width/9,height/2.5);
+     noStroke();
+     if(craftLost<10){
+    fill(240,140,255,7);
+    quad(0,0,width,0,width,height,0,height);
+     }
+     if(craftLost>105){
+       lifeCount=lifeCount-1;
+       if(lifeCount>0){
+         sinOne=4;
+         GameOver=0;
+       }
+     }
+     craftLost=craftLost+1;
    }
   //If the lifeCount is at 0, then begin the Game Over sequence where any key or mouse press will return to the home screen
   if(lifeCount==0){
@@ -647,28 +755,27 @@ if(47*width/50<prevx && prevy<(height/2+height/10) && prevy>(height/2-height/10)
    //Set Gameover to 2 in order to reach the victory sequence, do this after the level reaches one over the total number
    else{
      background(0);
+     translate(width/2, height/2);
+     rotate(PI*delay*.001);
      for (int i = 0; i < stars.length; i++) {
     stars[i].show(255,255,255,255);
    }
+   rotate(-PI*delay*.001);
     if(mousePressed || keyPressed){
       GameOver=0;
       sinOne=0;
       delay=0;
-    }
-    
-    fill(255,240,0,255);
-    textSize(height/5);
-    text("Victory",width/4,height/4);
-     translate(width/2, height/2);
+    }            
+    flareon=300*cos(radians(delay/2));
+    wave=wave+.001;
     for (float i = 0; i < LINE_O; i = i +.1){
-         wave=35;
+         //wave=35;
          theta = i*(360/LINE_O);
          phase=((PI)/LINE_O);
          meh = ((flareon*.5))*sin(wave*theta+phase)*cos(phase);
          osx=(meh+flareon+140)*tan(theta);
          osy=(meh+flareon+140)*sin(theta);
-         strokeWeight(0.1);
-        
+         strokeWeight(0.1);        
          strokeWeight(1);
          stroke(255,240,0,1);
          strokeWeight(15);
@@ -690,13 +797,11 @@ if(47*width/50<prevx && prevy<(height/2+height/10) && prevy>(height/2-height/10)
          point(osx,osy);
          
        }
-      translate(-width/2, -height/2);
-      
-     
-    
+      translate(-width/2, -height/2); 
+      fill(255,240,0,255);
+    textSize(height/5);
+    text("Victory",width/4,height/4);
   }
-
-  
 }
 
 
@@ -823,7 +928,6 @@ class Surfer {
       //Psych Bike
      noStroke();
       fill(255,174,204,255);
-      //quad(x-len,y-len,x+len,y-len,x+len,y+len,x-len,y+len);
       len=4;
       square(x,y,len);
       square(x+len,y,len);
@@ -1096,22 +1200,21 @@ class BH {
     xx= x;
     yy=y;
     noStroke();
-    fill(255,10);
-    ellipse(x,y,radius*1.22,radius*1.2);
     fill(255,11);
-    ellipse(x,y,radius*1.17,radius*1.17);
+    ellipse(x,y,radius*1.22,radius*1.2);
     fill(255,12);
-    ellipse(x,y,radius*1.14,radius*1.14);
+    ellipse(x,y,radius*1.17,radius*1.17);
     fill(255,13);
-    ellipse(x,y,radius*1.11,radius*1.11);
+    ellipse(x,y,radius*1.14,radius*1.14);
     fill(255,14);
-    ellipse(x,y,radius*1.08,radius*1.08);
+    ellipse(x,y,radius*1.11,radius*1.11);
     fill(255,15);
-    ellipse(x,y,radius*1.05,radius*1.05);
+    ellipse(x,y,radius*1.08,radius*1.08);
     fill(255,16);
+    ellipse(x,y,radius*1.05,radius*1.05);
+    fill(255,17);
     ellipse(x,y,radius*1.03,radius*1.03);
     strokeWeight(0.5);
-    stroke(255);
     fill(0);
     noStroke();
     quad(x+radius*.2/2,y+radius/2,x-radius*.2/2,y+radius/2,x-radius*.2/2,y-radius/2,x+radius*.2/2,y-radius/2);
@@ -1209,4 +1312,73 @@ float z(float t){
 float w(float t){
     return sin(t*t)*150+cos(t*sin(t));
   
+}
+void extraLife(float len){
+  fill(210,255,220,4);
+  noStroke();
+  for(int i=25;i<65;i=i+1){
+  ellipse(width/2+len/2,height/2+len*1.5,i,i);
+  }
+  noStroke();
+    fill(255,255);
+    square(width/2,height/2,len);
+    square(width/2,height/2-len,len);
+    square(width/2,height/2-len*2,len);
+    
+    square(width/2,height/2+len,len);
+    square(width/2+len,height/2+len,len);
+    square(width/2-len,height/2+len,len);
+    
+    square(width/2+len*2,height/2+len*2,len);
+    square(width/2-len*2,height/2+len*2,len);
+    square(width/2+len,height/2+len*2,len);
+    square(width/2-len,height/2+len*2,len);
+    square(width/2,height/2+len*2,len);
+    
+    square(width/2-len,height/2+len*4,len);
+    fill(120,255,140,255);
+    square(width/2,height/2-len*3,len);
+    square(width/2+len,height/2-len*3,len);
+    square(width/2+len*2,height/2-len*3,len);
+    square(width/2-len,height/2-len*3,len);
+    square(width/2-len*2,height/2-len*3,len);
+    square(width/2-len,height/2-len*2,len);
+    square(width/2+len,height/2-len*2,len);
+    square(width/2-len,height/2-len,len);
+    square(width/2+len,height/2-len,len);
+    square(width/2-len,height/2,len);
+    square(width/2+len,height/2,len);
+    square(width/2-len*2,height/2,len);
+    square(width/2+len*2,height/2,len);
+     square(width/2-len*2,height/2+len,len);
+    square(width/2+len*2,height/2+len,len);
+    square(width/2-len*3,height/2+len,len);
+    square(width/2+len*3,height/2+len,len);
+    square(width/2-len*3,height/2+len*2,len);
+    square(width/2+len*3,height/2+len*2,len);
+    square(width/2-len*3,height/2+len*3,len);
+    square(width/2+len*3,height/2+len*3,len);
+    square(width/2-len*3,height/2+len*4,len);
+    square(width/2+len*3,height/2+len*4,len);
+    
+    square(width/2-len*2,height/2+len*3,len);
+    square(width/2+len*2,height/2+len*3,len);
+    square(width/2-len*2,height/2+len*4,len);
+    square(width/2+len*2,height/2+len*4,len);
+    
+    square(width/2-len,height/2+len*3,len);
+    square(width/2+len,height/2+len*3,len);
+
+    square(width/2+len,height/2+len*4,len);
+    
+    square(width/2,height/2+len*3,len);
+    square(width/2,height/2+len*4,len);
+    
+    square(width/2-len*2,height/2+len*5,len);
+    square(width/2+len*2,height/2+len*5,len);
+    square(width/2-len,height/2+len*5,len);
+    square(width/2+len,height/2+len*5,len);
+    square(width/2,height/2+len*5,len);
+    
+    
 }
