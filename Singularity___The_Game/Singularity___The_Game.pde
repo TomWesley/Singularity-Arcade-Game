@@ -329,37 +329,38 @@ void draw() {
         translate(30,height/4.3);
         scale((1/1.8));
       }
-      //Cleanup Point
-     //Black Holes/Asteroids 
-    float Asteroiddistance;
-    float Asteroidmass=30;
-    float AsteroidInitialSpeed=10;
-    float BHdistance;
-    float BHx =width/6;
-    float BHy=height/6;
-    float gforce;
-    float BHmass=0;
-    float xGravityAsteroid= 0;
-    float yGravityAsteroid= 0;
-    xGravity=0;
-    yGravity=0;
-    float denom;   
-    if(level==3){
-      BHy=height/3.5; 
-      BHx =width/5.5;
-    }
-    surfergravity = 0; //Do the surfers relation to the black holes only once
-    for (int j = 0; j < OneAsteroid.length; j++) { 
-      if(initialAsteroid==0){
-        Asteroidy=int(random(0,height));
-        Asteroidx=width*1.05-j*4;
-        OneAsteroid[j].priorx=-AsteroidInitialSpeed+j;
-        OneAsteroid[j].priory=0;
+      //Black Holes/Asteroids 
+      float Asteroiddistance;
+      float Asteroidmass=30;
+      float AsteroidInitialSpeed=12;
+      float BHdistance;
+      float BHx =width/6;
+      float BHy=height/6;
+      float gforce;
+      float BHmass=0;
+      float xGravityAsteroid= 0;
+      float yGravityAsteroid= 0;
+      float denom; 
+      xGravity=0;
+      yGravity=0;
+      if(level==3){
+        BHy=height/3.5; 
+        BHx =width/5.5;
       }
-      else{
-      Asteroidx=OneAsteroid[j].xx;
-      Asteroidy=OneAsteroid[j].yy;
-      }
+      surfergravity = 0; //Do the surfers relation to the black holes only once
+      for (int j = 0; j < OneAsteroid.length; j++) {
+        AsteroidDestroyed=0;
+        if(initialAsteroid==0){
+          Asteroidy=int(random(0,height));
+          Asteroidx=width*1.05-j*4;
+          OneAsteroid[j].priorx=-AsteroidInitialSpeed+j;
+          OneAsteroid[j].priory=0;
+        }
+        else{
+          Asteroidx=OneAsteroid[j].xx;
+          Asteroidy=OneAsteroid[j].yy;
+        }
+//Cleanup Point
     Asteroidmass=5+j%3;
     xGravityAsteroid=0;
     yGravityAsteroid=0;
@@ -451,38 +452,38 @@ void draw() {
     else if(level==5){
       if(i==0){
         BHmass=250;
-        BHx=width/4;
+        BHx=width/2.9;
         BHy=height/2;
       }
       else if(i==1){
         BHmass=100;
         BHx=width/2;
-        BHy=height-height/4;
+        BHy=height-height/2.9;
       }
       else if(i==2){
         BHmass=100;
         BHx=width/2;
-        BHy=height/4;
+        BHy=height/2.9;
       }
       else if(i==3){
-        BHmass=50;
+        BHmass=80;
         BHx=width/10;
         BHy=height-height/8;
       }
       else if(i==4){
-        BHmass=50;
+        BHmass=80;
         BHx=width-width/9;
         BHy=height/10;
       }
       else if(i==5){
-        BHmass=50;
+        BHmass=80;
         BHx=width/3;
         BHy=height/7;
       }
       else{
-        BHmass=50+i*30;
-        BHx=width/2+i*width/20;
-        BHy=height-height/15;
+        BHmass=40+i*20;
+        BHx=width/3+(i-6)*width/6;
+        BHy=height*.9-(i-6)*height/13;
       }
     }
     //Calculate the surfer's gravity & corresponding motion only once when this loop is run against all of the asteroids
@@ -530,9 +531,10 @@ void draw() {
    BHx=OneBH[i].xx;
    BHy=OneBH[i].yy;
    }
-   if((abs(Asteroidx-BHx)<(BHmass/4))&&(abs(BHy-Asteroidy)<BHmass/4)){
+   if((abs(Asteroidx-BHx)<(BHmass/4.5))&&(abs(BHy-Asteroidy)<BHmass/4.5)){
       AsteroidDestroyed=1;
-    }    
+    }
+
     Asteroiddistance=sqrt((BHx-Asteroidx)*(BHx-Asteroidx)+(BHy-Asteroidy)*(BHy-Asteroidy));
     gforce= (.02*Asteroidmass*gConstant*BHmass)/(Asteroiddistance*Asteroiddistance+1);
     denom=abs(Asteroidx-BHx)+abs(Asteroidy-BHy);
@@ -544,19 +546,19 @@ void draw() {
     if(AsteroidDestroyed==1 || Asteroidx+xGravityAsteroid+OneAsteroid[j].priorx<0 || Asteroidx+xGravityAsteroid+OneAsteroid[j].priorx>width*1.2 ||Asteroidy+yGravityAsteroid+OneAsteroid[j].priory<0|| Asteroidy+yGravityAsteroid+OneAsteroid[j].priory>height){
       AsteroidDestroyed=0; 
       if(level==1){
-      OneAsteroid[j].priorx=-int(random(1,3));
+      OneAsteroid[j].priorx=-int(random(3,6));
       }
       if(level==2){
       OneAsteroid[j].priorx=-int(random(6,12));
       }
       else if(level==3){
-        OneAsteroid[j].priorx=-int(random(7,20));
+        OneAsteroid[j].priorx=-int(random(8,15));
       }
       else if(level==4){
-        OneAsteroid[j].priorx=-int(random(20,35));
+        OneAsteroid[j].priorx=-int(random(14,21));
       }
       else if(level==5){
-        OneAsteroid[j].priorx=-int(31);
+        OneAsteroid[j].priorx=-int(25);
       }
        OneAsteroid[j].priory=0;
        Asteroidx=width*1.1;
