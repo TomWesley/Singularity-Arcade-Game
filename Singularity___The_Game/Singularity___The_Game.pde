@@ -25,7 +25,6 @@ float w;
 float theta;
 float m;
 
-
 float delay=0;
 static final int LINE_C =200;
 static final int LINE_O =360;
@@ -361,11 +360,23 @@ void draw() {
           Asteroidy=OneAsteroid[j].yy;
         }
 //Cleanup Point
-    Asteroidmass=5+j%3;
+    Asteroidmass=4+j%4;
     xGravityAsteroid=0;
     yGravityAsteroid=0;
     for (int i = 0; i < OneBH.length; i++) {       
     //Black Hole Masses Depending on the Level
+    if(i==0){
+    BHy=height/2-height/5;
+    }
+    else if(i%2==0){
+      BHy=BHy-2*180-i%40;
+    }
+    else{
+      BHy=BHy+95*4+30*cos(radians(i));
+    } 
+   if(level==2){
+    BHx =BHx + width/13;
+   }
     if(level==1){
       if(i==0){
         BHmass=350;
@@ -436,10 +447,7 @@ void draw() {
      if(i==9){
        BHx=width;
        BHy=height/90;
-     }
-   
-      
-      
+     }      
     }
     else if(level==4){
       if(i==0){
@@ -448,6 +456,18 @@ void draw() {
       else{
       BHmass=210;
       }
+      if(i<4){
+      BHx=((i+1)*width)/5;
+      BHy=height/9;    
+   }
+   else if(i<7){
+     BHx=((i-2)*width)/5;
+      BHy=height/2; 
+   }
+   else{
+     BHx=((i-5)*width)/5;
+      BHy=height-height/9;   
+   }  
     }
     else if(level==5){
       if(i==0){
@@ -500,38 +520,13 @@ void draw() {
     ratiotwo = (BHy-prevy)/denom;
     xGravity = xGravity + ratio*gforce;
     yGravity = yGravity + ratiotwo*gforce;
-    if(i==0){
-    BHy=height/2-height/5;
-    }
-    else if(i%2==0){
-      BHy=BHy-2*180-i%40;
-    }
-    else{
-      BHy=BHy+95*4+20*cos(radians(i));
-    } 
-   if(level==2){
-    BHx =BHx + width/13;
-   }
-   else if(level==4){
-    if(i<3){
-      BHx=((i+2)*width)/5;
-      BHy=height/9;    
-   }
-   else if(i<6){
-     BHx=((i-2+1)*width)/5;
-      BHy=height/2; 
-   }
-   else{
-     BHx=((i-5+1)*width)/5;
-      BHy=height-height/9;   
-   }    
-   }
     } 
    else{
    BHx=OneBH[i].xx;
    BHy=OneBH[i].yy;
    }
-   if((abs(Asteroidx-BHx)<(BHmass/4.5))&&(abs(BHy-Asteroidy)<BHmass/4.5)){
+   
+   if((abs(Asteroidx-BHx)<(BHmass/4)) && (abs(Asteroidy-BHy)<BHmass/4)){
       AsteroidDestroyed=1;
     }
 
@@ -543,7 +538,8 @@ void draw() {
     xGravityAsteroid = xGravityAsteroid + ratio*gforce;
     yGravityAsteroid = yGravityAsteroid + ratiotwo*gforce;     
     }
-    if(AsteroidDestroyed==1 || Asteroidx+xGravityAsteroid+OneAsteroid[j].priorx<0 || Asteroidx+xGravityAsteroid+OneAsteroid[j].priorx>width*1.2 ||Asteroidy+yGravityAsteroid+OneAsteroid[j].priory<0|| Asteroidy+yGravityAsteroid+OneAsteroid[j].priory>height){
+   //if(AsteroidDestroyed==1 || (Asteroidx+xGravityAsteroid+OneAsteroid[j].priorx) < 0 || (Asteroidx+xGravityAsteroid+OneAsteroid[j].priorx) > width*1.2 || (Asteroidy+yGravityAsteroid+OneAsteroid[j].priory) < 0|| (Asteroidy+yGravityAsteroid+OneAsteroid[j].priory) > height){
+   if(AsteroidDestroyed==1 || (Asteroidx) < 0 || (Asteroidx) > width*1.2 || (Asteroidy) < 0|| (Asteroidy) > height){
       AsteroidDestroyed=0; 
       if(level==1){
       OneAsteroid[j].priorx=-int(random(3,6));
@@ -572,19 +568,22 @@ void draw() {
          }       
        }
         OneAsteroid[j].render(Asteroidmass,Asteroidx+OneAsteroid[j].priorx,Asteroidy+OneAsteroid[j].priory,Asteroidx,Asteroidy,1,1);
-
-    }else{
-  OneAsteroid[j].render(Asteroidmass,Asteroidx+xGravityAsteroid+OneAsteroid[j].priorx,Asteroidy+yGravityAsteroid+OneAsteroid[j].priory,Asteroidx,Asteroidy,1,1);
+      
     }
-  OneAsteroid[j].priorx=((Asteroidx+xGravityAsteroid+OneAsteroid[j].priorx)-Asteroidx)*.99;
-  OneAsteroid[j].priory=((Asteroidy+yGravityAsteroid+OneAsteroid[j].priory)-Asteroidy)*.99;
-  if((abs(prevx-Asteroidx)<(Asteroidmass*2.5))&&(abs(Asteroidy-prevy)<(Asteroidmass*2.5))){
-      GameOver=1;      
+    else{
+      OneAsteroid[j].render(Asteroidmass,Asteroidx+xGravityAsteroid+OneAsteroid[j].priorx,Asteroidy+yGravityAsteroid+OneAsteroid[j].priory,Asteroidx,Asteroidy,1,1);
     }
-    surfergravity=surfergravity+1; 
+    OneAsteroid[j].priorx=((Asteroidx+xGravityAsteroid+OneAsteroid[j].priorx)-Asteroidx)*.99;
+    OneAsteroid[j].priory=((Asteroidy+yGravityAsteroid+OneAsteroid[j].priory)-Asteroidy)*.99;
+    if((abs(prevx-Asteroidx)<(Asteroidmass*2.5))&&(abs(Asteroidy-prevy)<(Asteroidmass*2.5))){
+      GameOver=1;
+    }
+    if(surfergravity==0){
+      surfergravity=surfergravity+1; 
+    }
   }
   initialAsteroid=1;
-//Finish Line Wormhole - Make this into Quads
+//Finish Line Wormhole - Make this into Quads at some point and maybe a class
 stroke(255,240,0,45);
 noFill();
 strokeWeight(10);
@@ -724,7 +723,7 @@ LevelChangeCount=LevelChangeCount+1;
    }
   //If the lifeCount is at 0, then begin the Game Over sequence where any key or mouse press will return to the home screen
   if(lifeCount==0){
-    delay=delay+1;
+    delay=delay+1;/*
     if(delay%5==0){
     background(255,240,0,255);
     }
@@ -736,9 +735,10 @@ LevelChangeCount=LevelChangeCount+1;
     }
     else{
       background(100,255,120,255);
-    }
+    }*/
+    background(255-(tan(radians(delay*delay))),240-32*cos(radians(delay*2)),0+30*sin(PI*radians(delay)),255);
     fill(255,255,255,255);
-    text("Game Over",width/9,3*height/4);
+    text("Game Over",width/8.7,3*height/4);
     translate(width/2,height/3);
     for(float i = 0;i<LINE_C;i=i+.2){
       fill(0);   
@@ -858,11 +858,9 @@ class Star {
 }
 class Surfer {
   float pz;
-  Surfer() {  
-   
+  Surfer() {     
   }
-  void update() { 
-   
+  void update() {    
     }
     void render(float x, float y, float len, float quatro, float red, float blue, float green) {
       //Color parameters are not yet utilized
@@ -870,8 +868,7 @@ class Surfer {
     if(quatro==0){
       //Superbug
       len=4;
-    fill(255,240,0,255);
-    
+    fill(255,240,0,255);  
     square(x-len,y+3*len,len);
     square(x+len,y+3*len,len);
     square(x,y+3*len,len);
@@ -1042,7 +1039,7 @@ class Surfer {
       square(x+len*6,y+len,len);
       
       
-      fill(139,0,139,255);
+      fill(1,100,87,255);
       square(x-len*3,y-len,len);
       square(x+len*3,y-len,len);
       square(x+len*4,y,len);
@@ -1202,20 +1199,38 @@ class BH {
     xx= x;
     yy=y;
     noStroke();
-    fill(255,11);
-    ellipse(x,y,radius*1.22,radius*1.2);
-    fill(255,12);
-    ellipse(x,y,radius*1.17,radius*1.17);
-    fill(255,13);
-    ellipse(x,y,radius*1.14,radius*1.14);
-    fill(255,14);
-    ellipse(x,y,radius*1.11,radius*1.11);
     fill(255,15);
-    ellipse(x,y,radius*1.08,radius*1.08);
-    fill(255,16);
-    ellipse(x,y,radius*1.05,radius*1.05);
-    fill(255,17);
     ellipse(x,y,radius*1.03,radius*1.03);
+    ellipse(x,y,radius*1.04,radius*1.04);
+    ellipse(x,y,radius*1.05,radius*1.05);
+    ellipse(x,y,radius*1.06,radius*1.06);
+    ellipse(x,y,radius*1.07,radius*1.07);
+    ellipse(x,y,radius*1.08,radius*1.08);
+    ellipse(x,y,radius*1.09,radius*1.09);
+    ellipse(x,y,radius*1.1,radius*1.1);
+    ellipse(x,y,radius*1.11,radius*1.11);
+    ellipse(x,y,radius*1.12,radius*1.12);
+    ellipse(x,y,radius*1.13,radius*1.13);
+    ellipse(x,y,radius*1.14,radius*1.14);
+    ellipse(x,y,radius*1.15,radius*1.15);
+    /*
+    fill(255,11);
+    ellipse(x,y,radius*1.27,radius*1.27);
+    fill(255,12);
+    ellipse(x,y,radius*1.22,radius*1.22);
+    fill(255,13);
+    ellipse(x,y,radius*1.17,radius*1.17);
+    fill(255,14);
+    ellipse(x,y,radius*1.14,radius*1.14);
+    fill(255,15);
+    ellipse(x,y,radius*1.11,radius*1.11);
+    fill(255,16);
+    ellipse(x,y,radius*1.08,radius*1.08);
+    fill(255,17);
+    ellipse(x,y,radius*1.05,radius*1.05);
+    fill(255,18);
+    ellipse(x,y,radius*1.03,radius*1.03);
+    */
     strokeWeight(0.5);
     fill(0);
     noStroke();
@@ -1251,12 +1266,12 @@ class Asteroid {
     //Make sure the asteroids have a lot less mass so they don't fall in as easily
     xx=x;
     yy=y;
-    radius =mass/2;
+    radius=mass/2;
     noStroke();
     fill(255,0,0,28);
     ratio = (prevx-secondpriorx)/(abs(prevx-secondpriorx)+abs(prevy-secondpriory));
     ratioy = (prevy-secondpriory)/(abs(prevx-secondpriorx)+abs(prevy-secondpriory));
-   ellipse(prevx-tailLength*ratio*-.2,prevy-tailLength*ratioy*-.2,radius*6,radius*6);
+    ellipse(prevx-tailLength*ratio*-.2,prevy-tailLength*ratioy*-.2,radius*6,radius*6);
     ellipse(prevx-tailLength*ratio*0,prevy-tailLength*ratioy*0,radius*5.8,radius*5.8);
     fill(255,0,0,24);
     ellipse(prevx-tailLength*ratio*.2,prevy-tailLength*ratioy*.2,radius*5.6,radius*5.6);
@@ -1282,7 +1297,7 @@ class Asteroid {
     quad(x+radius*1.5,y-radius*1.5,x-radius*1.5,y-radius*1.5, x-radius*1.5,y+radius*1.5,x+radius*1.5,y+radius*1.5); 
     stroke(255,0,0,255);
     secondpriorx=prevx;
-  secondpriory=prevy;;
+    secondpriory=prevy;;
     
   }
 }
@@ -1295,26 +1310,6 @@ void rectangle(float x, float y, float w, float h, float r, float g, float b, fl
 quad(x-w/2,y-h/2,x-w/2,y+h/2,x+w/2,y+h/2,x+w/2,y-h/2); 
 }
 
-
-
-//Parametric Equations
-
-float x(float t){
-    return cos(sqrt(t))*PI*25/(sin(t)+2);
-  
-}
-float y(float t){
-    return sin(sqrt(t))*PI*25/(cos(t)+2);
-  
-}
-float z(float t){
-    return cos(t*t)*160-sin(t);
-  
-}
-float w(float t){
-    return sin(t*t)*150+cos(t*sin(t));
-  
-}
 void extraLife(float len){
   fill(210,255,220,4);
   noStroke();
@@ -1381,6 +1376,25 @@ void extraLife(float len){
     square(width/2-len,height/2+len*5,len);
     square(width/2+len,height/2+len*5,len);
     square(width/2,height/2+len*5,len);
-    
-    
+        
+}
+
+
+//Parametric Equations
+
+float x(float t){
+    return cos(sqrt(t))*PI*25/(sin(t)+2);
+  
+}
+float y(float t){
+    return sin(sqrt(t))*PI*25/(cos(t)+2);
+  
+}
+float z(float t){
+    return cos(t*t)*160-sin(t);
+  
+}
+float w(float t){
+    return sin(t*t)*150+cos(t*sin(t));
+  
 }
