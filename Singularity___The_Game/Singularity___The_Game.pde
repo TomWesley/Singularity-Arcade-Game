@@ -1,9 +1,9 @@
 //Copyright © 2019 TomWesley
 //SINGULARITY: This original novelty arcade game allows users pilot a Spacecraft which surfs on the gravitational waves of black holes to explore various galaxies. 
 //Coder: Thomas Wesley 
-//Last Edit 10/28/2019
+//Last Edit 1/1/2020
 //Notes - Add some aliens in the top left corner that shoots every 3 seconds, on levels 9 & ten Singularity: Add an extra life(Green diamond in a spot on level 5). More Levels In General. And, the Victory Screen!
-//Current Level Count - 3
+//Current Level Count - 5
 
 //Variable Declarations - Need Cleaned Up
 Star[] stars = new Star[800];
@@ -54,6 +54,8 @@ float mousey;
 int GameOver=0;
 float LevelChangeCount=0;
 float LevelChangeTrigger=0;
+float noText=0;
+float levelStart=0;
 
 float xGravity=0;
 float yGravity=0;
@@ -84,7 +86,7 @@ float prevyy=0;
     float levelTimer=0;
     float level=1;
     float victory=0;
-    
+    float turnoff=0;
 //Game Over Sequence    
     float craftLost=0;//counter to ensure the craft lost sequences are timed correctly before resetting
 
@@ -101,7 +103,7 @@ void setup() {
     OneBH[i] = new BH(10); 
   }
   for (int i = 0; i < OneAsteroid.length; i++) {
-    OneAsteroid[i] = new Asteroid(17); 
+    OneAsteroid[i] = new Asteroid(18); 
   }
   for (int i = 0; i < Surfers.length; i++) {
     Surfers[i] = new Surfer();
@@ -113,6 +115,7 @@ void draw() {
   cursor(CROSS); //Possibly insert a custom cursor eventually
   delay=delay+1;
   if(GameOver==0){
+    cursor(CROSS); 
     if(sinOne==0){
       //Title Screen when sinOne =0
       background(0);
@@ -127,7 +130,7 @@ void draw() {
       }
       translate(-width/2,-height/2);
       lifeCount=3; //Reset the number of lives each time the game is restarted
-      level=1; //Reset the game to level 1(Change for debugging)
+      level=7; //Reset the game to level 1(Change for debugging)
       textSize((width)/7.2);
       if(delay<255){
         fill(255,240,0,255-(255-delay));
@@ -138,7 +141,7 @@ void draw() {
       text("SINGULARITY",width/13.3,height/2);
       if(delay>250){
         textSize((width)/23.5);
-        text("Press Any Key To Begin",width/3.8,height-height/4);
+        text("Press Any Key To Begin",width/4,height-height/4);
       }
       if(delay>30){ //Delay the ability to exit the selection screen so the previous click does not trigger it accidentally
         if(keyPressed || mousePressed){
@@ -157,6 +160,7 @@ void draw() {
       prevy=height/2.1;
     }
     else if(sinOne==2){
+      turnoff=0;
       //Surfer Selection Page when sinOne=2
       background(0);
       translate(width/2,height/2);
@@ -276,7 +280,7 @@ void draw() {
       }
       if(Craftselectioncount!=-5){ //Use this to prevent an immediate selection by not accepting clicks in the first moments after entering the Surfer Selection Page
         Craftselectioncount=Craftselectioncount-1;
-      } 
+      }
     }
     else if(sinOne>=4){
       if(sinOne==4){
@@ -284,14 +288,26 @@ void draw() {
         prevy=height/2.1;
         levelTimer=0;
         initialAsteroid=0;
+        noText=0;
+        levelStart=0;
       }
+
+      if((keyPressed || mousePressed)&& turnoff>10){
       sinOne=5;
+      levelStart=1;
+      noText=1;
+      }
+      if(turnoff<11){
+      turnoff=turnoff+1;
+      }
       background(0,0,0,255); 
       translate(width/2,height/2);
       for (int i = 0; i < stars.length; i++) {
         stars[i].show(255,255,255,255);
       }
       translate(-width/2,-height/2);
+      textSize(height/7.5);
+      
       //Galaxy Start
       if(delay%5!=0){
         fill(255,255,255,255);
@@ -342,10 +358,7 @@ void draw() {
       float denom; 
       xGravity=0;
       yGravity=0;
-      if(level==3){
-        BHy=height/3.5; 
-        BHx =width/5.5;
-      }
+      
       surfergravity = 0; //Do the surfers relation to the black holes only once
       for (int j = 0; j < OneAsteroid.length; j++) {
         AsteroidDestroyed=0;
@@ -360,152 +373,172 @@ void draw() {
           Asteroidy=OneAsteroid[j].yy;
         }
 //Cleanup Point
-    Asteroidmass=4+j%4;
-    xGravityAsteroid=0;
-    yGravityAsteroid=0;
-    for (int i = 0; i < OneBH.length; i++) {       
-    //Black Hole Masses Depending on the Level
-    if(i==0){
-    BHy=height/2-height/5;
-    }
-    else if(i%2==0){
-      BHy=BHy-2*180-i%40;
-    }
-    else{
-      BHy=BHy+95*4+30*cos(radians(i));
-    } 
-   if(level==2){
-    BHx =BHx + width/13;
-   }
-    if(level==1){
-      if(i==0){
-        BHmass=350;
-        BHx=width/2;
-        BHy=height/2;
+    Asteroidmass=4+j%4; // Control the variety of asteroid sizes
+    xGravityAsteroid=0; //The gravity acting on the asteroids
+    yGravityAsteroid=0; //
+    for (int i = 0; i < OneBH.length; i++) {
+      //Black Hole Masses and Locations Depending on the Level
+      if(level==1){
+        if(i==0){
+          BHmass=350;
+          BHx=width/2;
+          BHy=height/2;
+        }
+        else if(i==1){
+          BHmass=100;
+          BHx=(8)*width/12;
+          BHy=height-height/9;
+        }
+        else if(i==2){
+          BHmass=100;
+          BHx=(8)*width/12;
+          BHy=height/9;
+        }
+        else{
+          BHmass=1;
+          BHx=-width;
+          BHy=height/2;
+        }
       }
-      else if(i==1){
-        BHmass=100;
-        BHx=(8)*width/12;
-        BHy=height-height/9;
+      if(level==2){
+        BHx =BHx + width/13;
+        BHmass=100+(i*20)%150;
+        if(i==0){
+          BHy=height/2-height/5;
+        }
+        else if(i%2==0){
+          BHy=BHy-2*180-i%40;
+        }
+        else{
+          BHy=BHy+95*4+30*cos(radians(i));
+        } 
       }
-    else if(i==2){
-      BHmass=100;
-      BHx=(8)*width/12;
-    BHy=height/9;
-  }
-  else{BHmass=1;
-  BHx=-width;
-  BHy=height/2;
-  }
-  }
-    if(level==2){
-    BHmass=60+(i*20)%150;
-  }
-    else if(level==3){
-      if(i==2){
-        BHmass=500;
+      else if(level==3){
+        if(i==2){
+          BHmass=500;
+        }
+        else{
+          BHmass=140+(i*30)%160;
+        }
+        if(i==0){
+          BHx=width/2+width/12;
+          BHy=height/12;
+        }
+        if(i==1){
+          BHx=width/2+width/9;
+          BHy=height-height/12;
+        }
+        if(i==2){
+          BHx=width/2;
+          BHy=height/2;
+        }
+        if(i==3){
+          BHx=width/2+width/3.9;
+          BHy=height/1.85;
+        }
+        if(i==4){
+          BHx=width-width/50;
+          BHy=height;
+        }
+        if(i==5){
+          BHx=width-width/40;
+          BHy=0;
+        }
+        if(i==6){
+          BHx=width/70;
+          BHy=height/1.5;
+        }
+        if(i==7){
+          BHx=width/4;
+          BHy=height/8;
+        }
+        if(i==8){
+          BHx=width/4;
+          BHy=height-height/5;
+        }
+        if(i==9){
+          BHx=width/12;
+          BHy=height/90;
+        }      
       }
-      else{
-        BHmass=140+(i*30)%160;
+      else if(level==4){
+        if(i==0){
+          BHx=170*cos(radians(delay))+width/2;
+          BHy=240*sin(radians(delay))+height/2; 
+          BHmass=350;
+        }
+        else if(i==1){
+          BHx=170*cos(radians(delay-180))+width/2;
+          BHy=240*sin(radians(delay-180))+height/2; 
+          BHmass=250;
+        }
+        else{
+          BHmass=210;
+        }
+        if(i>1){
+          BHx=-200;
+          BHy=i*width/10;
+        } 
       }
-     if(i==2){
-       BHx=width/2;
-       BHy=height/2;
-     }
-     if(i==0){
-       BHx=width/2+width/12;
-       BHy=height/12;
-     }
-     if(i==1){
-       BHx=width/2+width/9;
-       BHy=height-height/12;
-     }
-     if(i==3){
-       BHx=width/2+width/3.9;
-       BHy=height/1.85;
-     }
-     if(i==4){
-       BHx=width-width/50;
-       BHy=height/4;
-     }
-     if(i==5){
-       BHx=width-width/40;
-       BHy=height-height/5;
-     }
-     if(i==6){
-       BHx=width/70;
-       BHy=height/1.5;
-     }
-     if(i==7){
-       BHx=width/4;
-       BHy=height/8;
-     }
-     if(i==8){
-       BHx=width/4;
-       BHy=height-height/5;
-     }
-     if(i==9){
-       BHx=width;
-       BHy=height/90;
-     }      
-    }
-    else if(level==4){
-      if(i==0){
-        BHmass=50;
+      else if(level==5){
+        if(i==0){
+          BHmass=250;
+          BHx=width/2.8;
+          BHy=height/2;
+        }
+        else if(i==1){
+          BHmass=120;
+          BHx=width/2;
+          BHy=height-height/2.8;
+        }
+        else if(i==2){
+          BHmass=120;
+          BHx=width/2;
+          BHy=height/2.8;
+        }
+        else if(i==3){
+          BHmass=80;
+          BHx=width/10;
+          BHy=height-height/8;
+        }
+        else if(i==4){
+          BHmass=80;
+          BHx=width-width/9;
+          BHy=height/10;
+        }
+        else if(i==5){
+          BHmass=80;
+          BHx=width/3;
+          BHy=height/7;
+        }
+        else{
+          BHmass=40+i*20;
+          BHx=width/3+(i-6)*width/6;
+          BHy=height*.9-(i-6)*height/13;
+        }
       }
-      else{
-      BHmass=210;
+      else if(level==6){
+        if(i%2==0 ){
+          BHmass=200+i*20;
+          BHx=400*tan(radians(delay+i*72))*cos(radians(delay+i*72))+width/1.5;
+          BHy=600*cos(radians(delay+i*72))*sin(radians(delay+i*72))+height/2;  
+        }
+        else{
+          BHx=-200;
+          BHy=i*width/10;
+          BHmass=10;
+        }
       }
-      if(i<4){
-      BHx=((i+1)*width)/5;
-      BHy=height/9;    
-   }
-   else if(i<7){
-     BHx=((i-2)*width)/5;
-      BHy=height/2; 
-   }
-   else{
-     BHx=((i-5)*width)/5;
-      BHy=height-height/9;   
-   }  
-    }
-    else if(level==5){
-      if(i==0){
-        BHmass=250;
-        BHx=width/2.9;
-        BHy=height/2;
+      else if(level==7){
+        BHmass=180+int(log(i%5))*100;
+        BHx=width/11+i*width/13;
+        if(i%2==0){
+          BHy=sqrt(i)*height/8.5;
+        }
+        else{
+          BHy=height-sqrt(i)*height/8.7;
+        }
       }
-      else if(i==1){
-        BHmass=100;
-        BHx=width/2;
-        BHy=height-height/2.9;
-      }
-      else if(i==2){
-        BHmass=100;
-        BHx=width/2;
-        BHy=height/2.9;
-      }
-      else if(i==3){
-        BHmass=80;
-        BHx=width/10;
-        BHy=height-height/8;
-      }
-      else if(i==4){
-        BHmass=80;
-        BHx=width-width/9;
-        BHy=height/10;
-      }
-      else if(i==5){
-        BHmass=80;
-        BHx=width/3;
-        BHy=height/7;
-      }
-      else{
-        BHmass=40+i*20;
-        BHx=width/3+(i-6)*width/6;
-        BHy=height*.9-(i-6)*height/13;
-      }
-    }
     //Calculate the surfer's gravity & corresponding motion only once when this loop is run against all of the asteroids
     if(surfergravity==0){
       if((abs(BHx-prevx)<(BHmass/4))&&(abs(BHy-prevy)<(BHmass/4))){
@@ -531,7 +564,7 @@ void draw() {
     }
 
     Asteroiddistance=sqrt((BHx-Asteroidx)*(BHx-Asteroidx)+(BHy-Asteroidy)*(BHy-Asteroidy));
-    gforce= (.02*Asteroidmass*gConstant*BHmass)/(Asteroiddistance*Asteroiddistance+1);
+    gforce= (.015*Asteroidmass*gConstant*BHmass)/(Asteroiddistance*Asteroiddistance+1);
     denom=abs(Asteroidx-BHx)+abs(Asteroidy-BHy);
     ratio = (BHx-Asteroidx)/denom;
     ratiotwo = (BHy-Asteroidy)/denom;
@@ -556,10 +589,16 @@ void draw() {
       else if(level==5){
         OneAsteroid[j].priorx=-int(25);
       }
+      else if(level==6){
+        OneAsteroid[j].priorx=-int(random(23,35));
+      }
+      else if(level==7){
+        OneAsteroid[j].priorx=-int(random(30,40));
+      }
        OneAsteroid[j].priory=0;
        Asteroidx=width*1.1;
-       Asteroidy=random(height/6,5*height/6);
-       if(Asteroidy>(height/2-(height/11)) && Asteroidy<(height/2+(height/11))){
+       Asteroidy=random(height/100,99*height/100);
+       if(Asteroidy>(height/2-(height/11)) && Asteroidy<(height/2+(height/11)) && level!=7){
          if(delay%2==0){
            Asteroidy=random(0,2*height/6);
          }
@@ -610,7 +649,7 @@ ellipse(47*width/50,height/2,height/20,height/5);
 
 
 //The trigger for beating the level, indicate the level completion and have brief break
-if(LevelChangeTrigger==0 && GameOver==0 && 47*width/50<prevx && prevy<(height/2+height/10) && prevy>(height/2-height/10)){
+if(LevelChangeTrigger==0 && GameOver==0 && 46*width/50<prevx && prevy<(height/2+height/10) && prevy>(height/2-height/10)){
   LevelChangeCount=0;
   LevelChangeTrigger=1;
 }
@@ -628,8 +667,8 @@ if(LevelChangeTrigger==1){
   LevelChangeTrigger=0;
   sinOne=4;
   level=level+1;
-  //Change the next value here to reflect the last level which will trigger the victory sequence
-  if(level==6){
+  //Change the next value here to reflect the final level which will trigger the victory sequence
+  if(level==8){ //Add a spiral black hole level
     GameOver=2;
   } 
 }
@@ -662,7 +701,7 @@ LevelChangeCount=LevelChangeCount+1;
     float xsurf=mousex-prevx;
     float ysurf=mousey-prevy;
     levelTimer=levelTimer+1;
-    if(levelTimer>75){
+    if(levelTimer>45){
     ratio = xsurf/(abs(xsurf)+abs(ysurf));
     ratiotwo = ysurf/(abs(xsurf)+abs(ysurf));
     xsurf=ratio*distance;
@@ -670,12 +709,21 @@ LevelChangeCount=LevelChangeCount+1;
     
     }
     else{
+      if(levelStart==0){
+        fill(255,240,0,255);
+        text("PRESS ANY KEY",width/4.8,height/3.5);   
+        String thisText="Lives: "+lifeCount;
+        fill(255,0,0,255);
+        text(thisText,width/3.2,height/1.8);
+      }
+      if(noText==1){
       fill(255,240,0,255);
       textSize(height/7.5);
       String myText="Lives: "+lifeCount;
       text("Engage Thrusters!",width/9,height/3.5);
       fill(255,0,0,255);
-      text(myText,width/3.7,height/1.8);
+      text(myText,width/3.2,height/1.8);
+      }
       xsurf=0;
     ysurf=0;
     xGravity=0;
@@ -736,9 +784,19 @@ LevelChangeCount=LevelChangeCount+1;
     else{
       background(100,255,120,255);
     }*/
-    background(255-(tan(radians(delay*delay))),240-32*cos(radians(delay*2)),0+30*sin(PI*radians(delay)),255);
+    if(delay%4==0){
+      background(255,240,0,255);
+    }
+    else if(delay%3==0){
+      background(255,40,40,255);
+    }
+    else{
+      background(255,255);
+    }
+    //background(255-(tan(radians(delay*delay))),240-32*cos(radians(delay*2)),0+30*sin(PI*radians(delay)),255);
     fill(255,255,255,255);
     text("Game Over",width/8.7,3*height/4);
+    //print(level-1);//Output the level and save to database(figure that out)
     translate(width/2,height/3);
     for(float i = 0;i<LINE_C;i=i+.2){
       fill(0);   
@@ -769,7 +827,7 @@ LevelChangeCount=LevelChangeCount+1;
       delay=0;
     }            
     flareon=300*cos(radians(delay/2));
-    wave=wave+.001;
+    wave=wave+.0001;
     for (float i = 0; i < LINE_O; i = i +.1){
          //wave=35;
          theta = i*(360/LINE_O);
@@ -803,6 +861,7 @@ LevelChangeCount=LevelChangeCount+1;
       fill(255,240,0,255);
     textSize(height/5);
     text("Victory",width/4,height/4);
+    //print(level-1); //Output the level and save to database(figure that out)
   }
 }
 
@@ -1199,7 +1258,7 @@ class BH {
     xx= x;
     yy=y;
     noStroke();
-    fill(255,15);
+    fill(255,17);
     ellipse(x,y,radius*1.03,radius*1.03);
     ellipse(x,y,radius*1.04,radius*1.04);
     ellipse(x,y,radius*1.05,radius*1.05);
@@ -1213,24 +1272,7 @@ class BH {
     ellipse(x,y,radius*1.13,radius*1.13);
     ellipse(x,y,radius*1.14,radius*1.14);
     ellipse(x,y,radius*1.15,radius*1.15);
-    /*
-    fill(255,11);
-    ellipse(x,y,radius*1.27,radius*1.27);
-    fill(255,12);
-    ellipse(x,y,radius*1.22,radius*1.22);
-    fill(255,13);
-    ellipse(x,y,radius*1.17,radius*1.17);
-    fill(255,14);
-    ellipse(x,y,radius*1.14,radius*1.14);
-    fill(255,15);
-    ellipse(x,y,radius*1.11,radius*1.11);
-    fill(255,16);
-    ellipse(x,y,radius*1.08,radius*1.08);
-    fill(255,17);
-    ellipse(x,y,radius*1.05,radius*1.05);
-    fill(255,18);
-    ellipse(x,y,radius*1.03,radius*1.03);
-    */
+    ellipse(x,y,radius*1.16,radius*1.16);
     strokeWeight(0.5);
     fill(0);
     noStroke();
