@@ -205,8 +205,8 @@ function draw() {
            rotate(-delay*PI/2000);
            translate(-width/2,-height/2);
            if(loadDB==1){
-             var led=database.ref('scores');
-             led.on('value',gotData,errData);
+             var led = database.ref('scores');
+             led.on('value', gotData, errData);
            }
            else{
              loadDB=0;
@@ -1282,7 +1282,7 @@ class Surfer {
 
     }
     else{
-      len=4;
+      len = 4;
       //VoidWalker
       stroke(255);
       fill(100,14,237,255);
