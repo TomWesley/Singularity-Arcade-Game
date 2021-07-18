@@ -100,7 +100,7 @@ let craftLost=0;//counter to ensure the craft lost sequences are timed correctly
 
 function preload() {
   title = loadFont("volt.ttf");
-  // table = loadTable('leaderboard.csv', 'csv', 'header');
+  //External Sprites Used in the game
   imgOne=loadImage("YellowGal.jpg");
   imgThree=loadImage("BlueNStar.jpg");
   imgFive=loadImage("SpiralGal.jpg");
@@ -111,6 +111,7 @@ function preload() {
 
 
 function setup() {
+
   createCanvas(1280,720);
 
   //Create arrays of the class objects to be utilized in the draw phase
@@ -126,6 +127,7 @@ function setup() {
   for (let i = 0; i < 4; i++) {
     Surfers[i] = new Surfer();
   }
+  
   let Asteroidx =width/2;
   let Asteroidy=height/2;
 
@@ -209,7 +211,7 @@ function draw() {
              led.on('value', gotData, errData);
            }
            else{
-             loadDB=0;
+             loadDB = 0;
            }
 
            textFont(title);
