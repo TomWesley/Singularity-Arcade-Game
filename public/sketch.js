@@ -43,7 +43,7 @@ let LINE_O =360;
 let radius;
 
 let title;
-let sinOne = 0;
+let gamePhase = 0;
 let prevx = 0;
 let prevy = 0;
 
@@ -127,7 +127,7 @@ function setup() {
   for (let i = 0; i < 4; i++) {
     Surfers[i] = new Surfer();
   }
-  
+
   let Asteroidx =width/2;
   let Asteroidy=height/2;
 
@@ -195,7 +195,7 @@ function draw() {
 
        if(GameOver==0){
          cursor(CROSS);
-         if(sinOne==-1){
+         if(gamePhase==-1){
            background(0);
            speed=0.9;
            translate(width/2,height/2);
@@ -224,16 +224,15 @@ function draw() {
              line(width/9+aj*2,height/7+aj,width-width/9-aj*2,height/7.2+aj);
            }
 
-
            if(mouseIsPressed || keyIsPressed){
              mouseIsPressed=false;
              keyIsPressed=false;
-             sinOne=0;
+             gamePhase=0;
              delay=0;
            }
          }
-         if(sinOne==0){
-           //Title Screen when sinOne = 0
+         if(gamePhase==0){
+           //Title Screen when gamePhase = 0
            background(0);
            textSize(32)
            textFont(title);
@@ -274,7 +273,7 @@ function draw() {
                rect(1*width/4,height-height/3,width/2,height/9);
              }
              if(mouseIsPressed && (mouseX<3*width/4 && mouseX>width*1/4 && mouseY>(height-height/3) && mouseY<(height-height/6))){
-               sinOne=-1;
+               gamePhase=-1;
                loadDB=1;
                mouseIsPressed=false;
                keyIsPressed=false;
@@ -287,7 +286,7 @@ function draw() {
                keyIsPressed=false;
                //fullscreen(full);
                //resizeCanvas(displayWidth, displayHeight);
-               sinOne=2;
+               gamePhase=2;
                Craftselectioncount=15;
                extraLife=1;
              }
@@ -295,11 +294,11 @@ function draw() {
            prevx=width/12;
            prevy=height/2;
          }
-         else if(sinOne==2){
+         else if(gamePhase==2){
 
 
            turnoff=0;
-           //Surfer Selection Page when sinOne=2
+           //Surfer Selection Page when gamePhase=2
            background(0);
            translate(width/2,height/2);
            rotate(PI*delay/900);
@@ -392,28 +391,28 @@ function draw() {
                  //SuperBug
                  surfMass=2.6;
                  distance=9.2;
-                 sinOne=4;
+                 gamePhase=4;
                  surfType=0;
                }
                else if((mouseY<height-2*height/10 && mouseY>height-4*height/10)){
                  //Psych Bike
                  surfMass=2.3;
                  distance=9.6;
-                 sinOne=4;
+                 gamePhase=4;
                  surfType=1;
                }
                else if((mouseY<height-4*height/10 && mouseY>height-6*height/10)){
                  //The Compiler
                  surfMass=2.7;
                  distance=10;
-                 sinOne=4;
+                 gamePhase=4;
                  surfType=2;
                }
                else if((mouseY<height-6*height/10 && mouseY>height-8*height/10)){
                  //Voidwalker
                  surfMass=2.5;
                  distance=8.4;
-                 sinOne=4;
+                 gamePhase=4;
                  surfType=3;
                }
              }
@@ -423,8 +422,8 @@ function draw() {
            }
          }
 
-         else if(sinOne>=4){
-           if(sinOne==4){
+         else if(gamePhase>=4){
+           if(gamePhase==4){
              prevx=width/12;
              prevy=height/2;
              levelTimer=0;
@@ -433,7 +432,7 @@ function draw() {
              levelStart=0;
            }
            if((keyIsPressed || mouseIsPressed) && turnoff>10){
-             sinOne=5;
+             gamePhase=5;
              levelStart=1;
              noText=1;
            }
@@ -808,7 +807,7 @@ function draw() {
              }
              else{
                LevelChangeTrigger=0;
-               sinOne=4;
+               gamePhase=4;
                level=level+1;
                //Change the next value here to reflect the last level which will trigger the victory sequence
                if(level==11){
@@ -911,7 +910,7 @@ function draw() {
            if(craftLost>105){
              lifeCount=lifeCount-1;
              if(lifeCount>0){
-               sinOne = 4;
+               gamePhase = 4;
                GameOver = 0;
              }
            }
@@ -954,7 +953,7 @@ function draw() {
      translate(-width/2,-height/3);
      if(keyIsPressed || mouseIsPressed){
        GameOver=0;
-       sinOne=0;
+       gamePhase=0;
        delay=0;
      }
    }
@@ -970,7 +969,7 @@ function draw() {
    rotate(-PI*delay*0.0001);
    if(mouseIsPressed || keyIsPressed){
      GameOver=0;
-     sinOne=0;
+     gamePhase=0;
      delay=0;
    }
    flareon=300*cos(radians(delay/2));
@@ -1624,7 +1623,7 @@ function gotData(data){
   }
   textFont(title);
   textSize(width/18.5);
-  //Leaderboard when sinOne==-1
+  //Leaderboard when gamePhase==-1
   for(var j=0;j<10;j++){
     if(arr[j][2]==0){
       fill(255,0,0,255);
