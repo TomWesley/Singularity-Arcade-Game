@@ -820,7 +820,7 @@ function draw() {
            //Extra Life Section(Only on level 5)
            if(level==5){
              if(extraLife==1){
-               let len=4;
+               let len = width / 320;
                extraLifeSprite(len);
              }
 
@@ -975,13 +975,13 @@ function draw() {
    flareon=300*cos(radians(delay/2));
    wave=wave+0.0001;
    for (let i = 0; i < LINE_O; i = i +0.1){
-     theta = i*(360/LINE_O);
+     theta = i * (360/LINE_O);
      phase=((PI)/LINE_O);
      meh = ((flareon*0.5))*sin(wave*theta+phase)*cos(phase);
      osx=(meh+flareon+140)*tan(theta);
      osy=(meh+flareon+140)*sin(theta);
 
-     stroke(255,240,0,255);
+     stroke(255, 240, 0, 255);
      strokeWeight(1);
      point(osx,osy);
 
@@ -1057,9 +1057,9 @@ class Surfer {
   render(x, y, len,quatro, red, blue, green) {
     //Color parameters are not yet utilized
     noStroke();
+    len = width/320;
     if(quatro==0){
       //Superbug
-      len=4;
       fill(255,240,0,255);
       square(x-len,y+3*len,len);
       square(x+len,y+3*len,len);
@@ -1093,6 +1093,7 @@ class Surfer {
       square(x-len*5,y+len*2,len);
       square(x+len*5,y+len,len);
       square(x+len*5,y+len*2,len);
+
       fill(255,0,0,255);
       square(x-len,y,len*3);
       square(x,y+4*len,len);
@@ -1119,7 +1120,7 @@ class Surfer {
       //Psych Bike
       noStroke();
       fill(255,174,204,255);
-      len=4;
+
       square(x,y,len);
       square(x+len,y,len);
       square(x+len*2,y,len);
@@ -1173,7 +1174,6 @@ class Surfer {
     }
     else if(quatro==2){
       //The Compiler
-      len=4;
       noStroke();
       fill(80,230,130,255);
       square(x,y,len);
@@ -1283,7 +1283,6 @@ class Surfer {
 
     }
     else{
-      len = 4;
       //VoidWalker
       stroke(255);
       fill(100,14,237,255);
@@ -1388,7 +1387,7 @@ class BH {
   applyForce() {
   }
   render(mass,x,y,quatro) {
-    let radius =mass/2;
+    let radius = (width/1280)*mass/2;
     this.xx= x;
     this.yy=y;
     noStroke();
