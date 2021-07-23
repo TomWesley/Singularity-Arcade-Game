@@ -15,9 +15,9 @@ let imgNine;
 let imgPortal;
 
 //Arrays
-let stars = [];
+let Stars = [];
 let Surfers = [];
-let OneBH = [];
+let BlackHoles = [];
 let Asteroids = [];
 
 //Control the star speed
@@ -64,7 +64,6 @@ let prevxx = 0;
 let prevyy = 0;
 
 //Asteroid variables
-
 let initialAsteroid = 0;
 let AsteroidDestroyed=0;
 
@@ -87,6 +86,7 @@ let level = 1;
 let victory = 0;
 let turnoff = 0;
 let full = true ;
+
 //User Input Varibles
 let input;
 let button;
@@ -116,10 +116,10 @@ function setup() {
 
   //Create arrays of the class objects to be utilized in the draw phase
   for (let i = 0; i < 1000; i++) {
-    stars[i] = new Star();
+    Stars[i] = new Star();
   }
   for (let i = 0; i < 10; i++) {
-    OneBH[i] = new BH();
+    BlackHoles[i] = new BH();
   }
   for (let i = 0; i < 14; i++) {
     Asteroids[i] = new Asteroid();
@@ -128,8 +128,8 @@ function setup() {
     Surfers[i] = new Surfer();
   }
 
-  let Asteroidx =width/2;
-  let Asteroidy=height/2;
+  let Asteroidx = width/2;
+  let Asteroidy = height/2;
 
 
   var firebaseConfig = {
@@ -164,9 +164,9 @@ function draw() {
      if(nameIn==0){
        background(0);
        speed=0.8;
-       for (let i = 0; i < stars.length; i++) {
-         stars[i].update();
-         stars[i].show(255,255,255,255);
+       for (let i = 0; i < Stars.length; i++) {
+         Stars[i].update();
+         Stars[i].show(255,255,255,255);
        }
        textFont(title);
        fill(255,240,0,255);
@@ -190,19 +190,21 @@ function draw() {
        }
      }
      else{
+       //incremental variable that increases by one each frame
+       delay = delay + 1;
 
-       delay=delay+1;
+       if(GameOver == 0){
 
-       if(GameOver==0){
          cursor(CROSS);
+
          if(gamePhase==-1){
            background(0);
            speed=0.9;
            translate(width/2,height/2);
            rotate(delay*PI/2000);
-           for (let i = 0; i < stars.length; i++) {
-             stars[i].update();
-             stars[i].show(255,255,255,255);
+           for (let i = 0; i < Stars.length; i++) {
+             Stars[i].update();
+             Stars[i].show(255,255,255,255);
            }
            rotate(-delay*PI/2000);
            translate(-width/2,-height/2);
@@ -238,14 +240,14 @@ function draw() {
            textFont(title);
            translate(width/2,height/2);
            if((10+delay/220)<10000){
-             speed = delay/500; //The stars speed will increase over time
+             speed = delay/500; //The Stars speed will increase over time
            }
            else{
              speed = 20;
            }
-           for (let i = 0; i < stars.length; i++) {
-             stars[i].update();
-             stars[i].show(255,255,255,255);
+           for (let i = 0; i < Stars.length; i++) {
+             Stars[i].update();
+             Stars[i].show(255,255,255,255);
            }
 
 
@@ -302,8 +304,8 @@ function draw() {
            background(0);
            translate(width/2,height/2);
            rotate(PI*delay/900);
-           for (let i = 0; i < stars.length; i++) {
-             stars[i].show(255,255,255,255);
+           for (let i = 0; i < Stars.length; i++) {
+             Stars[i].show(255,255,255,255);
            }
            rotate(-PI*delay/900);
 
@@ -442,8 +444,8 @@ function draw() {
            background(0,0,0,255);
            image(imgPortal,4.8*width/6,height/2-width/10.66,width/3,width/5.33);
            translate(width/2,height/2);
-           for (let i = 0; i < stars.length; i++) {
-             stars[i].show(255,255,255,255);
+           for (let i = 0; i < Stars.length; i++) {
+             Stars[i].show(255,255,255,255);
            }
            translate(-width/2,-height/2);
            //Galaxy Start
@@ -502,7 +504,7 @@ function draw() {
 
              }
 
-             for (let i = 0; i < OneBH.length; i++) {
+             for (let i = 0; i < BlackHoles.length; i++) {
                //Black Hole Masses Depending on the Level
                if(i==0){
                  BHy=height/2-height/5;
@@ -692,7 +694,7 @@ function draw() {
                    //Add the data to the database only once
                    DBEntry=1;
                  }
-                 OneBH[i].render(BHmass,BHx,BHy,255);
+                 BlackHoles[i].render(BHmass,BHx,BHy,255);
                  BHdistance=sqrt((BHx-prevx)*(BHx-prevx)+(BHy-prevy)*(BHy-prevy));
                  //insert the surfer mass and BH mass into the equation
                  gforce= (surfMass*gConstant*(BHmass*0.8+BHmass*BHmass*0.0011))/(BHdistance*BHdistance+1);
@@ -703,8 +705,8 @@ function draw() {
                  yGravity = yGravity + ratiotwo*gforce;
                }
                else{
-                 BHx=OneBH[i].xx;
-                 BHy=OneBH[i].yy;
+                 BHx=BlackHoles[i].xx;
+                 BHy=BlackHoles[i].yy;
                }
 
                if((abs(Asteroidx-BHx)<(BHmass/4)) && (abs(Asteroidy-BHy)<BHmass/4)){
@@ -963,8 +965,8 @@ function draw() {
    background(0);
    translate(width/2, height/2);
    rotate(PI*delay*0.0001);
-   for (let i = 0; i < stars.length; i++) {
-     stars[i].show(255,255,255,255);
+   for (let i = 0; i < Stars.length; i++) {
+     Stars[i].show(255,255,255,255);
    }
    rotate(-PI*delay*0.0001);
    if(mouseIsPressed || keyIsPressed){
@@ -1021,7 +1023,7 @@ class Star {
     this.z = random(width/2);
     // I set the previous position of "z" in the same position of "z",
     this.pz=z;
-    // which it's like to say that the stars are not moving during the first frame.
+    // which it's like to say that the Stars are not moving during the first frame.
     // this.pz = z;
   }
   update() {
