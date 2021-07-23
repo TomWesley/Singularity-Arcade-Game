@@ -18,7 +18,7 @@ let imgPortal;
 let stars = [];
 let Surfers = [];
 let OneBH = [];
-let OneAsteroid = [];
+let Asteroids = [];
 
 //Control the star speed
 let speed;
@@ -70,7 +70,7 @@ let AsteroidDestroyed=0;
 
 //Surfer/Player Variables
 let surfergravity=0;
-let Craftselectioncount;//Helps so a mouse click on the opening screen doesn't also select your craft
+let Craftselectioncount; //Helps so a mouse click on the opening screen doesn't also select your craft
 let lifeCount=1;
 let extraLife=1;
 let displayExtraLife=0;
@@ -115,14 +115,14 @@ function setup() {
   createCanvas(1280,720);
 
   //Create arrays of the class objects to be utilized in the draw phase
-  for (let i = 0; i < 600; i++) {
+  for (let i = 0; i < 1000; i++) {
     stars[i] = new Star();
   }
   for (let i = 0; i < 10; i++) {
     OneBH[i] = new BH();
   }
   for (let i = 0; i < 14; i++) {
-    OneAsteroid[i] = new Asteroid();
+    Asteroids[i] = new Asteroid();
   }
   for (let i = 0; i < 4; i++) {
     Surfers[i] = new Surfer();
@@ -493,12 +493,12 @@ function draw() {
              if(initialAsteroid == 0){
                Asteroidy = random(0,height);
                Asteroidx = width*1.1;
-               OneAsteroid[j].priorx =- AsteroidInitialSpeed+j;
-               OneAsteroid[j].priory = 0;
+               Asteroids[j].priorx =- AsteroidInitialSpeed+j;
+               Asteroids[j].priory = 0;
              }
              else{
-               Asteroidx = OneAsteroid[j].xx;
-               Asteroidy = OneAsteroid[j].yy;
+               Asteroidx = Asteroids[j].xx;
+               Asteroidy = Asteroids[j].yy;
 
              }
 
@@ -725,36 +725,36 @@ function draw() {
              if(AsteroidDestroyed==1 || (Asteroidx) < 0 || (Asteroidx) > width*1.2 || (Asteroidy) < 0 || (Asteroidy) > height){
                AsteroidDestroyed=0;
                if(level==1){
-                 OneAsteroid[j].priorx=-random(2,4);
+                 Asteroids[j].priorx=-random(2,4);
                }
                if(level==2){
-                 OneAsteroid[j].priorx=-random(5,10);
+                 Asteroids[j].priorx=-random(5,10);
                }
                else if(level==3){
-                 OneAsteroid[j].priorx=-random(7,13);
+                 Asteroids[j].priorx=-random(7,13);
                }
                else if(level==4){
-                 OneAsteroid[j].priorx=-random(12,18);
+                 Asteroids[j].priorx=-random(12,18);
                }
                else if(level==5){
-                 OneAsteroid[j].priorx=-22;
+                 Asteroids[j].priorx=-22;
                }
                else if(level==6){
-                 OneAsteroid[j].priorx=-int(random(22,30));
+                 Asteroids[j].priorx=-int(random(22,30));
                }
                else if(level==7){
-                 OneAsteroid[j].priorx=-int(random(15,35));
+                 Asteroids[j].priorx=-int(random(15,35));
                }
                else if(level==8){
-                 OneAsteroid[j].priorx=-int(random(20,50));
+                 Asteroids[j].priorx=-int(random(20,50));
                }
                else if(level==9){
-                 OneAsteroid[j].priorx=-int(random(2,25));
+                 Asteroids[j].priorx=-int(random(2,25));
                }
                else if(level==10){
-                 OneAsteroid[j].priorx=-int(random(30,60));
+                 Asteroids[j].priorx=-int(random(30,60));
                }
-               OneAsteroid[j].priory=0;
+               Asteroids[j].priory=0;
                Asteroidx=width*1.1;
                Asteroidy=random((height/100),height);
                if(Asteroidy>(height/2-(height/11)) && Asteroidy<(height/2+(height/11)) && level!=7){
@@ -765,16 +765,16 @@ function draw() {
                    Asteroidy=random(4*height/6,height);
                  }
                }
-               OneAsteroid[j].render(Asteroidmass,(Asteroidx+OneAsteroid[j].priorx),(Asteroidy+OneAsteroid[j].priory),Asteroidx,Asteroidy,1,1);
+               Asteroids[j].render(Asteroidmass,(Asteroidx+Asteroids[j].priorx),(Asteroidy+Asteroids[j].priory),Asteroidx,Asteroidy,1,1);
 
              }
              else{
 
-               OneAsteroid[j].render(Asteroidmass,(Asteroidx+xGravityAsteroid+OneAsteroid[j].priorx),(Asteroidy+yGravityAsteroid+OneAsteroid[j].priory),Asteroidx,Asteroidy,1,1);
+               Asteroids[j].render(Asteroidmass,(Asteroidx+xGravityAsteroid+Asteroids[j].priorx),(Asteroidy+yGravityAsteroid+Asteroids[j].priory),Asteroidx,Asteroidy,1,1);
              }
 
-             OneAsteroid[j].priorx=((Asteroidx+xGravityAsteroid+OneAsteroid[j].priorx)-Asteroidx)*0.99;
-             OneAsteroid[j].priory=((Asteroidy+yGravityAsteroid+OneAsteroid[j].priory)-Asteroidy)*0.99;
+             Asteroids[j].priorx=((Asteroidx+xGravityAsteroid+Asteroids[j].priorx)-Asteroidx)*0.99;
+             Asteroids[j].priory=((Asteroidy+yGravityAsteroid+Asteroids[j].priory)-Asteroidy)*0.99;
 
 
              if((abs(prevx-Asteroidx)<(Asteroidmass*2.5))&&(abs(Asteroidy-prevy)<(Asteroidmass*2.5))){
