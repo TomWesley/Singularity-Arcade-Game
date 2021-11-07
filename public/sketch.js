@@ -35,6 +35,7 @@ let s = 0;
 let theta;
 let m;
 
+let timer = 0;
 let delay = 0;
 let LINE_C = 200;
 let LINE_O =360;
@@ -106,7 +107,7 @@ function preload() {
   imgFive=loadImage("SpiralGal.jpg");
   imgSeven=loadImage("BlueGal.jpg");
   imgNine=loadImage("WDwarf.jpg");
-  imgPortal=loadImage("PortalBit.jpg");
+  imgPortal=loadImage("SingularityPortal.jpeg");
 }
 
 
@@ -122,7 +123,7 @@ function setup() {
     BlackHoles[i] = new BH();
   }
   for (let i = 0; i < 14; i++) {
-    Asteroids[i] = new Asteroid();
+    Asteroids[i] = new Asteroid(4 + i % 4);
   }
   for (let i = 0; i < 4; i++) {
     Surfers[i] = new Surfer();
@@ -147,8 +148,8 @@ function setup() {
   firebase.initializeApp(firebaseConfig);
 
   input = createInput();
-  input.position(width/3, 4*height/9);
-  input.size(width/6,height/9);
+  input.position(width / 3, 4 * height / 9);
+  input.size(width / 6, height / 9);
   input.style('font-size', '48px');
   input.style('background-color', '#ffffa1');
   input.style('font-family', "Impact");
@@ -156,12 +157,13 @@ function setup() {
 
 //The draw function runs through the actions within it continuously
 function draw() {
+     timer = timer + 1;
      //Possibly insert a custom cursor eventually
      var database=firebase.database();
      var ref=database.ref('scores');
 
      cursor(CROSS);
-     if(nameIn==0){
+     if(nameIn == 0){
        background(0);
        speed=0.8;
        for (let i = 0; i < Stars.length; i++) {
@@ -169,6 +171,7 @@ function draw() {
          Stars[i].show(255,255,255,255);
        }
        textFont(title);
+       stroke(0);
        fill(255,240,0,255);
        textSize(width/10);
        text("Enter An Alias",1*width/9,height/4)
@@ -177,8 +180,8 @@ function draw() {
 
        stroke(255,255);
        fill(255,150);
-       if(mouseX<(width-width/5) && mouseX>3*width/5 && mouseY<5*height/9 && mouseY>4*height/9){
-         rect(3*width/5,4*height/9,width/5,height/9);
+       if(mouseX < (width - width / 5) && mouseX > 3 * width / 5 && mouseY < 5 * height / 9 && mouseY > 4 * height / 9){
+         rect(3 * width / 5,4 * height / 9, width / 5, height / 9);
        }
        if(mouseIsPressed && mouseX<(width-width/5) && mouseX>3*width/5 && mouseY<5*height/9 && mouseY>4*height/9 && input.value().length > 0){
          fullscreen(full);
@@ -219,8 +222,8 @@ function draw() {
            textFont(title);
            fill(255,240,0,255);
            textSize(width/14.3);
-           text("Global Leaderboard",width/8,height/8.9);
-           for(let aj=0;aj<25;aj=aj+5){
+           text("Global Leaderboard", width/8, height/8.9);
+           for(let aj = 0; aj < 25; aj = aj + 5){
              stroke(255,255,255,255);
              strokeWeight(1);
              line(width/9+aj*2,height/7+aj,width-width/9-aj*2,height/7.2+aj);
@@ -313,6 +316,7 @@ function draw() {
            translate(-width/2,-height/2);
            textSize(height/8.5);
            fill(255,240,0,255);
+           noStroke();
            text("Select A Surfer",width/5,height/6);
            stroke(255,240,0,255);
            line(width/7,height/5.5,width-width/7,height/5.5); //Underline
@@ -332,6 +336,7 @@ function draw() {
              quad(0,height-6*height/10,0,height-8*height/10,width,height-8*height/10,width,height-6*height/10);
            }
            textSize(height/14.5);
+           noStroke();
            fill(255,255,255,255);
            text("Superbug",width/4,height-1*height/13);
            text("Psych Bike",width/4,height-3.6*height/13);
@@ -348,6 +353,8 @@ function draw() {
            translate(0,-(height/13)*2.6*3);
            text("Speed",width-width/3.5,height-1.5*height/13);text("Mass",width-width/3.5,height-0.7*height/13);
            translate(0,(height/13)*2.6*3);
+
+           stroke(255);
            //Superbug Stats
            rectangle(width-width/6,height-0.915*height/13,height/60,height/30,255,240,0,255);
            rectangle(width-width/6.5,height-0.915*height/13,height/60,height/30,255,240,0,255);
@@ -383,6 +390,7 @@ function draw() {
            rectangle(width-width/6,height-3.505*height/13-abs(1.715*height/13-0.915*height/13),height/60,height/30,100,14,237,255);
            //Render the Sprites
            translate(0,(height/13)*2.6*2);
+
            Surfers[0].render(width/8,height-height/10,10,0,255,255,255);
            Surfers[1].render(width/8,height-3*height/10,10,1,255,255,255);
            Surfers[2].render(width/8,height-5*height/10,10,2,255,255,255);
@@ -468,7 +476,7 @@ function draw() {
 
            //Black Holes/Asteroids
            let Asteroiddistance;
-           let Asteroidmass = 30;
+           //let Asteroidmass = 30;
            let AsteroidInitialSpeed = 12;
            let BHdistance;
            let BHx = width/6;
@@ -488,7 +496,6 @@ function draw() {
            }
            surfergravity = 0; //Do the surfers relation to the black holes only once
            for(let j = 13; j >= 0; j=j-1) {
-             Asteroidmass = 4+j%4;
              xGravityAsteroid = 0;
              yGravityAsteroid = 0;
              AsteroidDestroyed=0;
@@ -688,14 +695,14 @@ function draw() {
                  BHy=yyyyyyyy;
                }
                //Calculate the surfer's gravity & corresponding motion only once when this loop is run against all of the asteroids
-               if(surfergravity==0){
+               if(surfergravity == 0){
                  if((abs(BHx-prevx)<(BHmass/4))&&(abs(BHy-prevy)<(BHmass/4))){
                    GameOver=1;
                    //Add the data to the database only once
                    DBEntry=1;
                  }
                  BlackHoles[i].render(BHmass,BHx,BHy,255);
-                 BHdistance=sqrt((BHx-prevx)*(BHx-prevx)+(BHy-prevy)*(BHy-prevy));
+                 BHdistance = sqrt((BHx-prevx)*(BHx-prevx)+(BHy-prevy)*(BHy-prevy));
                  //insert the surfer mass and BH mass into the equation
                  gforce= (surfMass*gConstant*(BHmass*0.8+BHmass*BHmass*0.0011))/(BHdistance*BHdistance+1);
                  denom=abs(prevx-BHx)+abs(prevy-BHy);
@@ -705,17 +712,16 @@ function draw() {
                  yGravity = yGravity + ratiotwo*gforce;
                }
                else{
-                 BHx=BlackHoles[i].xx;
-                 BHy=BlackHoles[i].yy;
+                 BHx = BlackHoles[i].xx;
+                 BHy = BlackHoles[i].yy;
                }
 
                if((abs(Asteroidx-BHx)<(BHmass/4)) && (abs(Asteroidy-BHy)<BHmass/4)){
-                 AsteroidDestroyed=1;
-
+                 AsteroidDestroyed = 1;
                }
 
                Asteroiddistance=sqrt((BHx-Asteroidx)*(BHx-Asteroidx)+(BHy-Asteroidy)*(BHy-Asteroidy));
-               gforce= (0.015*Asteroidmass*gConstant*BHmass)/(Asteroiddistance*Asteroiddistance+1);
+               gforce= (0.015 * Asteroids[j].mass * gConstant * BHmass)/(Asteroiddistance*Asteroiddistance+1);
                denom=abs(Asteroidx-BHx)+abs(Asteroidy-BHy);
                ratio = (BHx-Asteroidx)/denom;
                ratiotwo = (BHy-Asteroidy)/denom;
@@ -724,7 +730,7 @@ function draw() {
 
              }
 
-             if(AsteroidDestroyed==1 || (Asteroidx) < 0 || (Asteroidx) > width*1.2 || (Asteroidy) < 0 || (Asteroidy) > height){
+             if(AsteroidDestroyed == 1 || (Asteroidx) < 0 || (Asteroidx) > width*1.2 || (Asteroidy) < 0 || (Asteroidy) > height){
                AsteroidDestroyed=0;
                if(level==1){
                  Asteroids[j].priorx=-random(2,4);
@@ -757,8 +763,9 @@ function draw() {
                  Asteroids[j].priorx=-int(random(30,60));
                }
                Asteroids[j].priory=0;
-               Asteroidx=width*1.1;
+               Asteroidx = width*1.1;
                Asteroidy=random((height/100),height);
+
                if(Asteroidy>(height/2-(height/11)) && Asteroidy<(height/2+(height/11)) && level!=7){
                  if(delay%2==0){
                    Asteroidy=random(0,2*height/6);
@@ -767,24 +774,30 @@ function draw() {
                    Asteroidy=random(4*height/6,height);
                  }
                }
-               Asteroids[j].render(Asteroidmass,(Asteroidx+Asteroids[j].priorx),(Asteroidy+Asteroids[j].priory),Asteroidx,Asteroidy,1,1);
+               Asteroids[j].render((Asteroidx+Asteroids[j].priorx),(Asteroidy+Asteroids[j].priory),Asteroidx,Asteroidy,1,1);
 
              }
              else{
 
-               Asteroids[j].render(Asteroidmass,(Asteroidx+xGravityAsteroid+Asteroids[j].priorx),(Asteroidy+yGravityAsteroid+Asteroids[j].priory),Asteroidx,Asteroidy,1,1);
+               Asteroids[j].render((Asteroidx+xGravityAsteroid+Asteroids[j].priorx),(Asteroidy+yGravityAsteroid+Asteroids[j].priory),Asteroidx,Asteroidy,1,1);
              }
+
+
 
              Asteroids[j].priorx=((Asteroidx+xGravityAsteroid+Asteroids[j].priorx)-Asteroidx)*0.99;
              Asteroids[j].priory=((Asteroidy+yGravityAsteroid+Asteroids[j].priory)-Asteroidy)*0.99;
+             //Create an array with prior values and have the tails be more dynamic, curvy.
+            // if(timer % .75 == 0){
+             Asteroids[j].addToArray(Asteroids[j].xx, Asteroids[j].yy);
+           //}
 
-
-             if((abs(prevx-Asteroidx)<(Asteroidmass*2.5))&&(abs(Asteroidy-prevy)<(Asteroidmass*2.5))){
-               GameOver=1;
-               DBEntry=1;
+             if((abs(prevx - Asteroidx) < (Asteroids[j].radius*3.5)) && (abs(Asteroidy-prevy) < (Asteroids[j].radius*3.5))){
+               //Surfer Struck By Asteroid, please add in radius from the final sprites.
+               GameOver = 1;
+               DBEntry = 1;
              }
-             if(surfergravity==0){
-               surfergravity=surfergravity+1;
+             if(surfergravity == 0){
+               surfergravity = surfergravity + 1 ;
              }
            }
            initialAsteroid = 1;
@@ -800,6 +813,7 @@ function draw() {
            if(LevelChangeTrigger==1){
              GameOver=0;
              textSize(height/6.3);
+             stroke(0);
              fill(255,240,0,255);
              if(LevelChangeCount<50){
                text("Level Complete",width/9,height/2.8);
@@ -812,7 +826,7 @@ function draw() {
                gamePhase=4;
                level=level+1;
                //Change the next value here to reflect the last level which will trigger the victory sequence
-               if(level==11){
+               if(level == 11){
                  GameOver=2;
                  DBEntry=1;
                }
@@ -834,6 +848,7 @@ function draw() {
              }
              if(displayExtraLife>0){
                fill(120,255,140,255);
+               stroke(0);
                textSize(height/7.5);
                text("Extra Life +", width/4.2,height/3.5);
                displayExtraLife=displayExtraLife-1;
@@ -846,7 +861,7 @@ function draw() {
            let xsurf=mousex-prevx;
            let ysurf=mousey-prevy;
            levelTimer=levelTimer+1;
-           if(levelTimer>75){
+           if(levelTimer > 75){
              ratio = xsurf/(abs(xsurf)+abs(ysurf));
              ratiotwo = ysurf/(abs(xsurf)+abs(ysurf));
              xsurf=ratio*distance;
@@ -856,10 +871,11 @@ function draw() {
            else{
              if(levelStart==0){
                fill(255,240,0,255);
+               stroke(0);
                textSize(height/7.5);
                text("Awaiting Signal",width/6.6,height/3.5);
                var thisText="Lives: "+lifeCount;
-               fill(255,0,0,255);
+               stroke(0);
                text(thisText,width/3,height/1.8);
 
              }
@@ -867,11 +883,12 @@ function draw() {
 
 
                fill(255,240,0,255);
+               stroke(0);
                textSize(height/7.5);
                let myText="Lives: "+lifeCount;
-               text("Engage Thrusters!",width/8.25,height/3.5);
-               fill(255,0,0,255);
-               text(myText,width/3,height/1.8);
+               text("Engage Thrusters!", width/8.25, height/3.5);
+               //fill(255, 0, 0, 255);
+               text(myText, width / 3, height / 1.8);
              }
              xsurf=0;
              ysurf=0;
@@ -893,6 +910,7 @@ function draw() {
            }
            //Display what level it is
            fill(255,240,0,255);
+           stroke(0);
            textSize(height/20);
            text(int(level),width/40,height/20);
          }
@@ -900,9 +918,10 @@ function draw() {
        }
        //What happens after being eaten by a black hole or destroyed by an asteroid, have different sequences that occur
        else if(GameOver==1){
-         if(lifeCount>0){
+         if(lifeCount > 0){
            textSize(height/4.5);
-           fill(255,0,0,255);
+           fill(255,240,0,255);
+           stroke(0);
            text("Craft Lost",width/9,height/2.5);
            noStroke();
            if(craftLost<10){
@@ -911,7 +930,7 @@ function draw() {
            }
            if(craftLost>105){
              lifeCount=lifeCount-1;
-             if(lifeCount>0){
+             if(lifeCount > 0){
                gamePhase = 4;
                GameOver = 0;
              }
@@ -920,7 +939,7 @@ function draw() {
          }
          //If the lifeCount is at 0, then begin the Game Over sequence where any key or mouse press will return to the home screen
          if(lifeCount==0){
-           delay=delay+1;
+
            background(255,240,0,255);
            noStroke();
            fill(0,0,0,255);
@@ -932,33 +951,33 @@ function draw() {
            rect(width/1.6+width*sin(radians(delay)/4)/2,0,height/10,height);
 
 
-     fill(255,255,255,255);
-     stroke(0);
-     textSize(height/4.5);
-     text("Game Over",width/8.7,3*height/4);
-     if(DBEntry==1){
-       var data ={
-         name: playerName,
-         level: (level - 1),
-         surfer: surfType
-       }
-       ref.push(data);
-       DBEntry=0;
-     }
-     translate(width/2,height/3);
-     for(let i = 0;i<LINE_C;i=i+0.2){
-       fill(0);
-       stroke(0);
-       point(x(i+delay),y(i+delay));
-       point(z(i+delay),w(i+delay));
-     }
-     translate(-width/2,-height/3);
-     if(keyIsPressed || mouseIsPressed){
-       GameOver=0;
-       gamePhase=0;
-       delay=0;
-     }
-   }
+           fill(255,255,255,255);
+           stroke(0);
+           textSize(height/4.5);
+           text("Game Over",width/8.7,3*height/4);
+           if(DBEntry == 1){
+             var data ={
+               name: playerName,
+               level: (level - 1),
+               surfer: surfType
+             }
+             ref.push(data);
+             DBEntry = 0;
+           }
+           translate(width/2,height/3);
+           for(let i = 0;i<LINE_C;i=i+0.2){
+             fill(0);
+             stroke(0);
+             point(x(i+delay),y(i+delay));
+             point(z(i+delay),w(i+delay));
+           }
+           translate(-width/2,-height/3);
+           if(keyIsPressed || mouseIsPressed){
+             GameOver=0;
+             gamePhase=0;
+             delay=0;
+           }
+         }
  }
  //Set Gameover to 2 in order to reach the victory sequence, do this after the level reaches one over the total number
  else{
@@ -970,9 +989,9 @@ function draw() {
    }
    rotate(-PI*delay*0.0001);
    if(mouseIsPressed || keyIsPressed){
-     GameOver=0;
-     gamePhase=0;
-     delay=0;
+     GameOver = 0;
+     gamePhase = 0;
+     delay = 0;
    }
    flareon=300*cos(radians(delay/2));
    wave=wave+0.0001;
@@ -990,9 +1009,10 @@ function draw() {
    }
    translate(-width/2, -height/2);
    fill(255,240,0,255);
+   stroke(0);
    textSize(height/5);
    text("Victory",width/4,height/4);
-   if(DBEntry==1){
+   if(DBEntry == 1){
      var dataTwo ={
        name: playerName,
        level: 10,
@@ -1013,6 +1033,7 @@ function draw() {
 class Star {
   // float x; float y; float z;float pz;
   constructor() {
+    this.starSize = random(3, 6);
     // I place values in the variables
     this.x = random(-width/2, width/2);
     // note: height and width are the same: the canvas is a square.
@@ -1035,22 +1056,24 @@ class Star {
       this.pz = this.z;
     }
   }
-  show(uno,dos,tres,quatro) {
+  show(uno, dos, tres, quatro) {
+    //Add a twinkling factor for the stationary frames
     fill(uno,dos,tres,quatro);
     noStroke();
     let sx = map(this.x / this.z, 0, 1, 0, width/2);
     let sy = map(this.y / this.z, 0, 1, 0, height/2);
     // I use the z value to increase the star size between a range from 0 to 16.
-    let r = map(this.z, 0, width/2, 3, 0);
-    ellipse(sx, sy, r-0.8, r-0.8);
+    let r = map(this.z, 0, width/2, this.starSize, 0);
+    ellipse(sx, sy, r, r);
     let px = map(this.x / this.pz, 0, 1, 0, width/2);
     let py = map(this.y / this.pz, 0, 1, 0, height/2);
     this.pz = this.z;
     stroke(uno,dos,tres,quatro);
-    strokeWeight(1);
-    line(px, py, sx, sy);
+    strokeWeight(r);
+    //line(px, py, sx, sy);
   }
 }
+
 class Surfer {
   constructor() {
   }
@@ -1384,105 +1407,125 @@ class BH {
     this.gravity = constant;
     this.xx=0;
     this.yy=0;
-
   }
   applyForce() {
+
   }
-  render(mass,x,y,quatro) {
+  render(mass, x , y, quatro) {
     let radius = (width/1280)*mass/2;
     this.xx= x;
     this.yy=y;
     noStroke();
-    fill(255,15);
-    ellipse(x,y,radius*1.03,radius*1.03);
-    ellipse(x,y,radius*1.04,radius*1.04);
-    ellipse(x,y,radius*1.05,radius*1.05);
-    ellipse(x,y,radius*1.06,radius*1.06);
-    ellipse(x,y,radius*1.07,radius*1.07);
-    ellipse(x,y,radius*1.08,radius*1.08);
-    ellipse(x,y,radius*1.09,radius*1.09);
-    ellipse(x,y,radius*1.1,radius*1.1);
-    ellipse(x,y,radius*1.11,radius*1.11);
-    ellipse(x,y,radius*1.12,radius*1.12);
-    ellipse(x,y,radius*1.13,radius*1.13);
-    ellipse(x,y,radius*1.14,radius*1.14);
-    ellipse(x,y,radius*1.15,radius*1.15);
-
-    strokeWeight(0.5);
+    for(let r = 15; r > 1; r = r - .25 ){
+      fill(255, 255-noise(delay)*40, 255-noise(delay)*100, sqrt(50 * r));
+      ellipse(x,y,radius * r / 13.04, radius * r / 13.04);
+    }
     fill(0);
-    noStroke();
-    quad(x+radius*0.2/2,y+radius/2,x-radius*0.2/2,y+radius/2,x-radius*0.2/2,y-radius/2,x+radius*0.2/2,y-radius/2);
-    quad(x+radius*0.35/2,y+radius*0.95/2,x-radius*0.35/2,y+radius*0.95/2,x-radius*0.35/2,y-radius*0.95/2,x+radius*0.35/2,y-radius*0.95/2);
-    quad(x+radius*0.5/2,y+radius*0.89/2,x-radius*0.5/2,y+radius*0.89/2,x-radius*0.5/2,y-radius*0.89/2,x+radius*0.5/2,y-radius*0.89/2);
-    quad(x+radius*0.6/2,y+radius*0.82/2,x-radius*0.6/2,y+radius*0.82/2,x-radius*0.6/2,y-radius*0.82/2,x+radius*0.6/2,y-radius*0.82/2);
-    quad(x+radius*0.71/2,y+radius*0.71/2,x-radius*0.71/2,y+radius*0.71/2,x-radius*0.71/2,y-radius*0.71/2,x+radius*0.71/2,y-radius*0.71/2);
-    quad(x+radius*0.82/2,y+radius*0.6/2,x-radius*0.82/2,y+radius*0.6/2,x-radius*0.82/2,y-radius*0.6/2,x+radius*0.82/2,y-radius*0.6/2);
-    quad(x+radius*0.89/2,y+radius*0.5/2,x-radius*0.89/2,y+radius*0.5/2,x-radius*0.89/2,y-radius*0.5/2,x+radius*0.89/2,y-radius*0.5/2);
-    quad(x+radius*0.95/2,y+radius*0.35/2,x-radius*0.95/2,y+radius*0.35/2,x-radius*0.95/2,y-radius*0.35/2,x+radius*0.95/2,y-radius*0.35/2);
-    quad(x+radius*1/2,y+radius*0.2/2,x-radius*1/2,y+radius*0.2/2,x-radius*1/2,y-radius*0.2/2,x+radius*1/2,y-radius*0.2/2);
+    ellipse(x, y, radius, radius);
+    //fill(255,15);
+    // ellipse(x,y,radius*1.03,radius*1.03);
+    // ellipse(x,y,radius*1.04,radius*1.04);
+    // ellipse(x,y,radius*1.05,radius*1.05);
+    // ellipse(x,y,radius*1.06,radius*1.06);
+    // ellipse(x,y,radius*1.07,radius*1.07);
+    // ellipse(x,y,radius*1.08,radius*1.08);
+    // ellipse(x,y,radius*1.09,radius*1.09);
+    // ellipse(x,y,radius*1.1,radius*1.1);
+    // ellipse(x,y,radius*1.11,radius*1.11);
+    // ellipse(x,y,radius*1.12,radius*1.12);
+    // ellipse(x,y,radius*1.13,radius*1.13);
+    // ellipse(x,y,radius*1.14,radius*1.14);
+    // ellipse(x,y,radius*1.15,radius*1.15);
+
+    // fill(0);
+    // noStroke();
+    // quad(x+radius*0.2/2,y+radius/2,x-radius*0.2/2,y+radius/2,x-radius*0.2/2,y-radius/2,x+radius*0.2/2,y-radius/2);
+    // quad(x+radius*0.35/2,y+radius*0.95/2,x-radius*0.35/2,y+radius*0.95/2,x-radius*0.35/2,y-radius*0.95/2,x+radius*0.35/2,y-radius*0.95/2);
+    // quad(x+radius*0.5/2,y+radius*0.89/2,x-radius*0.5/2,y+radius*0.89/2,x-radius*0.5/2,y-radius*0.89/2,x+radius*0.5/2,y-radius*0.89/2);
+    // quad(x+radius*0.6/2,y+radius*0.82/2,x-radius*0.6/2,y+radius*0.82/2,x-radius*0.6/2,y-radius*0.82/2,x+radius*0.6/2,y-radius*0.82/2);
+    // quad(x+radius*0.71/2,y+radius*0.71/2,x-radius*0.71/2,y+radius*0.71/2,x-radius*0.71/2,y-radius*0.71/2,x+radius*0.71/2,y-radius*0.71/2);
+    // quad(x+radius*0.82/2,y+radius*0.6/2,x-radius*0.82/2,y+radius*0.6/2,x-radius*0.82/2,y-radius*0.6/2,x+radius*0.82/2,y-radius*0.6/2);
+    // quad(x+radius*0.89/2,y+radius*0.5/2,x-radius*0.89/2,y+radius*0.5/2,x-radius*0.89/2,y-radius*0.5/2,x+radius*0.89/2,y-radius*0.5/2);
+    // quad(x+radius*0.95/2,y+radius*0.35/2,x-radius*0.95/2,y+radius*0.35/2,x-radius*0.95/2,y-radius*0.35/2,x+radius*0.95/2,y-radius*0.35/2);
+    // quad(x+radius*1/2,y+radius*0.2/2,x-radius*1/2,y+radius*0.2/2,x-radius*1/2,y-radius*0.2/2,x+radius*1/2,y-radius*0.2/2);
   }
 }
 class Asteroid {
 
-  constructor() {
+  constructor(m) {
+    this.priorxArray = [];
+    this.prioryArray = [];
     this.priorx=0;
     this.priory=0;
     this.secondpriorx=0;
     this.secondpriory=0;
     this.xx=0;
     this.yy=0;
+    this.mass = m;
+    this.radius = this.mass/2;
     //this.secondpriorx=0;
   }
   applyForce() {
   }
-  render(mass, x, y, prevx,prevy,prevxx,prevyy) {
+  addToArray(px, py){
+    if(this.priorxArray.length >= 10){
+      this.priorxArray.pop();
+      this.prioryArray.pop();
+    }
+    this.priorxArray.unshift(px);
+    this.prioryArray.unshift(py);
+  }
+  render(x, y, prevx, prevy, prevxx, prevyy) {
     //Make sure the asteroids have a lot less mass so they don't fall in as easily
     this.xx=x;
     this.yy=y;
     // let secondpriorx;
     // let secondpriory;
-    let tailLength=19;
+
     let ratio;
     let ratioy;
-    let radius=mass/2;
-    noStroke();
-    fill(255,0,0,28);
-    ratio = (prevx-this.secondpriorx)/(abs(prevx-this.secondpriorx)+abs(prevy-this.secondpriory));
-    ratioy = (prevy-this.secondpriory)/(abs(prevx-this.secondpriorx)+abs(prevy-this.secondpriory));
-    ellipse(prevx-tailLength*ratio*-0.2,prevy-tailLength*ratioy*-0.2,radius*6,radius*6);
-    ellipse(prevx-tailLength*ratio*0,prevy-tailLength*ratioy*0,radius*5.8,radius*5.8);
-    fill(255,0,0,24);
-    ellipse(prevx-tailLength*ratio*0.2,prevy-tailLength*ratioy*0.2,radius*5.6,radius*5.6);
-    ellipse(prevx-tailLength*ratio*0.4,prevy-tailLength*ratioy*0.4,radius*5.4,radius*5.4);
-    fill(255,0,0,20);
-    ellipse(prevx-tailLength*ratio*0.6,prevy-tailLength*ratioy*0.6,radius*5.2,radius*5.2);
-    ellipse(prevx-tailLength*ratio*0.8,prevy-tailLength*ratioy*0.8,radius*5.0,radius*5.0);
-    fill(255,0,0,16);
-    ellipse(prevx-tailLength*ratio*1,prevy-tailLength*ratioy*1,radius*4.8,radius*4.8);
-    ellipse(prevx-tailLength*ratio*1.2,prevy-tailLength*ratioy*1.2,radius*4.6,radius*4.6);
-    fill(255,0,0,12);
-    ellipse(prevx-tailLength*ratio*1.4,prevy-tailLength*ratioy*1.4,radius*4.4,radius*4.4);
-    ellipse(prevx-tailLength*ratio*1.6,prevy-tailLength*ratioy*1.6,radius*4.2,radius*4.2);
-    fill(255,0,0,8);
-    ellipse(prevx-tailLength*ratio*1.8,prevy-tailLength*ratioy*1.8,radius*4.0,radius*4.0);
+    //let radius = this.mass/2;
 
+
+    // ratio = (prevx-this.secondpriorx)/(abs(prevx-this.secondpriorx)+abs(prevy-this.secondpriory));
+    // ratioy = (prevy-this.secondpriory)/(abs(prevx-this.secondpriorx)+abs(prevy-this.secondpriory));
     strokeWeight(0.1);
     stroke(255);
-    fill(255,0,0,255);
-    stroke(255,255);
-    quad(x+radius*2,y+radius,x+radius*2,y-radius,x-radius*2,y-radius,x-radius*2,y+radius);
-    quad(x+radius,y-radius*2,x+radius,y+radius*2, x-radius,y+radius*2,x-radius,y-radius*2);
-    quad(x+radius*1.5,y-radius*1.5,x-radius*1.5,y-radius*1.5, x-radius*1.5,y+radius*1.5,x+radius*1.5,y+radius*1.5);
-    stroke(255,0,0,255);
+    fill(255, 255);
+    stroke(255,210,0,255);
+    ellipse(x, y, this.radius*3.5, this.radius*3.5);
+    noStroke();
+    fill(255,0,200);
+    let angleOfTail = 0;
+    beginShape();
+    for(let i = 0; i < this.priorxArray.length; i = i + 1){
+      //fill(255, 255, 255, 50 - sqrt(i) * 10);
+      if(i == 0){
+        angleOfTail = atan((y - this.prioryArray[i])/(x - this.priorxArray[i]));
+
+      }
+      else{
+          angleOfTail = atan((this.prioryArray[i-1] - this.prioryArray[i])/(this.priorxArray[i-1] - this.priorxArray[i]));
+
+      }
+      //angleOfTail =
+      curveVertex(this.priorxArray[i])+5*(1/tan(angleOfTail+PI/2)),this.prioryArray[i]+5*tan(angleOfTail+PI/2));
+      //ellipse(this.priorxArray[i], this.prioryArray[i], this.radius*3.5 - this.radius*sqrt(i)*1, this.radius*3.5 - this.radius*sqrt(i)*1);
+    }
+    endShape();
+
+
+    // quad(x+radius*2,y+radius,x+radius*2,y-radius,x-radius*2,y-radius,x-radius*2,y+radius);
+    // quad(x+radius,y-radius*2,x+radius,y+radius*2, x-radius,y+radius*2,x-radius,y-radius*2);
+    // quad(x+radius*1.5,y-radius*1.5,x-radius*1.5,y-radius*1.5, x-radius*1.5,y+radius*1.5,x+radius*1.5,y+radius*1.5);
     this.secondpriorx=prevx;
     this.secondpriory=prevy;
 
   }
 }
 
-function rectangle(x, y,w, h, r, g, b, o){
-  noStroke();
-  strokeWeight(0.1);
+function rectangle(x, y, w, h, r, g, b, o){
+  strokeWeight(0.5);
   stroke(255,255);
   fill(r,g,b,o);
   quad(x-w/2,y-h/2,x-w/2,y+h/2,x+w/2,y+h/2,x+w/2,y-h/2);
@@ -1588,6 +1631,7 @@ function gotData(data){
   var scoress=data.val();
   var keys=Object.keys(scoress);
   var skipper=0;
+
   for(var i=0;i<keys.length;i++){
     var k=keys[i];
     var levels=scoress[k].level;
@@ -1638,6 +1682,7 @@ function gotData(data){
     if(arr[j][2]==3){
       fill(100,14,237,255);
     }
+    stroke(0);
     text(arr[j][0],width/3.3,height*(j+3.4)/13);
     text(arr[j][1],2.7*width/4,height*(j+3.4)/13);
   }
