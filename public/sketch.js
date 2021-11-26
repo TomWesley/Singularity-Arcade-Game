@@ -69,7 +69,7 @@ let initialAsteroid = 0;
 let AsteroidDestroyed=0;
 
 //Surfer/Player Variables
-let surfergravity=0;
+let surfergravity = 0;
 let Craftselectioncount; //Helps so a mouse click on the opening screen doesn't also select your craft
 let lifeCount=1;
 let extraLife=1;
@@ -1495,7 +1495,7 @@ class Asteroid {
     stroke(255,210,0,255);
     ellipse(x, y, this.radius*3.5, this.radius*3.5);
     noStroke();
-    fill(255,0,200);
+    fill(255,200);
     let angleOfTail = 0;
     beginShape();
     for(let i = 0; i < this.priorxArray.length; i = i + 1){
@@ -1509,8 +1509,8 @@ class Asteroid {
 
       }
       //angleOfTail =
-      curveVertex(this.priorxArray[i])+5*(1/tan(angleOfTail+PI/2)),this.prioryArray[i]+5*tan(angleOfTail+PI/2));
-      //ellipse(this.priorxArray[i], this.prioryArray[i], this.radius*3.5 - this.radius*sqrt(i)*1, this.radius*3.5 - this.radius*sqrt(i)*1);
+      //curveVertex(this.priorxArray[i]+5*(1/tan(angleOfTail+PI/2)),this.prioryArray[i]+5*tan(angleOfTail+PI/2));
+      ellipse(this.priorxArray[i], this.prioryArray[i], this.radius*3.5 - this.radius*sqrt(i)*1, this.radius*3.5 - this.radius*sqrt(i)*1);
     }
     endShape();
 
