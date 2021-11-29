@@ -107,7 +107,7 @@ function preload() {
   imgFive=loadImage("SpiralGal.jpg");
   imgSeven=loadImage("BlueGal.jpg");
   imgNine=loadImage("WDwarf.jpg");
-  imgPortal=loadImage("SingularityPortal.jpeg");
+  imgPortal=loadImage("ExitPortal.png");
 }
 
 
@@ -184,12 +184,12 @@ function draw() {
          rect(3 * width / 5,4 * height / 9, width / 5, height / 9);
        }
        if(mouseIsPressed && mouseX<(width-width/5) && mouseX>3*width/5 && mouseY<5*height/9 && mouseY>4*height/9 && input.value().length > 0){
-         fullscreen(full);
+         //fullscreen(full);
          playerName=addName();
          playerName=playerName.slice(0,8);
          input.remove();
          mouseIsPressed=false;
-         resizeCanvas(displayWidth, displayHeight);
+         //resizeCanvas(displayWidth, displayHeight);
        }
      }
      else{
@@ -450,7 +450,7 @@ function draw() {
              turnoff=turnoff+1;
            }
            background(0,0,0,255);
-           image(imgPortal,4.8*width/6,height/2-width/10.66,width/3,width/5.33);
+           image(imgPortal, 9*width/10, height/2-width/20,width/10,width/10);
            translate(width/2,height/2);
            for (let i = 0; i < Stars.length; i++) {
              Stars[i].show(255,255,255,255);
@@ -787,9 +787,8 @@ function draw() {
              Asteroids[j].priorx=((Asteroidx+xGravityAsteroid+Asteroids[j].priorx)-Asteroidx)*0.99;
              Asteroids[j].priory=((Asteroidy+yGravityAsteroid+Asteroids[j].priory)-Asteroidy)*0.99;
              //Create an array with prior values and have the tails be more dynamic, curvy.
-            // if(timer % .75 == 0){
+
              Asteroids[j].addToArray(Asteroids[j].xx, Asteroids[j].yy);
-           //}
 
              if((abs(prevx - Asteroidx) < (Asteroids[j].radius*3.5)) && (abs(Asteroidy-prevy) < (Asteroids[j].radius*3.5))){
                //Surfer Struck By Asteroid, please add in radius from the final sprites.
@@ -802,11 +801,9 @@ function draw() {
            }
            initialAsteroid = 1;
 
-
-
            //The trigger for beating the level, indicate the level completion and have brief break
            // image(imgPortal,4.8*width/6,height/2-width/10.66,width/3,width/5.33);
-           if(LevelChangeTrigger==0 && GameOver==0 && 46.25*width/50<prevx && prevy<(height/2+height/9.41) && prevy>(height/2-height/9.41)){
+           if(LevelChangeTrigger==0 && GameOver==0 && 44*width/50 < prevx && prevy < (height/2+width/17.8) && prevy > (height/2-width/17.8)){
              LevelChangeCount=0;
              LevelChangeTrigger=1;
            }
@@ -856,8 +853,8 @@ function draw() {
            }
 
            //Surfer
-           let mousex=mouseX;
-           let mousey=mouseY;
+           let mousex= int(mouseX);
+           let mousey= int(mouseY);
            let xsurf=mousex-prevx;
            let ysurf=mousey-prevy;
            levelTimer=levelTimer+1;
@@ -949,8 +946,6 @@ function draw() {
            rect(width/1.2+width*sin(radians(delay)/8)/2,0,height/10,height);
            rect(width/7+width*sin(cos(radians(delay))/12)/2,0,height/10,height);
            rect(width/1.6+width*sin(radians(delay)/4)/2,0,height/10,height);
-
-
            fill(255,255,255,255);
            stroke(0);
            textSize(height/4.5);
@@ -1369,6 +1364,7 @@ class Surfer {
       square(x+len*7,y-len*3,len);
       square(x-len*7,y-len*4,len);
       square(x+len*7,y-len*4,len);
+      
       fill(255,255,255,255);
       square(x+len,y-len,len);
       square(x-len,y-len,len);
@@ -1462,7 +1458,7 @@ class Asteroid {
     this.xx=0;
     this.yy=0;
     this.mass = m;
-    this.radius = this.mass/2;
+    this.radius = this.mass * .75;
     //this.secondpriorx=0;
   }
   applyForce() {
@@ -1493,26 +1489,39 @@ class Asteroid {
     stroke(255);
     fill(255, 255);
     stroke(255,210,0,255);
-    ellipse(x, y, this.radius*3.5, this.radius*3.5);
-    noStroke();
-    fill(255,200);
+    let speed = abs(this.priorxArray[9]-x)
+    colorMode(HSB);
+
+
     let angleOfTail = 0;
+    noFill();
+    stroke(255);
     beginShape();
     for(let i = 0; i < this.priorxArray.length; i = i + 1){
-      //fill(255, 255, 255, 50 - sqrt(i) * 10);
+      //fill(255-speed, 255, 50 - sqrt(i) * 10);
       if(i == 0){
-        angleOfTail = atan((y - this.prioryArray[i])/(x - this.priorxArray[i]));
-
+        angleOfTail = 90-57.2958 * atan((y - this.prioryArray[i])/(x - this.priorxArray[i]));
+        if(x < width){
+        curveVertex(x+cos(radians(angleOfTail+PI/2)),y+sin(radians(angleOfTail+PI/2)));
+      }
       }
       else{
-          angleOfTail = atan((this.prioryArray[i-1] - this.prioryArray[i])/(this.priorxArray[i-1] - this.priorxArray[i]));
-
+          angleOfTail = 90-57.2958 * atan((this.prioryArray[i-1] - this.prioryArray[i])/(this.priorxArray[i-1] - this.priorxArray[i]));
+          if(x < width){
+          curveVertex(this.priorxArray[i-1]+cos(radians(angleOfTail+PI/2)),this.prioryArray[i-1]+sin(radians(angleOfTail+PI/2)));
+        }
       }
+      //console.log(57.2958*atan(abs(this.prioryArray[i-1] - this.prioryArray[i])/abs(this.priorxArray[i-1] - this.priorxArray[i])));
       //angleOfTail =
-      //curveVertex(this.priorxArray[i]+5*(1/tan(angleOfTail+PI/2)),this.prioryArray[i]+5*tan(angleOfTail+PI/2));
-      ellipse(this.priorxArray[i], this.prioryArray[i], this.radius*3.5 - this.radius*sqrt(i)*1, this.radius*3.5 - this.radius*sqrt(i)*1);
+
+      //ellipse(this.priorxArray[i], this.prioryArray[i], this.radius*3.5 - this.radius*sqrt(i)*1, this.radius*3.5 - this.radius*sqrt(i)*1);
     }
+    curveVertex(this.priorxArray[this.priorxArray.length-1],this.prioryArray[this.priorxArray.length-1]);
+
     endShape();
+    fill(255-speed, 255, 255);
+    ellipse(x, y, this.radius*3.5, this.radius*3.5);
+    colorMode(RGB);
 
 
     // quad(x+radius*2,y+radius,x+radius*2,y-radius,x-radius*2,y-radius,x-radius*2,y+radius);
