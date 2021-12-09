@@ -14,6 +14,8 @@ let imgSeven;
 let imgNine;
 let imgPortal;
 
+let finalPosition;
+
 //Arrays
 let Stars = [];
 let Surfers = [];
@@ -112,6 +114,7 @@ function preload() {
 
 
 function setup() {
+  finalPosition= createVector(0, 0);
 
   createCanvas(1280,720);
 
@@ -170,6 +173,7 @@ function draw() {
          Stars[i].update();
          Stars[i].show(255,255,255,255);
        }
+
        textFont(title);
        stroke(0);
        fill(255,240,0,255);
@@ -200,7 +204,7 @@ function draw() {
 
          cursor(CROSS);
 
-         if(gamePhase==-1){
+         if(gamePhase == 1){
            background(0);
            speed=0.9;
            translate(width/2,height/2);
@@ -252,7 +256,6 @@ function draw() {
              Stars[i].update();
              Stars[i].show(255,255,255,255);
            }
-
 
            translate(-width/2,-height/2);
            lifeCount=3; //Reset the number of lives each time the game is restarted
@@ -853,16 +856,18 @@ function draw() {
            }
 
            //Surfer
-           let mousex= int(mouseX);
-           let mousey= int(mouseY);
+           let mousex = mouseX;
+           let mousey = mouseY;
+           let mouseVector;
+           mouseVector = createVector(mousex, mousey);
            let xsurf=mousex-prevx;
            let ysurf=mousey-prevy;
            levelTimer=levelTimer+1;
            if(levelTimer > 75){
              ratio = xsurf/(abs(xsurf)+abs(ysurf));
              ratiotwo = ysurf/(abs(xsurf)+abs(ysurf));
-             xsurf=ratio*distance;
-             ysurf=ratiotwo*distance;
+             xsurf = ratio*distance;
+             ysurf = ratiotwo*distance;
 
            }
            else{
@@ -893,18 +898,29 @@ function draw() {
              yGravity=0;
              prevx=width/12;
              prevy=height/2;
+             finalPosition.x = width / 12;
+             finalPosition.y = height / 2;
+
              GameOver=0;
            }
-           if(((abs(mousex-prevx)+abs(prevxx))<10.5)&&((abs(mousey-prevy)+abs(prevyy))<10.5)){
-             Surfers[int(surfType)].render(int(prevx),int(prevy),10,surfType,surfRed,surfBlue,surfGreen);
-           }
-           else{
-             Surfers[int(surfType)].render(int(prevx+xsurf+xGravity+prevxx),int(prevy+ysurf+yGravity+prevyy),10,surfType,surfRed,surfBlue,surfGreen);
+           // if(((abs(mousex-prevx)+abs(prevxx))<10.5)&&((abs(mousey-prevy)+abs(prevyy))<10.5)){
+           //   //Surfers[int(surfType)].render(int(prevx),int(prevy),10,surfType,surfRed,surfBlue,surfGreen);
+           // }
+           // else{
+             // finalPosition.x = finalPosition.x + mouseVector.x;
+             // finalPosition.y = finalPosition.y + mouseVector.y;
+             let force = p5.Vector.sub(finalPosition, mouseVector);
+             // let distanceSq = force.magSq();
+             // let G = 1;
+             //let strength = G *
+             Surfers[int(surfType)].render(finalPosition.x ,finalPosition.y ,10,surfType,surfRed,surfBlue,surfGreen);
+
+             //Surfers[int(surfType)].render(int(prevx+xsurf+xGravity+prevxx),int(prevy+ysurf+yGravity+prevyy),10,surfType,surfRed,surfBlue,surfGreen);
              prevx=prevx+xsurf+xGravity+prevxx;
              prevy=prevy+ysurf+yGravity+prevyy;
              prevxx=xsurf+xGravity;
              prevyy=ysurf+yGravity;
-           }
+           //}
            //Display what level it is
            fill(255,240,0,255);
            stroke(0);
@@ -1138,59 +1154,84 @@ class Surfer {
     }
     else if(quatro==1){
       //Psych Bike
-      noStroke();
-      fill(255,174,204,255);
 
-      square(x,y,len);
-      square(x+len,y,len);
-      square(x+len*2,y,len);
-      square(x+len*2,y+len,len);
-      square(x+len*2,y-len,len);
-      square(x+len*2,y-len*2,len);
-      square(x+len,y-len*2,len);
-      square(x,y-len*2,len);
-      square(x-len,y,len);
-      square(x-len*2,y,len);
-      square(x-len*2,y+len,len);
-      square(x-len*2,y-len,len);
-      square(x-len*2,y-len*2,len);
-      square(x-len,y-len*2,len);
-      square(x,y-len*2,len);
-      square(x,y+len*2,len);
-      square(x-len,y+len*2,len);
-      square(x+len,y+len*2,len);
-      square(x-len*2,y+len*3,len);
-      square(x+len*2,y+len*3,len);
-      square(x-len*3,y+len*3,len);
-      square(x+len*3,y+len*3,len);
-      square(x-len*4,y+len*4,len);
-      square(x+len*4,y+len*4,len);
-      square(x-len*3,y-len*2,len);
-      square(x+len*3,y-len*2,len);
-      square(x-len*4,y-len*2,len);
-      square(x+len*4,y-len*2,len);
-      square(x-len*5,y-len*2,len);
-      square(x+len*5,y-len*2,len);
-      square(x-len*5,y-len*3,len);
-      square(x+len*5,y-len*3,len);
-      square(x-len*5,y-len,len);
-      square(x+len*5,y-len,len);
+      let wid = len*6;
+      stroke(255,174,204,255);
+      noFill();
+          strokeWeight(3);
+      curve(x-wid*4,y-wid,x-wid,y-wid*.6,x-wid,y+wid*.6,x-wid*4,y+wid);
+      curve(x+wid*4,y-wid,x+wid,y-wid*.6,x+wid,y+wid*.6,x+wid*4,y+wid);
+      curve(x+wid*2,y-wid,x-wid*.1,y+wid*.5,x-wid*.15, y+wid*1.3, x+wid*2, y+wid);
+      curve(x-wid*2,y-wid,x+wid*.1,y+wid*.5,x+wid*.15, y+wid*1.3, x-wid*2, y+wid);
+
+      line(x+wid*.6, y, x-wid*.6,y);
+      strokeWeight(1);
       fill(198,220,255,255);
-      square(x,y+len,len);
-      square(x-len,y+len,len);
-      square(x+len,y+len,len);
-      square(x,y+len*3,len);
-      square(x-len,y+len*3,len);
-      square(x+len,y+len*3,len);
-      square(x,y+len*4,len);
-      square(x-len*5,y,len);
-      square(x+len*5,y,len);
-      square(x-len*4,y,len);
-      square(x+len*4,y,len);
-      square(x-len*5,y-len*4,len);
-      square(x+len*5,y-len*4,len);
-      square(x-len*4,y-len*4,len);
-      square(x+len*4,y-len*4,len);
+          stroke(0);
+          ellipse(x-wid,y-wid*.6,wid*.5,wid*.5);
+          ellipse(x-wid,y+wid*.6,wid*.5,wid*.5);
+          ellipse(x+wid,y-wid*.6,wid*.5,wid*.5);
+          ellipse(x+wid,y+wid*.6, wid*.5,wid*.5);
+      ellipse(x+wid*.15, y+wid*1.3,wid*.25,wid*.25);
+      ellipse(x-wid*.15, y+wid*1.3,wid*.25,wid*.25);
+      fill(255,174,204,255);
+      noStroke();
+      ellipse(x,y,wid*.58,wid*.58);
+
+      triangle(x-wid*.3, y, x+wid*.3, y, x, y+wid);
+      fill(198,220,255,255);
+      stroke(0);
+      quad(x,y-wid*.2,x+wid*.15,y+wid*.2,x,y+wid*.8,x-wid*.15,y+wid*.2);
+      // square(x,y,len);
+      // square(x+len,y,len);
+      // square(x+len*2,y,len);
+      // square(x+len*2,y+len,len);
+      // square(x+len*2,y-len,len);
+      // square(x+len*2,y-len*2,len);
+      // square(x+len,y-len*2,len);
+      // square(x,y-len*2,len);
+      // square(x-len,y,len);
+      // square(x-len*2,y,len);
+      // square(x-len*2,y+len,len);
+      // square(x-len*2,y-len,len);
+      // square(x-len*2,y-len*2,len);
+      // square(x-len,y-len*2,len);
+      // square(x,y-len*2,len);
+      // square(x,y+len*2,len);
+      // square(x-len,y+len*2,len);
+      // square(x+len,y+len*2,len);
+      // square(x-len*2,y+len*3,len);
+      // square(x+len*2,y+len*3,len);
+      // square(x-len*3,y+len*3,len);
+      // square(x+len*3,y+len*3,len);
+      // square(x-len*4,y+len*4,len);
+      // square(x+len*4,y+len*4,len);
+      // square(x-len*3,y-len*2,len);
+      // square(x+len*3,y-len*2,len);
+      // square(x-len*4,y-len*2,len);
+      // square(x+len*4,y-len*2,len);
+      // square(x-len*5,y-len*2,len);
+      // square(x+len*5,y-len*2,len);
+      // square(x-len*5,y-len*3,len);
+      // square(x+len*5,y-len*3,len);
+      // square(x-len*5,y-len,len);
+      // square(x+len*5,y-len,len);
+      // fill(198,220,255,255);
+      // square(x,y+len,len);
+      // square(x-len,y+len,len);
+      // square(x+len,y+len,len);
+      // square(x,y+len*3,len);
+      // square(x-len,y+len*3,len);
+      // square(x+len,y+len*3,len);
+      // square(x,y+len*4,len);
+      // square(x-len*5,y,len);
+      // square(x+len*5,y,len);
+      // square(x-len*4,y,len);
+      // square(x+len*4,y,len);
+      // square(x-len*5,y-len*4,len);
+      // square(x+len*5,y-len*4,len);
+      // square(x-len*4,y-len*4,len);
+      // square(x+len*4,y-len*4,len);
     }
     else if(quatro==2){
       //The Compiler
@@ -1364,7 +1405,7 @@ class Surfer {
       square(x+len*7,y-len*3,len);
       square(x-len*7,y-len*4,len);
       square(x+len*7,y-len*4,len);
-      
+
       fill(255,255,255,255);
       square(x+len,y-len,len);
       square(x-len,y-len,len);
