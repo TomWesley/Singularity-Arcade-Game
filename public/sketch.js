@@ -303,10 +303,10 @@ function draw() {
            prevy=height/2;
          }
          else if(gamePhase==2){
-
+           //Surfer Selection Page when gamePhase=2
 
            turnoff=0;
-           //Surfer Selection Page when gamePhase=2
+
            background(0);
            translate(width/2,height/2);
            rotate(PI*delay/900);
