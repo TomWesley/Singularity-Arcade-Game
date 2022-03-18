@@ -1,8 +1,8 @@
 //Copyright © 2019 Tom Wesley
 //SINGULARITY: This original novelty arcade game allows users pilot a Spacecraft which surfs on the gravitational waves of black holes to explore various galaxies.
 //Coder: Thomas Wesley
-//Last Edit 7/1/2021
-//Notes - Add some aliens in the top left corner that shoots every 3 seconds, on levels 9 & ten. Change the galaxy color based on level.
+//Last Edit 3/17/2022
+//Notes - Add some aliens in the top left corner that shoots every 3 seconds, for levels 10-15. Change the galaxy color based on level.
 //Current Level Count - 10
 
 //Variable Declarations
@@ -259,8 +259,10 @@ function draw() {
         textFont(title)
         translate(width / 2, height / 2)
         if (10 + delay / 220 < 10000) {
-          speed = delay / 500 //The Stars speed will increase over time
+          //The Stars speed will increase over time
+          speed = delay / 500
         } else {
+          //Fix a stopping speed
           speed = 20
         }
         for (let i = 0; i < Stars.length; i++) {
@@ -278,12 +280,12 @@ function draw() {
           fill(255, 240, 0, 255)
         }
         stroke(255, 255 - (255 - delay))
-
-        text('SINGULARITY', width / 13.3, height / 2)
+        textAlign(CENTER)
+        text('SINGULARITY', width / 2, height / 2)
 
         if (delay > 150) {
           textSize(width / 19.5)
-          text('View Leaderboard', 10 + width / 4, height - height / 4)
+          text('View Leaderboard', width / 2, height - height / 4)
           stroke(255, 255)
           fill(255, 150)
           if (
@@ -307,7 +309,8 @@ function draw() {
             keyIsPressed = false
           }
         }
-        if (delay > 30) {
+        textAlign(LEFT)
+        if (delay > 40) {
           //Delay the ability to exit the selection screen so the previous click does not trigger it accidentally
 
           if (
@@ -329,8 +332,8 @@ function draw() {
         }
         prevx = width / 12
         prevy = height / 2
-      } else if (gamePhase == 2) {
-        //Surfer Selection Page when gamePhase=2
+      } else if (gamePhase === 2) {
+        //Surfer Selection Page when gamePhase = 2
 
         turnoff = 0
 
@@ -346,7 +349,9 @@ function draw() {
         textSize(height / 8.5)
         fill(255, 240, 0, 255)
         noStroke()
-        text('Select A Surfer', width / 5, height / 6)
+        textAlign(CENTER)
+        text('Select A Surfer', width / 2, height / 6)
+        textAlign(LEFT)
         stroke(255, 240, 0, 255)
         line(width / 7, height / 5.5, width - width / 7, height / 5.5) //Underline
         //Display the surfer sprites and stats here
