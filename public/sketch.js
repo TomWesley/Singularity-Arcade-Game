@@ -93,7 +93,8 @@ let full = true
 //User Input Varibles
 let input
 let button
-let nameIn = 0
+let nameIn
+
 let id
 let playerName = ''
 let DBEntry
@@ -116,7 +117,7 @@ function setup() {
   finalPosition = createVector(0, 0)
 
   createCanvas(1280, 720)
-
+  //storeItem('nameIn', nameIn)
   //Create arrays of the class objects to be utilized in the draw phase
   for (let i = 0; i < 1000; i++) {
     Stars[i] = new Star()
@@ -131,10 +132,10 @@ function setup() {
     Surfers[i] = new Surfer()
   }
 
-  let Asteroidx = width / 2
-  let Asteroidy = height / 2
+  // let Asteroids[j].xx = width / 2
+  // let Asteroids[j].yy = height / 2
 
-  var firebaseConfig = {
+  const firebaseConfig = {
     apiKey: 'AIzaSyC7KRHKPJUlp997AFgUN1FwwbWxOZf1mII',
     authDomain: 'singularity-c216f.firebaseapp.com',
     databaseURL: 'https://singularity-c216f.firebaseio.com',
@@ -164,7 +165,7 @@ function draw() {
   var ref = database.ref('scores')
 
   cursor(CROSS)
-  if (nameIn == 0) {
+  if (getItem('nameIn') != 1) {
     background(0)
     speed = 0.8
     for (let i = 0; i < Stars.length; i++) {
@@ -206,6 +207,7 @@ function draw() {
       //resizeCanvas(displayWidth, displayHeight);
     }
   } else {
+    input.remove()
     //incremental variable that increases by one each frame
     delay = delay + 1
 
@@ -849,7 +851,7 @@ function draw() {
         }
 
         //Black Holes/Asteroids
-        let Asteroiddistance
+        let asteroidDistance
         //let Asteroidmass = 30;
         let AsteroidInitialSpeed = 12
         let BHdistance
@@ -869,20 +871,17 @@ function draw() {
           BHx = width / 5.5
         }
         surfergravity = 0 //Do the surfers relation to the black holes only once
+
         for (let j = 13; j >= 0; j = j - 1) {
           xGravityAsteroid = 0
           yGravityAsteroid = 0
           AsteroidDestroyed = 0
           if (initialAsteroid == 0) {
-            Asteroidy = random(0, height)
-            Asteroidx = width * 1.1
+            Asteroids[j].yy = random(0, height)
+            Asteroids[j].xx = width * 1.1
             Asteroids[j].priorx = -AsteroidInitialSpeed + j
             Asteroids[j].priory = 0
-          } else {
-            Asteroidx = Asteroids[j].xx
-            Asteroidy = Asteroids[j].yy
           }
-
           for (let i = 0; i < BlackHoles.length; i++) {
             //Black Hole Masses Depending on the Level
             if (i == 0) {
@@ -1100,32 +1099,32 @@ function draw() {
             }
 
             if (
-              abs(Asteroidx - BHx) < BHmass / 4 &&
-              abs(Asteroidy - BHy) < BHmass / 4
+              abs(Asteroids[j].xx - BHx) < BHmass / 4 &&
+              abs(Asteroids[j].yy - BHy) < BHmass / 4
             ) {
               AsteroidDestroyed = 1
             }
 
-            Asteroiddistance = sqrt(
-              (BHx - Asteroidx) * (BHx - Asteroidx) +
-                (BHy - Asteroidy) * (BHy - Asteroidy)
+            asteroidDistance = sqrt(
+              (BHx - Asteroids[j].xx) * (BHx - Asteroids[j].xx) +
+                (BHy - Asteroids[j].yy) * (BHy - Asteroids[j].yy)
             )
             gforce =
               (0.015 * Asteroids[j].mass * gConstant * BHmass) /
-              (Asteroiddistance * Asteroiddistance + 1)
-            denom = abs(Asteroidx - BHx) + abs(Asteroidy - BHy)
-            ratio = (BHx - Asteroidx) / denom
-            ratiotwo = (BHy - Asteroidy) / denom
+              (asteroidDistance * asteroidDistance + 1)
+            denom = abs(Asteroids[j].xx - BHx) + abs(Asteroids[j].yy - BHy)
+            ratio = (BHx - Asteroids[j].xx) / denom
+            ratiotwo = (BHy - Asteroids[j].yy) / denom
             xGravityAsteroid = xGravityAsteroid + float(ratio * gforce)
             yGravityAsteroid = yGravityAsteroid + float(ratiotwo * gforce)
           }
 
           if (
             AsteroidDestroyed == 1 ||
-            Asteroidx < 0 ||
-            Asteroidx > width * 1.2 ||
-            Asteroidy < 0 ||
-            Asteroidy > height
+            Asteroids[j].xx < 0 ||
+            Asteroids[j].xx > width * 1.2 ||
+            Asteroids[j].yy < 0 ||
+            Asteroids[j].yy > height
           ) {
             AsteroidDestroyed = 0
             if (level == 1) {
@@ -1150,53 +1149,59 @@ function draw() {
             } else if (level == 10) {
               Asteroids[j].priorx = -int(random(30, 60))
             }
-            Asteroids[j].priory = 0
-            Asteroidx = width * 1.1
-            Asteroidy = random(height / 100, height)
+            Asteroids[j].priory = random(-1, 1)
+            Asteroids[j].xx = width * 1.1
+            Asteroids[j].yy = random(height / 100, height)
 
             if (
-              Asteroidy > height / 2 - height / 11 &&
-              Asteroidy < height / 2 + height / 11 &&
+              Asteroids[j].yy > height / 2 - height / 11 &&
+              Asteroids[j].yy < height / 2 + height / 11 &&
               level != 7
             ) {
               if (delay % 2 == 0) {
-                Asteroidy = random(0, (2 * height) / 6)
+                Asteroids[j].yy = random(0, (2 * height) / 6)
               } else {
-                Asteroidy = random((4 * height) / 6, height)
+                Asteroids[j].yy = random((4 * height) / 6, height)
               }
             }
             Asteroids[j].render(
-              Asteroidx + Asteroids[j].priorx,
-              Asteroidy + Asteroids[j].priory,
-              Asteroidx,
-              Asteroidy,
+              Asteroids[j].xx + Asteroids[j].priorx,
+              Asteroids[j].yy + Asteroids[j].priory,
+              Asteroids[j].xx,
+              Asteroids[j].yy,
               1,
               1
             )
           } else {
             Asteroids[j].render(
-              Asteroidx + xGravityAsteroid + Asteroids[j].priorx,
-              Asteroidy + yGravityAsteroid + Asteroids[j].priory,
-              Asteroidx,
-              Asteroidy,
+              Asteroids[j].xx + xGravityAsteroid + Asteroids[j].priorx,
+              Asteroids[j].yy + yGravityAsteroid + Asteroids[j].priory,
+              Asteroids[j].xx,
+              Asteroids[j].yy,
               1,
               1
             )
           }
 
           Asteroids[j].priorx =
-            (Asteroidx + xGravityAsteroid + Asteroids[j].priorx - Asteroidx) *
+            (Asteroids[j].xx +
+              xGravityAsteroid +
+              Asteroids[j].priorx -
+              Asteroids[j].xx) *
             0.99
           Asteroids[j].priory =
-            (Asteroidy + yGravityAsteroid + Asteroids[j].priory - Asteroidy) *
+            (Asteroids[j].yy +
+              yGravityAsteroid +
+              Asteroids[j].priory -
+              Asteroids[j].yy) *
             0.99
           //Create an array with prior values and have the tails be more dynamic, curvy.
 
           Asteroids[j].addToArray(Asteroids[j].xx, Asteroids[j].yy)
 
           if (
-            abs(prevx - Asteroidx) < Asteroids[j].radius * 3.5 &&
-            abs(Asteroidy - prevy) < Asteroids[j].radius * 3.5
+            abs(prevx - Asteroids[j].xx) < Asteroids[j].radius * 3.5 &&
+            abs(Asteroids[j].yy - prevy) < Asteroids[j].radius * 3.5
           ) {
             //Surfer Struck By Asteroid, please add in radius from the final sprites.
             GameOver = 1
@@ -1309,19 +1314,21 @@ function draw() {
           prevy = height / 2
           finalPosition.x = width / 12
           finalPosition.y = height / 2
-
           GameOver = 0
         }
         // if(((abs(mousex-prevx)+abs(prevxx))<10.5)&&((abs(mousey-prevy)+abs(prevyy))<10.5)){
         //   //Surfers[int(surfType)].render(int(prevx),int(prevy),10,surfType,surfRed,surfBlue,surfGreen);
         // }
         // else{
-        // finalPosition.x = finalPosition.x + mouseVector.x;
-        // finalPosition.y = finalPosition.y + mouseVector.y;
+        // finalPosition.x = finalPosition.x + mouseVector.x
+        // finalPosition.y = finalPosition.y + mouseVector.y
+
+        finalPosition.x = mousex
+        finalPosition.y = mousey
         let force = p5.Vector.sub(finalPosition, mouseVector)
         // let distanceSq = force.magSq();
         // let G = 1;
-        //let strength = G *
+        // let strength = G *
         Surfers[int(surfType)].render(
           finalPosition.x,
           finalPosition.y,
@@ -2006,13 +2013,15 @@ class Asteroid {
     fill(255, 255)
     stroke(255, 210, 0, 255)
     let speed = abs(this.priorxArray[9] - x)
-    colorMode(HSB)
+    //colorMode(HSB)
 
     let angleOfTail = 0
     noFill()
     stroke(255)
+
     beginShape()
     for (let i = 0; i < this.priorxArray.length; i = i + 1) {
+      strokeWeight(i)
       //fill(255-speed, 255, 50 - sqrt(i) * 10);
       if (i == 0) {
         angleOfTail =
@@ -2050,7 +2059,8 @@ class Asteroid {
     )
 
     endShape()
-    fill(255 - speed, 255, 255)
+    strokeWeight(1)
+    fill(255, 255, 255)
     ellipse(x, y, this.radius * 3.5, this.radius * 3.5)
     colorMode(RGB)
 
@@ -2151,6 +2161,7 @@ function extraLifeSprite(len) {
 function addName() {
   id = input.value()
   nameIn = 1
+  storeItem('nameIn', nameIn)
   return id
 }
 //Parametric Equations
