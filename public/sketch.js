@@ -1,12 +1,17 @@
 //Copyright © 2019 Tom Wesley
 //SINGULARITY: This original novelty arcade game allows users pilot a Spacecraft which surfs on the gravitational waves of black holes to explore various galaxies.
 //Coder: Thomas Wesley
-//Last Edit 3/17/2022
+//Last Edit 11/2/2022
 //Notes - Add some aliens in the top left corner that shoots every 3 seconds, for levels 10-15. Change the galaxy color based on level.
 //Current Level Count - 10
 
 //Variable Declarations
+
+//import { initializeApp } from 'firebase/app'
+
+var app = 0
 //Images
+
 let imgOne
 let imgThree
 let imgFive
@@ -147,7 +152,7 @@ function setup() {
   }
 
   // Initialize Firebase
-  firebase.initializeApp(firebaseConfig)
+  app = firebase.initializeApp(firebaseConfig)
 
   input = createInput()
   input.position(width / 3, (4 * height) / 9)
@@ -161,7 +166,7 @@ function setup() {
 function draw() {
   timer = timer + 1
   //Possibly insert a custom cursor eventually
-  var database = firebase.database()
+  const database = app.database()
   var ref = database.ref('scores')
 
   cursor(CROSS)
