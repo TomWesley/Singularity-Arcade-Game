@@ -140,6 +140,7 @@ function setup() {
   // let Asteroids[j].xx = width / 2
   // let Asteroids[j].yy = height / 2
 
+  //Database Configuration
   const firebaseConfig = {
     apiKey: 'AIzaSyC7KRHKPJUlp997AFgUN1FwwbWxOZf1mII',
     authDomain: 'singularity-c216f.firebaseapp.com',
@@ -165,10 +166,11 @@ function setup() {
 //The draw function runs through the actions within it continuously
 function draw() {
   timer = timer + 1
-  //Possibly insert a custom cursor eventually
+
   const database = app.database()
   var ref = database.ref('scores')
 
+  //Use a more visually appealing cursor - Possibly insert a custom cursor eventually
   cursor(CROSS)
   if (getItem('nameIn') != 1) {
     background(0)
@@ -219,7 +221,7 @@ function draw() {
     if (GameOver === 0) {
       cursor(CROSS)
 
-      if (gamePhase == 1) {
+      if (gamePhase === 1) {
         background(0)
         speed = 0.9
         translate(width / 2, height / 2)
@@ -230,6 +232,7 @@ function draw() {
         }
         rotate((-delay * PI) / 2000)
         translate(-width / 2, -height / 2)
+
         if (loadDB == 1) {
           var led = database.ref('scores')
           led.on('value', gotData, errData)
