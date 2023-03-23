@@ -220,7 +220,6 @@ function draw() {
 
     if (GameOver === 0) {
       cursor(CROSS)
-
       if (gamePhase === 1) {
         background(0)
         speed = 0.9
@@ -272,7 +271,7 @@ function draw() {
           //The Stars speed will increase over time
           speed = delay / 500
         } else {
-          //Fix a stopping speed
+          //Fix a maximum speed
           speed = 20
         }
         for (let i = 0; i < Stars.length; i++) {
