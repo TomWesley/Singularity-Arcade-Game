@@ -1500,7 +1500,7 @@ function draw() {
 class Star {
   // float x; float y; float z;float pz;
   constructor() {
-    this.starSize = random(3, 6)
+    this.starSize = random(height / 360, height / 100)
     // I place values in the variables
     this.x = random(-width / 2, width / 2)
     // note: height and width are the same: the canvas is a square.
@@ -1513,6 +1513,13 @@ class Star {
     this.pz = z
     // which it's like to say that the Stars are not moving during the first frame.
     // this.pz = z;
+    this.colours = []
+    this.colours[0] = color(255, 255, 255)
+    this.colours[1] = color(235, 205, 255)
+    this.colours[2] = color(255, 245, 205)
+    this.colours[3] = color(255, 205, 205)
+    this.colours[4] = color(255, 205, 155)
+    this.primary = int(random(4))
   }
   update() {
     this.z = this.z - speed
@@ -1525,7 +1532,8 @@ class Star {
   }
   show(uno, dos, tres, quatro) {
     //Add a twinkling factor for the stationary frames
-    fill(uno, dos, tres, quatro)
+
+    fill(this.colours[this.primary])
     noStroke()
     let sx = map(this.x / this.z, 0, 1, 0, width / 2)
     let sy = map(this.y / this.z, 0, 1, 0, height / 2)
@@ -1535,8 +1543,7 @@ class Star {
     let px = map(this.x / this.pz, 0, 1, 0, width / 2)
     let py = map(this.y / this.pz, 0, 1, 0, height / 2)
     this.pz = this.z
-    stroke(uno, dos, tres, quatro)
-    strokeWeight(r)
+
     //line(px, py, sx, sy);
   }
 }
