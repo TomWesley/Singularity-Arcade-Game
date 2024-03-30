@@ -1614,129 +1614,7 @@ class Surfer {
       square(x + 5 * len, y + len * 4, len)
     } else if (quatro == 1) {
       //Psych Bike
-
-      let wid = len * 6
-      stroke(255, 174, 204, 255)
-      noFill()
-      strokeWeight(3)
-      curve(
-        x - wid * 4,
-        y - wid,
-        x - wid,
-        y - wid * 0.6,
-        x - wid,
-        y + wid * 0.6,
-        x - wid * 4,
-        y + wid
-      )
-      curve(
-        x + wid * 4,
-        y - wid,
-        x + wid,
-        y - wid * 0.6,
-        x + wid,
-        y + wid * 0.6,
-        x + wid * 4,
-        y + wid
-      )
-      curve(
-        x + wid * 2,
-        y - wid,
-        x - wid * 0.1,
-        y + wid * 0.5,
-        x - wid * 0.15,
-        y + wid * 1.3,
-        x + wid * 2,
-        y + wid
-      )
-      curve(
-        x - wid * 2,
-        y - wid,
-        x + wid * 0.1,
-        y + wid * 0.5,
-        x + wid * 0.15,
-        y + wid * 1.3,
-        x - wid * 2,
-        y + wid
-      )
-
-      line(x + wid * 0.6, y, x - wid * 0.6, y)
-      strokeWeight(1)
-      fill(198, 220, 255, 255)
-      stroke(0)
-      ellipse(x - wid, y - wid * 0.6, wid * 0.5, wid * 0.5)
-      ellipse(x - wid, y + wid * 0.6, wid * 0.5, wid * 0.5)
-      ellipse(x + wid, y - wid * 0.6, wid * 0.5, wid * 0.5)
-      ellipse(x + wid, y + wid * 0.6, wid * 0.5, wid * 0.5)
-      ellipse(x + wid * 0.15, y + wid * 1.3, wid * 0.25, wid * 0.25)
-      ellipse(x - wid * 0.15, y + wid * 1.3, wid * 0.25, wid * 0.25)
-      fill(255, 174, 204, 255)
-      noStroke()
-      ellipse(x, y, wid * 0.58, wid * 0.58)
-
-      triangle(x - wid * 0.3, y, x + wid * 0.3, y, x, y + wid)
-      fill(198, 220, 255, 255)
-      stroke(0)
-      quad(
-        x,
-        y - wid * 0.2,
-        x + wid * 0.15,
-        y + wid * 0.2,
-        x,
-        y + wid * 0.8,
-        x - wid * 0.15,
-        y + wid * 0.2
-      )
-      // square(x,y,len);
-      // square(x+len,y,len);
-      // square(x+len*2,y,len);
-      // square(x+len*2,y+len,len);
-      // square(x+len*2,y-len,len);
-      // square(x+len*2,y-len*2,len);
-      // square(x+len,y-len*2,len);
-      // square(x,y-len*2,len);
-      // square(x-len,y,len);
-      // square(x-len*2,y,len);
-      // square(x-len*2,y+len,len);
-      // square(x-len*2,y-len,len);
-      // square(x-len*2,y-len*2,len);
-      // square(x-len,y-len*2,len);
-      // square(x,y-len*2,len);
-      // square(x,y+len*2,len);
-      // square(x-len,y+len*2,len);
-      // square(x+len,y+len*2,len);
-      // square(x-len*2,y+len*3,len);
-      // square(x+len*2,y+len*3,len);
-      // square(x-len*3,y+len*3,len);
-      // square(x+len*3,y+len*3,len);
-      // square(x-len*4,y+len*4,len);
-      // square(x+len*4,y+len*4,len);
-      // square(x-len*3,y-len*2,len);
-      // square(x+len*3,y-len*2,len);
-      // square(x-len*4,y-len*2,len);
-      // square(x+len*4,y-len*2,len);
-      // square(x-len*5,y-len*2,len);
-      // square(x+len*5,y-len*2,len);
-      // square(x-len*5,y-len*3,len);
-      // square(x+len*5,y-len*3,len);
-      // square(x-len*5,y-len,len);
-      // square(x+len*5,y-len,len);
-      // fill(198,220,255,255);
-      // square(x,y+len,len);
-      // square(x-len,y+len,len);
-      // square(x+len,y+len,len);
-      // square(x,y+len*3,len);
-      // square(x-len,y+len*3,len);
-      // square(x+len,y+len*3,len);
-      // square(x,y+len*4,len);
-      // square(x-len*5,y,len);
-      // square(x+len*5,y,len);
-      // square(x-len*4,y,len);
-      // square(x+len*4,y,len);
-      // square(x-len*5,y-len*4,len);
-      // square(x+len*5,y-len*4,len);
-      // square(x-len*4,y-len*4,len);
-      // square(x+len*4,y-len*4,len);
+      drawPsychBike(len, x, y)
     } else if (quatro == 2) {
       //The Compiler
       noStroke()
@@ -1958,32 +1836,6 @@ class BH {
     }
     fill(0)
     ellipse(x, y, radius, radius)
-    //fill(255,15);
-    // ellipse(x,y,radius*1.03,radius*1.03);
-    // ellipse(x,y,radius*1.04,radius*1.04);
-    // ellipse(x,y,radius*1.05,radius*1.05);
-    // ellipse(x,y,radius*1.06,radius*1.06);
-    // ellipse(x,y,radius*1.07,radius*1.07);
-    // ellipse(x,y,radius*1.08,radius*1.08);
-    // ellipse(x,y,radius*1.09,radius*1.09);
-    // ellipse(x,y,radius*1.1,radius*1.1);
-    // ellipse(x,y,radius*1.11,radius*1.11);
-    // ellipse(x,y,radius*1.12,radius*1.12);
-    // ellipse(x,y,radius*1.13,radius*1.13);
-    // ellipse(x,y,radius*1.14,radius*1.14);
-    // ellipse(x,y,radius*1.15,radius*1.15);
-
-    // fill(0);
-    // noStroke();
-    // quad(x+radius*0.2/2,y+radius/2,x-radius*0.2/2,y+radius/2,x-radius*0.2/2,y-radius/2,x+radius*0.2/2,y-radius/2);
-    // quad(x+radius*0.35/2,y+radius*0.95/2,x-radius*0.35/2,y+radius*0.95/2,x-radius*0.35/2,y-radius*0.95/2,x+radius*0.35/2,y-radius*0.95/2);
-    // quad(x+radius*0.5/2,y+radius*0.89/2,x-radius*0.5/2,y+radius*0.89/2,x-radius*0.5/2,y-radius*0.89/2,x+radius*0.5/2,y-radius*0.89/2);
-    // quad(x+radius*0.6/2,y+radius*0.82/2,x-radius*0.6/2,y+radius*0.82/2,x-radius*0.6/2,y-radius*0.82/2,x+radius*0.6/2,y-radius*0.82/2);
-    // quad(x+radius*0.71/2,y+radius*0.71/2,x-radius*0.71/2,y+radius*0.71/2,x-radius*0.71/2,y-radius*0.71/2,x+radius*0.71/2,y-radius*0.71/2);
-    // quad(x+radius*0.82/2,y+radius*0.6/2,x-radius*0.82/2,y+radius*0.6/2,x-radius*0.82/2,y-radius*0.6/2,x+radius*0.82/2,y-radius*0.6/2);
-    // quad(x+radius*0.89/2,y+radius*0.5/2,x-radius*0.89/2,y+radius*0.5/2,x-radius*0.89/2,y-radius*0.5/2,x+radius*0.89/2,y-radius*0.5/2);
-    // quad(x+radius*0.95/2,y+radius*0.35/2,x-radius*0.95/2,y+radius*0.35/2,x-radius*0.95/2,y-radius*0.35/2,x+radius*0.95/2,y-radius*0.35/2);
-    // quad(x+radius*1/2,y+radius*0.2/2,x-radius*1/2,y+radius*0.2/2,x-radius*1/2,y-radius*0.2/2,x+radius*1/2,y-radius*0.2/2);
   }
 }
 class Asteroid {
@@ -1997,10 +1849,12 @@ class Asteroid {
     this.xx = 0
     this.yy = 0
     this.mass = m
-    this.radius = this.mass * 0.75
+    this.radius = this.mass * 1.75
     //this.secondpriorx=0;
   }
-  applyForce() {}
+  applyForce() {
+    234
+  }
   addToArray(px, py) {
     if (this.priorxArray.length >= 10) {
       this.priorxArray.pop()
@@ -2009,80 +1863,88 @@ class Asteroid {
     this.priorxArray.unshift(px)
     this.prioryArray.unshift(py)
   }
-  render(x, y, prevx, prevy, prevxx, prevyy) {
-    //Make sure the asteroids have a lot less mass so they don't fall in as easily
+  render(x, y, prevX, prevY, prevxx, prevyy) {
+    let distance = dist(x, y, prevx, prevy)
+    let tailLength = distance * 10
+    //Draw the tail
+    // for (let i = 0; i < tailLength; i += 10) {
+    //   let tailX = lerp(x, prevX, i / tailLength)
+    //   let tailY = lerp(y, prevY, i / tailLength)
+    //   let tailOpacity = map(i, 0, tailLength, 255, 0)
+    //   stroke(255, tailOpacity)
+    //   point(tailX, tailY)
+    // }
+
+    //Draw the asteroid
+    fill(255, 255, 255, 255)
+    noStroke()
+
+    ellipse(x, y, this.radius, this.radius)
+    // //Make sure the asteroids have a lot less mass so they don't fall in as easily
     this.xx = x
     this.yy = y
-    // let secondpriorx;
-    // let secondpriory;
+    // // let secondpriorx;
+    // // let secondpriory;
 
-    let ratio
-    let ratioy
-    //let radius = this.mass/2;
+    // let ratio
+    // let ratioy
+    // //let radius = this.mass/2;
 
-    // ratio = (prevx-this.secondpriorx)/(abs(prevx-this.secondpriorx)+abs(prevy-this.secondpriory));
-    // ratioy = (prevy-this.secondpriory)/(abs(prevx-this.secondpriorx)+abs(prevy-this.secondpriory));
-    strokeWeight(0.1)
-    stroke(255)
-    fill(255, 255)
-    stroke(255, 210, 0, 255)
-    let speed = abs(this.priorxArray[9] - x)
-    //colorMode(HSB)
+    // // ratio = (prevx-this.secondpriorx)/(abs(prevx-this.secondpriorx)+abs(prevy-this.secondpriory));
+    // // ratioy = (prevy-this.secondpriory)/(abs(prevx-this.secondpriorx)+abs(prevy-this.secondpriory));
+    // strokeWeight(0.1)
+    // stroke(255)
+    // fill(255, 255)
+    // stroke(255, 210, 0, 255)
+    // let speed = abs(this.priorxArray[9] - x)
+    // //colorMode(HSB)
 
-    let angleOfTail = 0
-    noFill()
-    stroke(255)
+    // let angleOfTail = 0
+    // noFill()
+    // stroke(255)
 
-    beginShape()
-    for (let i = 0; i < this.priorxArray.length; i = i + 1) {
-      strokeWeight(i)
-      //fill(255-speed, 255, 50 - sqrt(i) * 10);
-      if (i == 0) {
-        angleOfTail =
-          90 -
-          57.2958 * atan((y - this.prioryArray[i]) / (x - this.priorxArray[i]))
-        if (x < width) {
-          curveVertex(
-            x + cos(radians(angleOfTail + PI / 2)),
-            y + sin(radians(angleOfTail + PI / 2))
-          )
-        }
-      } else {
-        angleOfTail =
-          90 -
-          57.2958 *
-            atan(
-              (this.prioryArray[i - 1] - this.prioryArray[i]) /
-                (this.priorxArray[i - 1] - this.priorxArray[i])
-            )
-        if (x < width) {
-          curveVertex(
-            this.priorxArray[i - 1] + cos(radians(angleOfTail + PI / 2)),
-            this.prioryArray[i - 1] + sin(radians(angleOfTail + PI / 2))
-          )
-        }
-      }
-      //console.log(57.2958*atan(abs(this.prioryArray[i-1] - this.prioryArray[i])/abs(this.priorxArray[i-1] - this.priorxArray[i])));
-      //angleOfTail =
+    // beginShape()
+    // for (let i = 0; i < this.priorxArray.length; i = i + 1) {
+    //   strokeWeight(i)
+    //   //fill(255-speed, 255, 50 - sqrt(i) * 10);
+    //   if (i == 0) {
+    //     angleOfTail =
+    //       90 -
+    //       57.2958 * atan((y - this.prioryArray[i]) / (x - this.priorxArray[i]))
+    //     if (x < width) {
+    //       curveVertex(
+    //         x + cos(radians(angleOfTail + PI / 2)),
+    //         y + sin(radians(angleOfTail + PI / 2))
+    //       )
+    //     }
+    //   } else {
+    //     angleOfTail =
+    //       90 -
+    //       57.2958 *
+    //         atan(
+    //           (this.prioryArray[i - 1] - this.prioryArray[i]) /
+    //             (this.priorxArray[i - 1] - this.priorxArray[i])
+    //         )
+    //     if (x < width) {
+    //       curveVertex(
+    //         this.priorxArray[i - 1] + cos(radians(angleOfTail + PI / 2)),
+    //         this.prioryArray[i - 1] + sin(radians(angleOfTail + PI / 2))
+    //       )
+    //     }
+    //   }
+    // }
+    // curveVertex(
+    //   this.priorxArray[this.priorxArray.length - 1],
+    //   this.prioryArray[this.priorxArray.length - 1]
+    // )
 
-      //ellipse(this.priorxArray[i], this.prioryArray[i], this.radius*3.5 - this.radius*sqrt(i)*1, this.radius*3.5 - this.radius*sqrt(i)*1);
-    }
-    curveVertex(
-      this.priorxArray[this.priorxArray.length - 1],
-      this.prioryArray[this.priorxArray.length - 1]
-    )
-
-    endShape()
-    strokeWeight(1)
-    fill(255, 255, 255)
-    ellipse(x, y, this.radius * 3.5, this.radius * 3.5)
+    // endShape()
+    // strokeWeight(1)
+    // fill(255, 255, 255)
+    // ellipse(x, y, this.radius * 3.5, this.radius * 3.5)
     colorMode(RGB)
-
-    // quad(x+radius*2,y+radius,x+radius*2,y-radius,x-radius*2,y-radius,x-radius*2,y+radius);
-    // quad(x+radius,y-radius*2,x+radius,y+radius*2, x-radius,y+radius*2,x-radius,y-radius*2);
-    // quad(x+radius*1.5,y-radius*1.5,x-radius*1.5,y-radius*1.5, x-radius*1.5,y+radius*1.5,x+radius*1.5,y+radius*1.5);
-    this.secondpriorx = prevx
-    this.secondpriory = prevy
+    // this.secondpriorx = prevx
+    // this.secondpriory = prevy
   }
 }
 
@@ -2260,5 +2122,75 @@ function gotData(data) {
     text(arr[j][1], (2.7 * width) / 4, (height * (j + 3.4)) / 13)
   }
 }
+function drawPsychBike(len, x, y) {
+  let wid = len * 6
+  stroke(255, 174, 204, 255)
+  noFill()
+  strokeWeight(3)
+  curve(
+    x - wid * 4,
+    y - wid,
+    x - wid,
+    y - wid * 0.6,
+    x - wid,
+    y + wid * 0.6,
+    x - wid * 4,
+    y + wid
+  )
+  curve(
+    x + wid * 4,
+    y - wid,
+    x + wid,
+    y - wid * 0.6,
+    x + wid,
+    y + wid * 0.6,
+    x + wid * 4,
+    y + wid
+  )
+  curve(
+    x + wid * 2,
+    y - wid,
+    x - wid * 0.1,
+    y + wid * 0.5,
+    x - wid * 0.15,
+    y + wid * 1.3,
+    x + wid * 2,
+    y + wid
+  )
+  curve(
+    x - wid * 2,
+    y - wid,
+    x + wid * 0.1,
+    y + wid * 0.5,
+    x + wid * 0.15,
+    y + wid * 1.3,
+    x - wid * 2,
+    y + wid
+  )
 
+  line(x + wid * 0.6, y, x - wid * 0.6, y)
+  strokeWeight(1)
+  fill(198, 220, 255, 255)
+  noStroke()
+  ellipse(x - wid, y - wid * 0.6, wid * 0.5, wid * 0.5)
+  ellipse(x - wid, y + wid * 0.6, wid * 0.5, wid * 0.5)
+  ellipse(x + wid, y - wid * 0.6, wid * 0.5, wid * 0.5)
+  ellipse(x + wid, y + wid * 0.6, wid * 0.5, wid * 0.5)
+  ellipse(x + wid * 0.15, y + wid * 1.3, wid * 0.25, wid * 0.25)
+  ellipse(x - wid * 0.15, y + wid * 1.3, wid * 0.25, wid * 0.25)
+  fill(255, 174, 204, 255)
+  noStroke()
+  ellipse(x, y, wid * 0.58, wid * 0.58)
+
+  triangle(x - wid * 0.3, y, x + wid * 0.3, y, x, y + wid)
+  fill(198, 220, 255, 255)
+  triangle(
+    x - wid * 0.15,
+    y - wid * 0.1,
+    x,
+    y + wid * 0.45,
+    x + wid * 0.15,
+    y - wid * 0.1
+  )
+}
 function errData(err) {}
