@@ -1,7 +1,7 @@
 //Copyright © 2019 Tom Wesley
 //SINGULARITY: This original novelty arcade game allows users pilot a Spacecraft which surfs on the gravitational waves of black holes to explore various galaxies.
 //Coder: Thomas Wesley
-//Last Edit 11/2/2022
+//Last Edit 4/4/2024
 //Notes - Add some aliens in the top left corner that shoots every 3 seconds, for levels 10-15. Change the galaxy color based on level.
 //Current Level Count - 10
 
@@ -124,7 +124,7 @@ function setup() {
   createCanvas(1280, 720)
   //storeItem('nameIn', nameIn)
   //Create arrays of the class objects to be utilized in the draw phase
-  for (let i = 0; i < 1000; i++) {
+  for (let i = 0; i < 500; i++) {
     Stars[i] = new Star()
   }
   for (let i = 0; i < 10; i++) {
@@ -172,6 +172,7 @@ function draw() {
 
   //Use a more visually appealing cursor - Possibly insert a custom cursor eventually
   cursor(CROSS)
+
   if (getItem('nameIn') != 1) {
     background(0)
     speed = 0.8
@@ -209,6 +210,7 @@ function draw() {
       //fullscreen(full);
       playerName = addName()
       playerName = playerName.slice(0, 8)
+
       input.remove()
       mouseIsPressed = false
       //resizeCanvas(displayWidth, displayHeight);
@@ -1865,83 +1867,24 @@ class Asteroid {
   }
   render(x, y, prevX, prevY, prevxx, prevyy) {
     let distance = dist(x, y, prevx, prevy)
-    let tailLength = distance * 10
+    let tailLength = distance * 5
     //Draw the tail
-    // for (let i = 0; i < tailLength; i += 10) {
+    // for (let i = 0; i < tailLength; i += 1) {
     //   let tailX = lerp(x, prevX, i / tailLength)
     //   let tailY = lerp(y, prevY, i / tailLength)
-    //   let tailOpacity = map(i, 0, tailLength, 255, 0)
-    //   stroke(255, tailOpacity)
+    //   let tailOpacity = map(i, 0, tailLength, 255, 100)
+    //   stroke(176, 224, 230, tailOpacity)
     //   point(tailX, tailY)
     // }
 
     //Draw the asteroid
-    fill(255, 255, 255, 255)
+    fill(176, 224, 230, 255)
     noStroke()
 
     ellipse(x, y, this.radius, this.radius)
     // //Make sure the asteroids have a lot less mass so they don't fall in as easily
     this.xx = x
     this.yy = y
-    // // let secondpriorx;
-    // // let secondpriory;
-
-    // let ratio
-    // let ratioy
-    // //let radius = this.mass/2;
-
-    // // ratio = (prevx-this.secondpriorx)/(abs(prevx-this.secondpriorx)+abs(prevy-this.secondpriory));
-    // // ratioy = (prevy-this.secondpriory)/(abs(prevx-this.secondpriorx)+abs(prevy-this.secondpriory));
-    // strokeWeight(0.1)
-    // stroke(255)
-    // fill(255, 255)
-    // stroke(255, 210, 0, 255)
-    // let speed = abs(this.priorxArray[9] - x)
-    // //colorMode(HSB)
-
-    // let angleOfTail = 0
-    // noFill()
-    // stroke(255)
-
-    // beginShape()
-    // for (let i = 0; i < this.priorxArray.length; i = i + 1) {
-    //   strokeWeight(i)
-    //   //fill(255-speed, 255, 50 - sqrt(i) * 10);
-    //   if (i == 0) {
-    //     angleOfTail =
-    //       90 -
-    //       57.2958 * atan((y - this.prioryArray[i]) / (x - this.priorxArray[i]))
-    //     if (x < width) {
-    //       curveVertex(
-    //         x + cos(radians(angleOfTail + PI / 2)),
-    //         y + sin(radians(angleOfTail + PI / 2))
-    //       )
-    //     }
-    //   } else {
-    //     angleOfTail =
-    //       90 -
-    //       57.2958 *
-    //         atan(
-    //           (this.prioryArray[i - 1] - this.prioryArray[i]) /
-    //             (this.priorxArray[i - 1] - this.priorxArray[i])
-    //         )
-    //     if (x < width) {
-    //       curveVertex(
-    //         this.priorxArray[i - 1] + cos(radians(angleOfTail + PI / 2)),
-    //         this.prioryArray[i - 1] + sin(radians(angleOfTail + PI / 2))
-    //       )
-    //     }
-    //   }
-    // }
-    // curveVertex(
-    //   this.priorxArray[this.priorxArray.length - 1],
-    //   this.prioryArray[this.priorxArray.length - 1]
-    // )
-
-    // endShape()
-    // strokeWeight(1)
-    // fill(255, 255, 255)
-    // ellipse(x, y, this.radius * 3.5, this.radius * 3.5)
     colorMode(RGB)
     // this.secondpriorx = prevx
     // this.secondpriory = prevy
