@@ -173,6 +173,7 @@ function draw() {
   //Use a more visually appealing cursor - Possibly insert a custom cursor eventually
   cursor(CROSS)
 
+  //if (getItem('Stage') < 2) {
   if (getItem('nameIn') != 1) {
     background(0)
     speed = 0.8
@@ -223,8 +224,10 @@ function draw() {
     if (GameOver === 0) {
       cursor(CROSS)
       if (gamePhase === 1) {
+        //Leaderboard
         background(0)
         speed = 0.9
+
         translate(width / 2, height / 2)
         rotate((delay * PI) / 2000)
         for (let i = 0; i < Stars.length; i++) {
@@ -264,6 +267,7 @@ function draw() {
         }
       }
       if (gamePhase == 0) {
+        storeItem('Stage', 2)
         //Title Screen when gamePhase = 0
         background(0)
         textSize(32)
@@ -344,10 +348,9 @@ function draw() {
         prevx = width / 12
         prevy = height / 2
       } else if (gamePhase === 2) {
+        storeItem('Stage', 3)
         //Surfer Selection Page when gamePhase = 2
-
         turnoff = 0
-
         background(0)
         translate(width / 2, height / 2)
         rotate((PI * delay) / 900)
@@ -810,6 +813,7 @@ function draw() {
           Craftselectioncount = Craftselectioncount - 1
         }
       } else if (gamePhase >= 4) {
+        storeItem('Stage', 4)
         if (gamePhase == 4) {
           prevx = width / 12
           prevy = height / 2
@@ -827,13 +831,12 @@ function draw() {
           turnoff = turnoff + 1
         }
         background(0, 0, 0, 255)
-        image(
-          imgPortal,
-          (9 * width) / 10,
-          height / 2 - width / 20,
-          width / 10,
-          width / 10
-        )
+        //finish line
+        strokeWeight(10)
+        stroke(255, 240, 10)
+        noFill()
+        ellipse((width * 9.75) / 10, height / 2, width / 25, height / 5)
+
         translate(width / 2, height / 2)
         for (let i = 0; i < Stars.length; i++) {
           Stars[i].show(255, 255, 255, 255)
@@ -1325,15 +1328,9 @@ function draw() {
           finalPosition.y = height / 2
           GameOver = 0
         }
-        // if(((abs(mousex-prevx)+abs(prevxx))<10.5)&&((abs(mousey-prevy)+abs(prevyy))<10.5)){
-        //   //Surfers[int(surfType)].render(int(prevx),int(prevy),10,surfType,surfRed,surfBlue,surfGreen);
-        // }
-        // else{
-        // finalPosition.x = finalPosition.x + mouseVector.x
-        // finalPosition.y = finalPosition.y + mouseVector.y
 
-        finalPosition.x = mousex
-        finalPosition.y = mousey
+        finalPosition.x = (mouseX + prevx) / 2
+        finalPosition.y = (mouseY + prevy) / 2
         let force = p5.Vector.sub(finalPosition, mouseVector)
         // let distanceSq = force.magSq();
         // let G = 1;
@@ -1348,12 +1345,11 @@ function draw() {
           surfGreen
         )
 
-        //Surfers[int(surfType)].render(int(prevx+xsurf+xGravity+prevxx),int(prevy+ysurf+yGravity+prevyy),10,surfType,surfRed,surfBlue,surfGreen);
         prevx = prevx + xsurf + xGravity + prevxx
         prevy = prevy + ysurf + yGravity + prevyy
         prevxx = xsurf + xGravity
         prevyy = ysurf + yGravity
-        //}
+
         //Display what level it is
         fill(255, 240, 0, 255)
         stroke(0)
@@ -1362,7 +1358,7 @@ function draw() {
       }
       craftLost = 0
     }
-    //What happens after being eaten by a black hole or destroyed by an asteroid, have different sequences that occur
+    //What happens after being eaten by a black hole or destroyed by an asteroid, have different sequences that occur - mini graphics splash
     else if (GameOver == 1) {
       if (lifeCount > 0) {
         textSize(height / 4.5)
@@ -1980,7 +1976,7 @@ function extraLifeSprite(len) {
 function addName() {
   id = input.value()
   nameIn = 1
-  storeItem('nameIn', nameIn)
+  storeItem('Stage', nameIn)
   return id
 }
 //Parametric Equations
