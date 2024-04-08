@@ -76,6 +76,8 @@ let initialAsteroid = 0
 let AsteroidDestroyed = 0
 
 //Surfer/Player Variables
+let xsurf = 0
+let ysurf = 0
 let surfergravity = 0
 let Craftselectioncount //Helps so a mouse click on the opening screen doesn't also select your craft
 let lifeCount = 1
@@ -1291,14 +1293,13 @@ function draw() {
         let mousey = mouseY
         let mouseVector
         mouseVector = createVector(mousex, mousey)
-        let xsurf = mousex - prevx
-        let ysurf = mousey - prevy
+
         levelTimer = levelTimer + 1
         if (levelTimer > 75) {
-          ratio = xsurf / (abs(xsurf) + abs(ysurf))
-          ratiotwo = ysurf / (abs(xsurf) + abs(ysurf))
-          xsurf = ratio * distance
-          ysurf = ratiotwo * distance
+          // ratio = xsurf / (abs(xsurf) + abs(ysurf))
+          // ratiotwo = ysurf / (abs(xsurf) + abs(ysurf))
+          // xsurf = ratio * distance
+          // ysurf = ratiotwo * distance
         } else {
           if (levelStart == 0) {
             fill(255, 240, 0, 255)
@@ -1318,19 +1319,20 @@ function draw() {
             //fill(255, 0, 0, 255);
             text(myText, width / 3, height / 1.8)
           }
-          xsurf = 0
-          ysurf = 0
+          xsurf = width / 12
+          ysurf = height / 2
           xGravity = 0
           yGravity = 0
-          prevx = width / 12
-          prevy = height / 2
+
           finalPosition.x = width / 12
           finalPosition.y = height / 2
           GameOver = 0
         }
 
-        finalPosition.x = (mouseX + prevx) / 2
-        finalPosition.y = (mouseY + prevy) / 2
+        finalPosition.x = xsurf + (mouseX - xsurf) * 0.01
+        finalPosition.y = ysurf + (mouseY - ysurf) * 0.01
+        xsurf = finalPosition.x
+        ysurf = finalPosition.y
         let force = p5.Vector.sub(finalPosition, mouseVector)
         // let distanceSq = force.magSq();
         // let G = 1;
