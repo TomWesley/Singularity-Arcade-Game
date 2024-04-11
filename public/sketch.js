@@ -11,6 +11,8 @@
 
 var app = 0
 //Images
+let ratioX = 1
+let ratioY = 1
 
 let imgOne
 let imgThree
@@ -65,7 +67,7 @@ let levelStart = 0
 
 let xGravity = 0
 let yGravity = 0
-let gConstant = 195
+let gConstant = 175
 let ratio = 0
 let ratiotwo = 0
 let prevxx = 0
@@ -83,7 +85,7 @@ let Craftselectioncount //Helps so a mouse click on the opening screen doesn't a
 let lifeCount = 1
 let extraLife = 1
 let displayExtraLife = 0
-let distance = 4
+let surferSpeed = 4
 let surfRed
 let surfBlue
 let surfGreen
@@ -133,7 +135,7 @@ function setup() {
     BlackHoles[i] = new BH()
   }
   for (let i = 0; i < 14; i++) {
-    Asteroids[i] = new Asteroid(4 + (i % 4))
+    Asteroids[i] = new Asteroid(random(0.1, 0.4))
   }
   for (let i = 0; i < 4; i++) {
     Surfers[i] = new Surfer()
@@ -369,7 +371,7 @@ function draw() {
         text('Select A Surfer', width / 2, height / 6)
         textAlign(LEFT)
         stroke(255, 240, 0, 255)
-        line(width / 7, height / 5.5, width - width / 7, height / 5.5) //Underline
+        line(width / 7, height / 5, width - width / 7, height / 5) //Underline
         //Display the surfer sprites and stats here
         stroke(255, 255)
         fill(255, 150)
@@ -777,7 +779,7 @@ function draw() {
             if (mouseY < height && mouseY > height - (2 * height) / 10) {
               //SuperBug
               surfMass = 2.6
-              distance = 9.2
+              surferSpeed = 13
               gamePhase = 4
               surfType = 0
             } else if (
@@ -786,7 +788,7 @@ function draw() {
             ) {
               //Psych Bike
               surfMass = 2.3
-              distance = 9.6
+              surferSpeed = 14.5
               gamePhase = 4
               surfType = 1
             } else if (
@@ -795,7 +797,7 @@ function draw() {
             ) {
               //The Compiler
               surfMass = 2.7
-              distance = 10
+              surferSpeed = 16
               gamePhase = 4
               surfType = 2
             } else if (
@@ -804,7 +806,7 @@ function draw() {
             ) {
               //Voidwalker
               surfMass = 2.5
-              distance = 8.4
+              surferSpeed = 11.5
               gamePhase = 4
               surfType = 3
             }
@@ -1084,6 +1086,7 @@ function draw() {
             }
             //Calculate the surfer's gravity & corresponding motion only once when this loop is run against all of the asteroids
             if (surfergravity == 0) {
+              //
               if (
                 abs(BHx - prevx) < BHmass / 4 &&
                 abs(BHy - prevy) < BHmass / 4
@@ -1093,15 +1096,10 @@ function draw() {
                 DBEntry = 1
               }
               BlackHoles[i].render(BHmass, BHx, BHy, 255)
-              BHdistance = sqrt(
-                (BHx - prevx) * (BHx - prevx) + (BHy - prevy) * (BHy - prevy)
-              )
+              BHdistance = dist(BHx, BHy, prevx, prevy)
               //insert the surfer mass and BH mass into the equation
               gforce =
-                (surfMass *
-                  gConstant *
-                  (BHmass * 0.8 + BHmass * BHmass * 0.0011)) /
-                (BHdistance * BHdistance + 1)
+                (surfMass * gConstant * BHmass) / (BHdistance * BHdistance + 1)
               denom = abs(prevx - BHx) + abs(prevy - BHy)
               ratio = (BHx - prevx) / denom
               ratiotwo = (BHy - prevy) / denom
@@ -1119,12 +1117,10 @@ function draw() {
               AsteroidDestroyed = 1
             }
 
-            asteroidDistance = sqrt(
-              (BHx - Asteroids[j].xx) * (BHx - Asteroids[j].xx) +
-                (BHy - Asteroids[j].yy) * (BHy - Asteroids[j].yy)
-            )
+            asteroidDistance = dist(BHx, BHy, Asteroids[j].xx, Asteroids[j].yy)
+
             gforce =
-              (0.015 * Asteroids[j].mass * gConstant * BHmass) /
+              (Asteroids[j].mass * gConstant * BHmass) /
               (asteroidDistance * asteroidDistance + 1)
             denom = abs(Asteroids[j].xx - BHx) + abs(Asteroids[j].yy - BHy)
             ratio = (BHx - Asteroids[j].xx) / denom
@@ -1214,8 +1210,8 @@ function draw() {
           Asteroids[j].addToArray(Asteroids[j].xx, Asteroids[j].yy)
 
           if (
-            abs(prevx - Asteroids[j].xx) < Asteroids[j].radius * 3.5 &&
-            abs(Asteroids[j].yy - prevy) < Asteroids[j].radius * 3.5
+            abs(prevx - Asteroids[j].xx) < Asteroids[j].radius &&
+            abs(Asteroids[j].yy - prevy) < Asteroids[j].radius
           ) {
             //Surfer Struck By Asteroid, please add in radius from the final sprites.
             GameOver = 1
@@ -1296,8 +1292,14 @@ function draw() {
 
         levelTimer = levelTimer + 1
         if (levelTimer > 75) {
-          // ratio = xsurf / (abs(xsurf) + abs(ysurf))
-          // ratiotwo = ysurf / (abs(xsurf) + abs(ysurf))
+          //NEES TO BE FIXED
+          if (abs(ysurf - mouseY) > 3 && abs(xsurf - mouseX) > 3) {
+            ratioX =
+              abs(xsurf - mouseX) / (abs(ysurf - mouseY) + abs(xsurf - mouseX))
+            ratioY =
+              abs(ysurf - mouseY) / (abs(ysurf - mouseY) + abs(xsurf - mouseX))
+          }
+          //  ratiotwo = ysurf / (abs(xsurf) + abs(ysurf))
           // xsurf = ratio * distance
           // ysurf = ratiotwo * distance
         } else {
@@ -1328,9 +1330,20 @@ function draw() {
           finalPosition.y = height / 2
           GameOver = 0
         }
-
-        finalPosition.x = xsurf + (mouseX - xsurf) * 0.01
-        finalPosition.y = ysurf + (mouseY - ysurf) * 0.01
+        //control for the mouse being too close to the surfer, SEPARATE X AND Y HERE
+        if (abs(mouseX - xsurf) > 3) {
+          finalPosition.x =
+            xsurf +
+            ((mouseX - xsurf) / abs(mouseX - xsurf)) * 1 * surferSpeed * ratioX
+        }
+        if (abs(mouseY - ysurf) > 3) {
+          finalPosition.y =
+            ysurf +
+            ((mouseY - ysurf) / abs(mouseY - ysurf)) * 1 * surferSpeed * ratioY
+        }
+        //Add in the gravity
+        finalPosition.x = finalPosition.x + xGravity
+        finalPosition.y = finalPosition.y + yGravity
         xsurf = finalPosition.x
         ysurf = finalPosition.y
         let force = p5.Vector.sub(finalPosition, mouseVector)
@@ -1347,10 +1360,8 @@ function draw() {
           surfGreen
         )
 
-        prevx = prevx + xsurf + xGravity + prevxx
-        prevy = prevy + ysurf + yGravity + prevyy
-        prevxx = xsurf + xGravity
-        prevyy = ysurf + yGravity
+        prevx = finalPosition.x
+        prevy = finalPosition.y
 
         //Display what level it is
         fill(255, 240, 0, 255)
@@ -1425,7 +1436,8 @@ function draw() {
         fill(255, 255, 255, 255)
         stroke(0)
         textSize(height / 4.5)
-        text('Game Over', width / 8.7, (3 * height) / 4)
+        textAlign(CENTER)
+        text('Game Over', width / 2, (3 * height) / 4)
         if (DBEntry == 1) {
           var data = {
             name: playerName,
@@ -1849,11 +1861,11 @@ class Asteroid {
     this.xx = 0
     this.yy = 0
     this.mass = m
-    this.radius = this.mass * 1.75
+    this.radius = this.mass * 25
     //this.secondpriorx=0;
   }
   applyForce() {
-    234
+    //234
   }
   addToArray(px, py) {
     if (this.priorxArray.length >= 10) {
@@ -1866,14 +1878,6 @@ class Asteroid {
   render(x, y, prevX, prevY, prevxx, prevyy) {
     let distance = dist(x, y, prevx, prevy)
     let tailLength = distance * 5
-    //Draw the tail
-    // for (let i = 0; i < tailLength; i += 1) {
-    //   let tailX = lerp(x, prevX, i / tailLength)
-    //   let tailY = lerp(y, prevY, i / tailLength)
-    //   let tailOpacity = map(i, 0, tailLength, 255, 100)
-    //   stroke(176, 224, 230, tailOpacity)
-    //   point(tailX, tailY)
-    // }
 
     //Draw the asteroid
     fill(176, 224, 230, 255)
@@ -1884,8 +1888,6 @@ class Asteroid {
     this.xx = x
     this.yy = y
     colorMode(RGB)
-    // this.secondpriorx = prevx
-    // this.secondpriory = prevy
   }
 }
 
