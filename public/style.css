@@ -1,7 +1,19 @@
-html, body {
+html {
   margin: 0;
   padding: 0;
 }
 canvas {
   display: block;
+  border: 5px solid #d5c428; /* Thick black border */
+  box-shadow: inset 5px 5px 0px 0px #2196f3,
+    /* Inner blue glow */ inset -5px -5px 0px 0px #f44336; /* Inner red glow */
+}
+
+body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0;
+}
+div {
 }

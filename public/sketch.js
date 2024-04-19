@@ -30,7 +30,7 @@ class BlackHole {
 
   draw() {
     fill(0)
-    strokeWeight(10)
+    strokeWeight(this.size / 20)
     stroke(255)
     ellipse(this.x + this.offsetX, this.y + this.offsetY, this.size, this.size)
   }
@@ -40,21 +40,21 @@ const levelBlackHoles = [
   [new BlackHole(640, 360, 250, false)],
   // Level 2 configuration (2 black holes)
   [
-    new BlackHole(426.67, 360, 40, false),
+    new BlackHole(426.67, 360, 140, false),
     new BlackHole(853.33, 360, 40, false),
   ],
   // Level 3 configuration (3 black holes)
   [
-    new BlackHole(426.67, 120, 30, false),
-    new BlackHole(426.67, 600, 30, false),
-    new BlackHole(853.33, 360, 30, true, 0, 50), // One moving in circle
+    new BlackHole(426.67, 120, 130, false),
+    new BlackHole(426.67, 600, 130, false),
+    new BlackHole(853.33, 360, 80, true, 0, 50), // One moving in circle
   ],
   // Level 4 configuration (4 black holes)
   [
-    new BlackHole(320, 120, 25, false),
-    new BlackHole(960, 120, 25, false),
-    new BlackHole(320, 600, 25, false),
-    new BlackHole(960, 600, 25, true, 3.14 / 2, 30), // One moving horizontally
+    new BlackHole(320, 120, 125, false),
+    new BlackHole(960, 120, 125, false),
+    new BlackHole(320, 600, 75, false),
+    new BlackHole(960, 600, 75, true, 3.14 / 2, 30), // One moving horizontally
   ],
   // Level 5 configuration (5 black holes)
   [
@@ -240,7 +240,6 @@ function setup() {
 
 //The draw function runs through the actions within it continuously
 function draw() {
-  changeLevel(1)
   timer = timer + 1
 
   const database = app.database()
@@ -425,6 +424,7 @@ function draw() {
         prevx = width / 12
         prevy = height / 2
       } else if (gamePhase === 2) {
+        changeLevel(1)
         storeItem('Stage', 3)
         //Surfer Selection Page when gamePhase = 2
         turnoff = 0
@@ -2100,4 +2100,5 @@ function changeLevel(newLevel) {
       levelBlackHoles.length
     )
   }
+  print(currentLevel)
 }
