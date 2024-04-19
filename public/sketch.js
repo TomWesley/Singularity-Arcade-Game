@@ -8,7 +8,72 @@
 //Variable Declarations
 
 //import { initializeApp } from 'firebase/app'
+class BlackHole {
+  constructor(x, y, size, isMoving, moveAngle, moveRadius) {
+    this.x = x
+    this.y = y
+    this.size = size
+    this.isMoving = isMoving
+    this.moveAngle = moveAngle
+    this.moveRadius = moveRadius
+    this.offsetX = 0
+    this.offsetY = 0
+  }
 
+  move() {
+    if (this.isMoving) {
+      this.offsetX = cos(this.moveAngle) * this.moveRadius
+      this.offsetY = sin(this.moveAngle) * this.moveRadius
+      this.moveAngle += 0.01 // Adjust for desired speed of movement
+    }
+  }
+
+  draw() {
+    fill(0)
+    strokeWeight(10)
+    stroke(255)
+    ellipse(this.x + this.offsetX, this.y + this.offsetY, this.size, this.size)
+  }
+}
+const levelBlackHoles = [
+  // Level 1 configuration (1 black hole)
+  [new BlackHole(640, 360, 250, false)],
+  // Level 2 configuration (2 black holes)
+  [
+    new BlackHole(426.67, 360, 40, false),
+    new BlackHole(853.33, 360, 40, false),
+  ],
+  // Level 3 configuration (3 black holes)
+  [
+    new BlackHole(426.67, 120, 30, false),
+    new BlackHole(426.67, 600, 30, false),
+    new BlackHole(853.33, 360, 30, true, 0, 50), // One moving in circle
+  ],
+  // Level 4 configuration (4 black holes)
+  [
+    new BlackHole(320, 120, 25, false),
+    new BlackHole(960, 120, 25, false),
+    new BlackHole(320, 600, 25, false),
+    new BlackHole(960, 600, 25, true, 3.14 / 2, 30), // One moving horizontally
+  ],
+  // Level 5 configuration (5 black holes)
+  [
+    new BlackHole(256, 120, 20, true, 0, 40), // One moving in circle (center)
+    new BlackHole(512, 120, 20, false),
+    new BlackHole(768, 120, 20, false),
+    new BlackHole(256, 600, 20, false),
+    new BlackHole(1024, 600, 20, false),
+  ],
+  // Level 6 configuration (6 black holes)
+  [
+    new BlackHole(426.67, 90, 30, false),
+    new BlackHole(853.33, 90, 30, false),
+    new BlackHole(426.67, 630, 30, false),
+    new BlackHole(853.33, 630, 30, false),
+    new BlackHole(160, 360, 25, true, 3.14, 25), // One moving in circle (top left)
+    new BlackHole(1120, 360, 25, true, 0, 25), // One moving in circle (top right)
+  ],
+]
 var app = 0
 //Images
 let ratioX = 1
@@ -27,6 +92,7 @@ let finalPosition
 let Stars = []
 let Surfers = []
 let BlackHoles = []
+let blackholes = []
 let asteroids = []
 const numAsteroids = 13
 
@@ -174,6 +240,7 @@ function setup() {
 
 //The draw function runs through the actions within it continuously
 function draw() {
+  changeLevel(1)
   timer = timer + 1
 
   const database = app.database()
@@ -890,217 +957,221 @@ function draw() {
           asteroids[i].move()
           asteroids[i].draw()
         }
-
-        for (let i = 0; i < BlackHoles.length; i++) {
-          //Black Hole Masses Depending on the Level
-          if (i == 0) {
-            BHy = height / 2 - height / 5
-          } else if (i % 2 == 0) {
-            BHy = BHy - 2 * 180 - (i % 40)
-          } else {
-            BHy = BHy + 95 * 4 + 30 * cos(radians(i))
-          }
-          if (level == 2) {
-            BHx = BHx + width / 13
-          }
-          if (level == 1) {
-            if (i == 0) {
-              BHmass = height / 2.8
-              BHx = width / 2
-              BHy = height / 2
-            } else if (i == 1) {
-              angle = delay / 2
-              let xxxx = (height / 2.3) * cos(radians(angle)) + width / 2
-              let yyyy = (height / 3) * sin(radians(angle)) + height / 2
-              BHmass = height / 5
-              BHx = xxxx
-              BHy = yyyy
-            } else {
-              BHmass = 1
-              BHx = -width
-              BHy = height / 2
-            }
-          }
-          if (level == 2) {
-            BHmass = height / 6 + (((i * height) / 30) % 150)
-          } else if (level == 3) {
-            if (i == 2) {
-              BHmass = height / 2
-            } else {
-              BHmass = height / 8 + (((i * height) / 40) % 160)
-            }
-            if (i == 2) {
-              BHx = width / 2
-              BHy = height / 2
-            }
-            if (i == 0) {
-              BHx = width / 2 + width / 12
-              BHy = height / 12
-            }
-            if (i == 1) {
-              BHx = width / 2 + width / 9
-              BHy = height - height / 12
-            }
-            if (i == 3) {
-              BHx = width / 2 + width / 3.9
-              BHy = height / 2.2
-            }
-            if (i == 4) {
-              BHx = -width / 2
-              BHy = height / 4
-            }
-            if (i == 5) {
-              BHx = width - width / 40
-              BHy = height - height / 5
-            }
-            if (i == 6) {
-              BHx = width / 70
-              BHy = height / 1.5
-            }
-            if (i == 7) {
-              BHx = width / 4
-              BHy = height / 8
-            }
-            if (i == 8) {
-              BHx = width / 4
-              BHy = height - height / 5
-            }
-            if (i == 9) {
-              BHx = -width
-              BHy = height / 90
-            }
-          } else if (level == 4) {
-            if (i % 2 == 0) {
-              BHmass = height / 3.5 + (i % (height / 140)) * 30
-
-              angle = (i + 1) * 36 + delay / 2.7
-              let xxxxx = (height / 4) * cos(radians(angle)) + width / 2
-              let yyyyy = (height / 2) * sin(radians(angle)) + height / 2
-              BHx = xxxxx
-              BHy = yyyyy
-            } else {
-              BHmass = 15
-              BHx = -width
-              BHy = 0
-            }
-          } else if (level == 5) {
-            if (i == 0) {
-              BHmass = height / 2.8
-              BHx = width / 2.8
-              BHy = height / 2
-            } else if (i == 1) {
-              BHmass = height / 4.5
-              BHx = width / 2
-              BHy = height - height / 2.8
-            } else if (i == 2) {
-              BHmass = height / 4.5
-              BHx = width / 2
-              BHy = height / 2.8
-            } else if (i == 3) {
-              BHmass = height / 5
-              BHx = width / 10
-              BHy = height - height / 8
-            } else if (i == 4) {
-              BHmass = height / 5.5
-              BHx = width - width / 9
-              BHy = height / 10
-            } else if (i == 5) {
-              BHmass = height / 5.5
-              BHx = width / 3
-              BHy = height / 7
-            } else {
-              BHmass = height / 14 + (i * height) / 40
-              BHx = width / 3 + ((i - 6) * width) / 6
-              BHy = height * 0.9 - ((i - 6) * height) / 13
-            }
-          } else if (level == 6) {
-            if (i % 2 == 0) {
-              BHmass = height / 3.5 + (i * height) / 80
-              BHx =
-                (height / 2) *
-                  tan(radians(delay / 1.2 + i * 72)) *
-                  cos(radians(delay / 1.2 + i * 72)) +
-                width / 1.5
-              BHy =
-                (height / 1.4) *
-                  cos(radians(delay / 1.2 + i * 72)) *
-                  sin(radians(delay / 1.2 + i * 72)) +
-                height / 2
-            } else {
-              BHx = -200
-              BHy = (i * width) / 10
-              BHmass = 10
-            }
-          } else if (level == 7) {
-            BHmass = height / 6.3 + (log((i % 6) + 1) * height) / 14
-            BHx = width / 11 + (i * width) / 13
-            if (i % 2 == 0) {
-              BHy = (sqrt(i) * height) / 8.5
-            } else {
-              BHy = height - (sqrt(i) * height) / 8.7
-            }
-          } else if (level == 8) {
-            BHmass = height / 3.5 + ((i % 4) * height) / 20
-            angle = (i + 1) * 36 + delay / 1.6
-            let xxxxxx = height * 1.5 * sin(radians(angle)) + width / 2
-            let yyyyyy =
-              (height / 1.2) * sin(radians(angle)) * cos(radians(angle)) +
-              height / 2
-            BHx = xxxxxx
-            BHy = yyyyyy
-          } else if (level == 9) {
-            BHmass = height / 5.1 + ((i % 4) * height) / 20
-            angle = (i + 1) * 36 + delay / 18
-            let xxxxxxx =
-              (height / 12 + width / 12) * cos(radians(angle)) -
-              (width / 5) *
-                cos((height / width + radians(angle)) * radians(angle)) +
-              width / 1.4
-            let yyyyyyy =
-              (height / 12 + width / 12) * sin(radians(angle)) -
-              (width / 5) *
-                sin((height / width + radians(angle)) * radians(angle)) +
-              height / 2
-            BHx = xxxxxxx * 0.85
-            BHy = yyyyyyy * 1
-          } else if (level == 10) {
-            BHmass = height / 5.5 + ((i % 5) * height) / 20
-            angle = (i + 1) * 50 + 18 * cos(radians(delay / 4))
-            let xxxxxxxx =
-              (height / 15) *
-                (cos(radians(angle)) + radians(angle) * sin(radians(angle))) +
-              width / 2
-            let yyyyyyyy =
-              (height / 15) *
-                (sin(radians(angle)) - radians(angle) * cos(radians(angle))) +
-              height / 2
-            BHx = xxxxxxxx
-            BHy = yyyyyyyy
-          }
-          //Calculate the surfer's gravity & corresponding motion only once when this loop is run against all of the asteroids
-          if (surfergravity == 0) {
-            //
-            if (
-              abs(BHx - prevx) < BHmass / 4 &&
-              abs(BHy - prevy) < BHmass / 4
-            ) {
-              GameOver = 1
-              //Add the data to the database only once
-              DBEntry = 1
-            }
-            BHdistance = dist(BHx, BHy, prevx, prevy)
-            //insert the surfer mass and BH mass into the equation
-            gforce =
-              (surfMass * gConstant * BHmass) / (BHdistance * BHdistance + 1)
-            denom = abs(prevx - BHx) + abs(prevy - BHy)
-            ratio = (BHx - prevx) / denom
-            ratiotwo = (BHy - prevy) / denom
-            xGravity = xGravity + ratio * gforce
-            yGravity = yGravity + ratiotwo * gforce
-            surfergravity = surfergravity + 1
-          }
-          BlackHoles[i].render(BHmass, BHx, BHy, 255)
+        for (let i = 0; i < blackHoles.length; i++) {
+          blackHoles[i].move()
+          blackHoles[i].draw()
         }
+        //IMPORTANT
+        // for (let i = 0; i < BlackHoles.length; i++) {
+        //   //Black Hole Masses Depending on the Level
+        //   if (i == 0) {
+        //     BHy = height / 2 - height / 5
+        //   } else if (i % 2 == 0) {
+        //     BHy = BHy - 2 * 180 - (i % 40)
+        //   } else {
+        //     BHy = BHy + 95 * 4 + 30 * cos(radians(i))
+        //   }
+        //   if (level == 2) {
+        //     BHx = BHx + width / 13
+        //   }
+        //   if (level == 1) {
+        //     if (i == 0) {
+        //       BHmass = height / 2.8
+        //       BHx = width / 2
+        //       BHy = height / 2
+        //     } else if (i == 1) {
+        //       angle = delay / 2
+        //       let xxxx = (height / 2.3) * cos(radians(angle)) + width / 2
+        //       let yyyy = (height / 3) * sin(radians(angle)) + height / 2
+        //       BHmass = height / 5
+        //       BHx = xxxx
+        //       BHy = yyyy
+        //     } else {
+        //       BHmass = 1
+        //       BHx = -width
+        //       BHy = height / 2
+        //     }
+        //   }
+        //   if (level == 2) {
+        //     BHmass = height / 6 + (((i * height) / 30) % 150)
+        //   } else if (level == 3) {
+        //     if (i == 2) {
+        //       BHmass = height / 2
+        //     } else {
+        //       BHmass = height / 8 + (((i * height) / 40) % 160)
+        //     }
+        //     if (i == 2) {
+        //       BHx = width / 2
+        //       BHy = height / 2
+        //     }
+        //     if (i == 0) {
+        //       BHx = width / 2 + width / 12
+        //       BHy = height / 12
+        //     }
+        //     if (i == 1) {
+        //       BHx = width / 2 + width / 9
+        //       BHy = height - height / 12
+        //     }
+        //     if (i == 3) {
+        //       BHx = width / 2 + width / 3.9
+        //       BHy = height / 2.2
+        //     }
+        //     if (i == 4) {
+        //       BHx = -width / 2
+        //       BHy = height / 4
+        //     }
+        //     if (i == 5) {
+        //       BHx = width - width / 40
+        //       BHy = height - height / 5
+        //     }
+        //     if (i == 6) {
+        //       BHx = width / 70
+        //       BHy = height / 1.5
+        //     }
+        //     if (i == 7) {
+        //       BHx = width / 4
+        //       BHy = height / 8
+        //     }
+        //     if (i == 8) {
+        //       BHx = width / 4
+        //       BHy = height - height / 5
+        //     }
+        //     if (i == 9) {
+        //       BHx = -width
+        //       BHy = height / 90
+        //     }
+        //   } else if (level == 4) {
+        //     if (i % 2 == 0) {
+        //       BHmass = height / 3.5 + (i % (height / 140)) * 30
+
+        //       angle = (i + 1) * 36 + delay / 2.7
+        //       let xxxxx = (height / 4) * cos(radians(angle)) + width / 2
+        //       let yyyyy = (height / 2) * sin(radians(angle)) + height / 2
+        //       BHx = xxxxx
+        //       BHy = yyyyy
+        //     } else {
+        //       BHmass = 15
+        //       BHx = -width
+        //       BHy = 0
+        //     }
+        //   } else if (level == 5) {
+        //     if (i == 0) {
+        //       BHmass = height / 2.8
+        //       BHx = width / 2.8
+        //       BHy = height / 2
+        //     } else if (i == 1) {
+        //       BHmass = height / 4.5
+        //       BHx = width / 2
+        //       BHy = height - height / 2.8
+        //     } else if (i == 2) {
+        //       BHmass = height / 4.5
+        //       BHx = width / 2
+        //       BHy = height / 2.8
+        //     } else if (i == 3) {
+        //       BHmass = height / 5
+        //       BHx = width / 10
+        //       BHy = height - height / 8
+        //     } else if (i == 4) {
+        //       BHmass = height / 5.5
+        //       BHx = width - width / 9
+        //       BHy = height / 10
+        //     } else if (i == 5) {
+        //       BHmass = height / 5.5
+        //       BHx = width / 3
+        //       BHy = height / 7
+        //     } else {
+        //       BHmass = height / 14 + (i * height) / 40
+        //       BHx = width / 3 + ((i - 6) * width) / 6
+        //       BHy = height * 0.9 - ((i - 6) * height) / 13
+        //     }
+        //   } else if (level == 6) {
+        //     if (i % 2 == 0) {
+        //       BHmass = height / 3.5 + (i * height) / 80
+        //       BHx =
+        //         (height / 2) *
+        //           tan(radians(delay / 1.2 + i * 72)) *
+        //           cos(radians(delay / 1.2 + i * 72)) +
+        //         width / 1.5
+        //       BHy =
+        //         (height / 1.4) *
+        //           cos(radians(delay / 1.2 + i * 72)) *
+        //           sin(radians(delay / 1.2 + i * 72)) +
+        //         height / 2
+        //     } else {
+        //       BHx = -200
+        //       BHy = (i * width) / 10
+        //       BHmass = 10
+        //     }
+        //   } else if (level == 7) {
+        //     BHmass = height / 6.3 + (log((i % 6) + 1) * height) / 14
+        //     BHx = width / 11 + (i * width) / 13
+        //     if (i % 2 == 0) {
+        //       BHy = (sqrt(i) * height) / 8.5
+        //     } else {
+        //       BHy = height - (sqrt(i) * height) / 8.7
+        //     }
+        //   } else if (level == 8) {
+        //     BHmass = height / 3.5 + ((i % 4) * height) / 20
+        //     angle = (i + 1) * 36 + delay / 1.6
+        //     let xxxxxx = height * 1.5 * sin(radians(angle)) + width / 2
+        //     let yyyyyy =
+        //       (height / 1.2) * sin(radians(angle)) * cos(radians(angle)) +
+        //       height / 2
+        //     BHx = xxxxxx
+        //     BHy = yyyyyy
+        //   } else if (level == 9) {
+        //     BHmass = height / 5.1 + ((i % 4) * height) / 20
+        //     angle = (i + 1) * 36 + delay / 18
+        //     let xxxxxxx =
+        //       (height / 12 + width / 12) * cos(radians(angle)) -
+        //       (width / 5) *
+        //         cos((height / width + radians(angle)) * radians(angle)) +
+        //       width / 1.4
+        //     let yyyyyyy =
+        //       (height / 12 + width / 12) * sin(radians(angle)) -
+        //       (width / 5) *
+        //         sin((height / width + radians(angle)) * radians(angle)) +
+        //       height / 2
+        //     BHx = xxxxxxx * 0.85
+        //     BHy = yyyyyyy * 1
+        //   } else if (level == 10) {
+        //     BHmass = height / 5.5 + ((i % 5) * height) / 20
+        //     angle = (i + 1) * 50 + 18 * cos(radians(delay / 4))
+        //     let xxxxxxxx =
+        //       (height / 15) *
+        //         (cos(radians(angle)) + radians(angle) * sin(radians(angle))) +
+        //       width / 2
+        //     let yyyyyyyy =
+        //       (height / 15) *
+        //         (sin(radians(angle)) - radians(angle) * cos(radians(angle))) +
+        //       height / 2
+        //     BHx = xxxxxxxx
+        //     BHy = yyyyyyyy
+        //   }
+        //   //Calculate the surfer's gravity & corresponding motion only once when this loop is run against all of the asteroids
+        //   if (surfergravity == 0) {
+        //     //
+        //     if (
+        //       abs(BHx - prevx) < BHmass / 4 &&
+        //       abs(BHy - prevy) < BHmass / 4
+        //     ) {
+        //       GameOver = 1
+        //       //Add the data to the database only once
+        //       DBEntry = 1
+        //     }
+        //     BHdistance = dist(BHx, BHy, prevx, prevy)
+        //     //insert the surfer mass and BH mass into the equation
+        //     gforce =
+        //       (surfMass * gConstant * BHmass) / (BHdistance * BHdistance + 1)
+        //     denom = abs(prevx - BHx) + abs(prevy - BHy)
+        //     ratio = (BHx - prevx) / denom
+        //     ratiotwo = (BHy - prevy) / denom
+        //     xGravity = xGravity + ratio * gforce
+        //     yGravity = yGravity + ratiotwo * gforce
+        //     surfergravity = surfergravity + 1
+        //   }
+        //   BlackHoles[i].render(BHmass, BHx, BHy, 255)
+        // }
 
         //The trigger for beating the level, indicate the level completion and have brief break
         // image(imgPortal,4.8*width/6,height/2-width/10.66,width/3,width/5.33);
@@ -1127,7 +1198,9 @@ function draw() {
           } else {
             LevelChangeTrigger = 0
             gamePhase = 4
+
             level = level + 1
+            changeLevel(level)
             //Change the next value here to reflect the last level which will trigger the victory sequence
             if (level == 11) {
               GameOver = 2
@@ -2016,3 +2089,15 @@ function drawPsychBike(len, x, y) {
   )
 }
 function errData(err) {}
+
+function changeLevel(newLevel) {
+  if (newLevel >= 1 && newLevel <= 10) {
+    currentLevel = newLevel
+    blackHoles = levelBlackHoles[currentLevel - 1]
+  } else {
+    console.error(
+      'Invalid level number. Please choose between 1 and 10',
+      levelBlackHoles.length
+    )
+  }
+}
