@@ -27,7 +27,8 @@ let finalPosition
 let Stars = []
 let Surfers = []
 let BlackHoles = []
-let Asteroids = []
+let asteroids = []
+const numAsteroids = 13
 
 //Control the star speed
 let speed
@@ -67,7 +68,7 @@ let levelStart = 0
 
 let xGravity = 0
 let yGravity = 0
-let gConstant = 55
+let gConstant = 40
 let ratio = 0
 let ratiotwo = 0
 let prevxx = 0
@@ -134,8 +135,15 @@ function setup() {
   for (let i = 0; i < 10; i++) {
     BlackHoles[i] = new BH()
   }
-  for (let i = 0; i < 14; i++) {
-    Asteroids[i] = new Asteroid(random(0.1, 0.4))
+  for (let i = 0; i < numAsteroids; i++) {
+    let temp = new Asteroid(
+      width,
+      random(height),
+      random(-2, 2),
+      random(-2, 2),
+      random(10, 30)
+    )
+    append(asteroids, temp)
   }
   for (let i = 0; i < 4; i++) {
     Surfers[i] = new Surfer()
@@ -819,7 +827,6 @@ function draw() {
           prevx = width / 12
           prevy = height / 2
           levelTimer = 0
-          initialAsteroid = 0
           noText = 0
           levelStart = 0
         }
@@ -864,9 +871,7 @@ function draw() {
         }
 
         //Black Holes/Asteroids
-        let asteroidDistance
-        //let Asteroidmass = 30;
-        let AsteroidInitialSpeed = 12
+
         let BHdistance
         let BHx = width / 6
         let BHy = height / 6
@@ -875,8 +880,6 @@ function draw() {
         let denom
         xGravity = 0
         yGravity = 0
-        let xAsteroidTotal = 0
-        let yAsteroidTotal = 0
         let xGravityAsteroid = 0
         let yGravityAsteroid = 0
         if (level == 3) {
@@ -884,7 +887,10 @@ function draw() {
           BHx = width / 5.5
         }
         surfergravity = 0 //Do the surfers relation to the black holes only once
-
+        for (let i = 0; i < asteroids.length; i++) {
+          asteroids[i].move()
+          asteroids[i].draw()
+        }
         for (let j = 13; j >= 0; j = j - 1) {
           for (let i = 0; i < BlackHoles.length; i++) {
             //Black Hole Masses Depending on the Level
@@ -1730,51 +1736,41 @@ class BH {
     let radius = ((width / 1280) * mass) / 2
     this.xx = x
     this.yy = y
-    noStroke()
-    for (let r = 15; r > 1; r = r - 0.25) {
-      fill(255, 255 - noise(delay) * 40, 255 - noise(delay) * 100, sqrt(50 * r))
-      ellipse(x, y, (radius * r) / 13.04, (radius * r) / 13.04)
-    }
+    // for (let r = 15; r > 1; r = r - 0.25) {
+    //   fill(255, 255 - noise(delay) * 40, 255 - noise(delay) * 100, sqrt(50 * r))
+    //   ellipse(x, y, (radius * r) / 13.04, (radius * r) / 13.04)
+    // }
+    strokeWeight(5)
+    stroke(255)
     fill(0)
     ellipse(x, y, radius, radius)
   }
 }
 class Asteroid {
-  constructor(m) {
-    // this.priorxArray = []
-    // this.prioryArray = []
-    // this.priorx = 0
-    // this.priory = 0
-    // this.secondpriorx = 0
-    // this.secondpriory = 0
-    this.location = createVector(0, 0)
-    this.previousLocation = createVector(0, 0)
-    this.velocity = createVector(0, 0)
-    this.xx = 0
-    this.yy = 0
-    this.mass = m
-    this.radius = this.mass * 50
+  constructor(x, y, vx, vy, size) {
+    this.x = x
+    this.y = y
+    this.vx = vx
+    this.vy = vy
+    this.size = size
   }
-  applyForce() {
-    //234
-  }
-  render(l, pL) {
-    let distance = dist(l.x, l.y, pL.x, pL.y)
-    let tailLength = distance * 5
-    this.location = l
-    this.previousLocation = pL
-    //Draw the asteroid
 
-    fill(100, 100, 255, 255)
-    noStroke()
-    ellipse(l.x, l.y, this.radius / 2, this.radius / 2)
-    // fill(200, 230, 255, 25)
-    // ellipse(x, y, this.radius, this.radius)
-    // //Make sure the asteroids have a lot less mass so they don't fall in as easily
-    this.xx = l.x
-    this.yy = l.y
-    this.previousLocation = l
-    colorMode(RGB)
+  move() {
+    this.x += this.vx
+    this.y += this.vy
+
+    // Check if offscreen and respawn
+    if (this.x < 0 || this.y < 0 || this.y > height) {
+      this.x = width
+      this.y = random(height)
+      this.vx = random(-2, 2)
+      this.vy = random(-2, 2)
+    }
+  }
+
+  draw() {
+    fill(255)
+    ellipse(this.x, this.y, this.size, this.size)
   }
 }
 
