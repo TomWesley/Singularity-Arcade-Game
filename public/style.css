@@ -4,16 +4,26 @@ html {
 }
 canvas {
   display: block;
-  border: 5px solid #d5c428; /* Thick black border */
-  box-shadow: inset 5px 5px 0px 0px #2196f3,
-    /* Inner blue glow */ inset -5px -5px 0px 0px #f44336; /* Inner red glow */
+  border: 5px solid black;
+  border-radius: 25px;
+  box-shadow: 0 0 20px 10px rgba(243, 227, 0, 0.786),
+    /* Blue inner shadow */ 0 0 20px 10px rgba(246, 1, 95, 0.878); /* Red inner shadow */
 }
 
 body {
+  background: black;
   display: flex;
   justify-content: center;
   align-items: center;
+  min-height: 100vh;
   margin: 0;
 }
 div {
+}
+@media only screen and (max-width: 768px) {
+  /* Adjust width as needed */
+  canvas {
+    transform: rotate(90deg); /* Rotate 90 degrees for portrait mode */
+    width: 10vh;
+  }
 }

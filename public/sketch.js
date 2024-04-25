@@ -13,6 +13,7 @@ class BlackHole {
     this.x = x
     this.y = y
     this.size = size
+    this.mass = size
     this.isMoving = isMoving
     this.moveAngle = moveAngle
     this.moveRadius = moveRadius
@@ -84,7 +85,6 @@ let imgThree
 let imgFive
 let imgSeven
 let imgNine
-let imgPortal
 
 let finalPosition
 
@@ -134,7 +134,9 @@ let levelStart = 0
 
 let xGravity = 0
 let yGravity = 0
-let gConstant = 600
+let xGravityAsteroid = 0
+let yGravityAsteroid = 0
+let gConstant = 700
 let ratio = 0
 let ratiotwo = 0
 let prevxx = 0
@@ -186,7 +188,6 @@ function preload() {
   imgFive = loadImage('SpiralGal.jpg')
   imgSeven = loadImage('BlueGal.jpg')
   imgNine = loadImage('WDwarf.jpg')
-  imgPortal = loadImage('ExitPortal.png')
 }
 
 function setup() {
@@ -203,11 +204,11 @@ function setup() {
   }
   for (let i = 0; i < numAsteroids; i++) {
     let temp = new Asteroid(
-      width,
+      width * 1.1,
       random(height),
+      random(-5, -1),
       random(-2, 2),
-      random(-2, 2),
-      random(10, 30)
+      width / 140
     )
     append(asteroids, temp)
   }
@@ -908,10 +909,39 @@ function draw() {
         }
         background(0, 0, 0, 255)
         //finish line
-        strokeWeight(10)
-        stroke(255, 240, 10)
-        noFill()
-        ellipse((width * 9.75) / 10, height / 2, width / 25, height / 5)
+        fill(255, 240, 10)
+
+        noStroke()
+        quad(
+          width * 0.91,
+
+          height * 0.4,
+
+          width * 0.95,
+          height * 0.4,
+
+          width * 0.985,
+          height * 0.5,
+
+          width * 0.945,
+          height * 0.5
+        )
+        quad(
+          width * 0.91,
+
+          height * 0.6,
+
+          width * 0.95,
+          height * 0.6,
+
+          width * 0.985,
+          height * 0.5,
+
+          width * 0.945,
+          height * 0.5
+        )
+
+        noStroke()
 
         translate(width / 2, height / 2)
         for (let i = 0; i < Stars.length; i++) {
@@ -941,18 +971,15 @@ function draw() {
         //Black Holes/Asteroids
 
         let BHdistance
-        let BHx = width / 6
-        let BHy = height / 6
+
         let gforce
         let BHmass = 0
         let denom
         xGravity = 0
         yGravity = 0
-        if (level == 3) {
-          BHy = height / 3.5
-          BHx = width / 5.5
-        }
-        surfergravity = 0 //Do the surfers relation to the black holes only once
+        xGravityAsteroid = 0
+        yGravityAsteroid = 0
+
         for (let i = 0; i < asteroids.length; i++) {
           asteroids[i].move()
           asteroids[i].draw()
@@ -960,221 +987,45 @@ function draw() {
         for (let i = 0; i < blackHoles.length; i++) {
           blackHoles[i].move()
           blackHoles[i].draw()
-        }
-        //IMPORTANT
-        // for (let i = 0; i < BlackHoles.length; i++) {
-        //   //Black Hole Masses Depending on the Level
-        //   if (i == 0) {
-        //     BHy = height / 2 - height / 5
-        //   } else if (i % 2 == 0) {
-        //     BHy = BHy - 2 * 180 - (i % 40)
-        //   } else {
-        //     BHy = BHy + 95 * 4 + 30 * cos(radians(i))
-        //   }
-        //   if (level == 2) {
-        //     BHx = BHx + width / 13
-        //   }
-        //   if (level == 1) {
-        //     if (i == 0) {
-        //       BHmass = height / 2.8
-        //       BHx = width / 2
-        //       BHy = height / 2
-        //     } else if (i == 1) {
-        //       angle = delay / 2
-        //       let xxxx = (height / 2.3) * cos(radians(angle)) + width / 2
-        //       let yyyy = (height / 3) * sin(radians(angle)) + height / 2
-        //       BHmass = height / 5
-        //       BHx = xxxx
-        //       BHy = yyyy
-        //     } else {
-        //       BHmass = 1
-        //       BHx = -width
-        //       BHy = height / 2
-        //     }
-        //   }
-        //   if (level == 2) {
-        //     BHmass = height / 6 + (((i * height) / 30) % 150)
-        //   } else if (level == 3) {
-        //     if (i == 2) {
-        //       BHmass = height / 2
-        //     } else {
-        //       BHmass = height / 8 + (((i * height) / 40) % 160)
-        //     }
-        //     if (i == 2) {
-        //       BHx = width / 2
-        //       BHy = height / 2
-        //     }
-        //     if (i == 0) {
-        //       BHx = width / 2 + width / 12
-        //       BHy = height / 12
-        //     }
-        //     if (i == 1) {
-        //       BHx = width / 2 + width / 9
-        //       BHy = height - height / 12
-        //     }
-        //     if (i == 3) {
-        //       BHx = width / 2 + width / 3.9
-        //       BHy = height / 2.2
-        //     }
-        //     if (i == 4) {
-        //       BHx = -width / 2
-        //       BHy = height / 4
-        //     }
-        //     if (i == 5) {
-        //       BHx = width - width / 40
-        //       BHy = height - height / 5
-        //     }
-        //     if (i == 6) {
-        //       BHx = width / 70
-        //       BHy = height / 1.5
-        //     }
-        //     if (i == 7) {
-        //       BHx = width / 4
-        //       BHy = height / 8
-        //     }
-        //     if (i == 8) {
-        //       BHx = width / 4
-        //       BHy = height - height / 5
-        //     }
-        //     if (i == 9) {
-        //       BHx = -width
-        //       BHy = height / 90
-        //     }
-        //   } else if (level == 4) {
-        //     if (i % 2 == 0) {
-        //       BHmass = height / 3.5 + (i % (height / 140)) * 30
 
-        //       angle = (i + 1) * 36 + delay / 2.7
-        //       let xxxxx = (height / 4) * cos(radians(angle)) + width / 2
-        //       let yyyyy = (height / 2) * sin(radians(angle)) + height / 2
-        //       BHx = xxxxx
-        //       BHy = yyyyy
-        //     } else {
-        //       BHmass = 15
-        //       BHx = -width
-        //       BHy = 0
-        //     }
-        //   } else if (level == 5) {
-        //     if (i == 0) {
-        //       BHmass = height / 2.8
-        //       BHx = width / 2.8
-        //       BHy = height / 2
-        //     } else if (i == 1) {
-        //       BHmass = height / 4.5
-        //       BHx = width / 2
-        //       BHy = height - height / 2.8
-        //     } else if (i == 2) {
-        //       BHmass = height / 4.5
-        //       BHx = width / 2
-        //       BHy = height / 2.8
-        //     } else if (i == 3) {
-        //       BHmass = height / 5
-        //       BHx = width / 10
-        //       BHy = height - height / 8
-        //     } else if (i == 4) {
-        //       BHmass = height / 5.5
-        //       BHx = width - width / 9
-        //       BHy = height / 10
-        //     } else if (i == 5) {
-        //       BHmass = height / 5.5
-        //       BHx = width / 3
-        //       BHy = height / 7
-        //     } else {
-        //       BHmass = height / 14 + (i * height) / 40
-        //       BHx = width / 3 + ((i - 6) * width) / 6
-        //       BHy = height * 0.9 - ((i - 6) * height) / 13
-        //     }
-        //   } else if (level == 6) {
-        //     if (i % 2 == 0) {
-        //       BHmass = height / 3.5 + (i * height) / 80
-        //       BHx =
-        //         (height / 2) *
-        //           tan(radians(delay / 1.2 + i * 72)) *
-        //           cos(radians(delay / 1.2 + i * 72)) +
-        //         width / 1.5
-        //       BHy =
-        //         (height / 1.4) *
-        //           cos(radians(delay / 1.2 + i * 72)) *
-        //           sin(radians(delay / 1.2 + i * 72)) +
-        //         height / 2
-        //     } else {
-        //       BHx = -200
-        //       BHy = (i * width) / 10
-        //       BHmass = 10
-        //     }
-        //   } else if (level == 7) {
-        //     BHmass = height / 6.3 + (log((i % 6) + 1) * height) / 14
-        //     BHx = width / 11 + (i * width) / 13
-        //     if (i % 2 == 0) {
-        //       BHy = (sqrt(i) * height) / 8.5
-        //     } else {
-        //       BHy = height - (sqrt(i) * height) / 8.7
-        //     }
-        //   } else if (level == 8) {
-        //     BHmass = height / 3.5 + ((i % 4) * height) / 20
-        //     angle = (i + 1) * 36 + delay / 1.6
-        //     let xxxxxx = height * 1.5 * sin(radians(angle)) + width / 2
-        //     let yyyyyy =
-        //       (height / 1.2) * sin(radians(angle)) * cos(radians(angle)) +
-        //       height / 2
-        //     BHx = xxxxxx
-        //     BHy = yyyyyy
-        //   } else if (level == 9) {
-        //     BHmass = height / 5.1 + ((i % 4) * height) / 20
-        //     angle = (i + 1) * 36 + delay / 18
-        //     let xxxxxxx =
-        //       (height / 12 + width / 12) * cos(radians(angle)) -
-        //       (width / 5) *
-        //         cos((height / width + radians(angle)) * radians(angle)) +
-        //       width / 1.4
-        //     let yyyyyyy =
-        //       (height / 12 + width / 12) * sin(radians(angle)) -
-        //       (width / 5) *
-        //         sin((height / width + radians(angle)) * radians(angle)) +
-        //       height / 2
-        //     BHx = xxxxxxx * 0.85
-        //     BHy = yyyyyyy * 1
-        //   } else if (level == 10) {
-        //     BHmass = height / 5.5 + ((i % 5) * height) / 20
-        //     angle = (i + 1) * 50 + 18 * cos(radians(delay / 4))
-        //     let xxxxxxxx =
-        //       (height / 15) *
-        //         (cos(radians(angle)) + radians(angle) * sin(radians(angle))) +
-        //       width / 2
-        //     let yyyyyyyy =
-        //       (height / 15) *
-        //         (sin(radians(angle)) - radians(angle) * cos(radians(angle))) +
-        //       height / 2
-        //     BHx = xxxxxxxx
-        //     BHy = yyyyyyyy
-        //   }
-        //   //Calculate the surfer's gravity & corresponding motion only once when this loop is run against all of the asteroids
-        //   if (surfergravity == 0) {
-        //     //
-        //     if (
-        //       abs(BHx - prevx) < BHmass / 4 &&
-        //       abs(BHy - prevy) < BHmass / 4
-        //     ) {
-        //       GameOver = 1
-        //       //Add the data to the database only once
-        //       DBEntry = 1
-        //     }
-        //     BHdistance = dist(BHx, BHy, prevx, prevy)
-        //     //insert the surfer mass and BH mass into the equation
-        //     gforce =
-        //       (surfMass * gConstant * BHmass) / (BHdistance * BHdistance + 1)
-        //     denom = abs(prevx - BHx) + abs(prevy - BHy)
-        //     ratio = (BHx - prevx) / denom
-        //     ratiotwo = (BHy - prevy) / denom
-        //     xGravity = xGravity + ratio * gforce
-        //     yGravity = yGravity + ratiotwo * gforce
-        //     surfergravity = surfergravity + 1
-        //   }
-        //   BlackHoles[i].render(BHmass, BHx, BHy, 255)
-        // }
+          //Gravity between the black hole and surfer
+          BHdistance = dist(blackHoles[i].x, blackHoles[i].y, prevx, prevy)
+          gforce =
+            (surfMass * gConstant * blackHoles[i].mass) /
+            (BHdistance * BHdistance + 1)
+          denom =
+            abs(prevx - blackHoles[i].x) + abs(prevy - blackHoles[i].y) + 1
+          ratio = (blackHoles[i].x - prevx) / denom
+          ratiotwo = (blackHoles[i].y - prevy) / denom
+          xGravity = xGravity + ratio * gforce
+          yGravity = yGravity + ratiotwo * gforce
+          for (let j = 0; j < asteroids.length; j++) {
+            BHdistance = dist(
+              blackHoles[i].x,
+              blackHoles[i].y,
+              asteroids[j].x,
+              asteroids[j].y
+            )
+            if (BHdistance < blackHoles[i].size / 2) {
+              asteroids[j].reset()
+            }
+            gforce =
+              (asteroids[j].mass * gConstant * blackHoles[i].mass) /
+              (BHdistance * BHdistance + 1)
+            denom =
+              abs(asteroids[j].x - blackHoles[i].x) +
+              abs(asteroids[j].y - blackHoles[i].y) +
+              1
+            ratio = (blackHoles[i].x - asteroids[j].x) / denom
+            ratiotwo = (blackHoles[i].y - asteroids[j].y) / denom
+            xGravityAsteroid = ratio * gforce
+            yGravityAsteroid = ratiotwo * gforce
+            asteroids[j].vx = asteroids[j].vx + xGravityAsteroid
+            asteroids[j].vy = asteroids[j].vy + yGravityAsteroid
+          }
+        }
 
         //The trigger for beating the level, indicate the level completion and have brief break
-        // image(imgPortal,4.8*width/6,height/2-width/10.66,width/3,width/5.33);
         if (
           LevelChangeTrigger == 0 &&
           GameOver == 0 &&
@@ -1592,112 +1443,113 @@ class Surfer {
       //Psych Bike
       drawPsychBike(len, x, y)
     } else if (quatro == 2) {
+      drawCompiler(len, x, y)
       //The Compiler
       noStroke()
-      fill(80, 230, 130, 255)
-      square(x, y, len)
-      square(x, y - len, len)
-      square(x, y - len * 2, len)
-      square(x, y - len * 3, len)
-      square(x, y - len * 4, len)
-      square(x, y + len, len)
-      square(x, y + len * 2, len)
-      square(x, y + len * 3, len)
-      square(x, y + len * 4, len)
-      square(x, y + len * 5, len)
+      // fill(80, 230, 130, 255)
+      // square(x, y, len)
+      // square(x, y - len, len)
+      // square(x, y - len * 2, len)
+      // square(x, y - len * 3, len)
+      // square(x, y - len * 4, len)
+      // square(x, y + len, len)
+      // square(x, y + len * 2, len)
+      // square(x, y + len * 3, len)
+      // square(x, y + len * 4, len)
+      // square(x, y + len * 5, len)
 
-      square(x - len, y, len)
-      square(x - len, y - len, len)
-      square(x - len, y - len * 2, len)
-      square(x - len, y - len * 3, len)
-      square(x - len, y + len, len)
-      square(x - len, y + len * 2, len)
-      square(x - len, y + len * 3, len)
-      square(x - len, y + len * 4, len)
+      // square(x - len, y, len)
+      // square(x - len, y - len, len)
+      // square(x - len, y - len * 2, len)
+      // square(x - len, y - len * 3, len)
+      // square(x - len, y + len, len)
+      // square(x - len, y + len * 2, len)
+      // square(x - len, y + len * 3, len)
+      // square(x - len, y + len * 4, len)
 
-      square(x + len, y, len)
-      square(x + len, y - len, len)
-      square(x + len, y - len * 2, len)
-      square(x + len, y - len * 3, len)
-      square(x + len, y + len, len)
-      square(x + len, y + len * 2, len)
-      square(x + len, y + len * 3, len)
-      square(x + len, y + len * 4, len)
+      // square(x + len, y, len)
+      // square(x + len, y - len, len)
+      // square(x + len, y - len * 2, len)
+      // square(x + len, y - len * 3, len)
+      // square(x + len, y + len, len)
+      // square(x + len, y + len * 2, len)
+      // square(x + len, y + len * 3, len)
+      // square(x + len, y + len * 4, len)
 
-      square(x + len * 2, y, len)
-      square(x + len * 2, y - len, len)
-      square(x + len * 2, y + len, len)
-      square(x + len * 2, y + len * 2, len)
-      square(x - len * 2, y, len)
-      square(x - len * 2, y - len, len)
-      square(x - len * 2, y + len, len)
-      square(x - len * 2, y + len * 2, len)
+      // square(x + len * 2, y, len)
+      // square(x + len * 2, y - len, len)
+      // square(x + len * 2, y + len, len)
+      // square(x + len * 2, y + len * 2, len)
+      // square(x - len * 2, y, len)
+      // square(x - len * 2, y - len, len)
+      // square(x - len * 2, y + len, len)
+      // square(x - len * 2, y + len * 2, len)
 
-      square(x + len * 3, y, len)
-      square(x + len * 3, y + len, len)
-      square(x + len * 3, y + len * 2, len)
-      square(x - len * 3, y, len)
-      square(x - len * 3, y + len, len)
-      square(x - len * 3, y + len * 2, len)
+      // square(x + len * 3, y, len)
+      // square(x + len * 3, y + len, len)
+      // square(x + len * 3, y + len * 2, len)
+      // square(x - len * 3, y, len)
+      // square(x - len * 3, y + len, len)
+      // square(x - len * 3, y + len * 2, len)
 
-      square(x - len * 5, y, len)
-      square(x - len * 5, y + len, len)
-      square(x + len * 5, y, len)
-      square(x + len * 5, y + len, len)
-      square(x - len * 6, y, len)
-      square(x - len * 6, y + len, len)
-      square(x + len * 6, y, len)
-      square(x + len * 6, y + len, len)
+      // square(x - len * 5, y, len)
+      // square(x - len * 5, y + len, len)
+      // square(x + len * 5, y, len)
+      // square(x + len * 5, y + len, len)
+      // square(x - len * 6, y, len)
+      // square(x - len * 6, y + len, len)
+      // square(x + len * 6, y, len)
+      // square(x + len * 6, y + len, len)
 
-      fill(1, 100, 87, 255)
-      square(x - len * 3, y - len, len)
-      square(x + len * 3, y - len, len)
-      square(x + len * 4, y, len)
-      square(x + len * 4, y + len, len)
-      square(x + len * 4, y + len * 2, len)
-      square(x - len * 4, y, len)
-      square(x - len * 4, y + len, len)
-      square(x - len * 4, y + len * 2, len)
+      // fill(1, 100, 87, 255)
+      // square(x - len * 3, y - len, len)
+      // square(x + len * 3, y - len, len)
+      // square(x + len * 4, y, len)
+      // square(x + len * 4, y + len, len)
+      // square(x + len * 4, y + len * 2, len)
+      // square(x - len * 4, y, len)
+      // square(x - len * 4, y + len, len)
+      // square(x - len * 4, y + len * 2, len)
 
-      square(x - len * 7, y, len)
-      square(x - len * 7, y + len, len)
-      square(x + len * 7, y, len)
-      square(x + len * 7, y + len, len)
+      // square(x - len * 7, y, len)
+      // square(x - len * 7, y + len, len)
+      // square(x + len * 7, y, len)
+      // square(x + len * 7, y + len, len)
 
-      square(x - len * 7, y + len * 2, len)
-      square(x - len * 7, y + len * 3, len)
-      square(x + len * 7, y + len * 2, len)
-      square(x + len * 7, y + len * 3, len)
-      square(x - len * 7, y - len, len)
-      square(x - len * 7, y - len * 2, len)
-      square(x + len * 7, y - len, len)
-      square(x + len * 7, y - len * 2, len)
+      // square(x - len * 7, y + len * 2, len)
+      // square(x - len * 7, y + len * 3, len)
+      // square(x + len * 7, y + len * 2, len)
+      // square(x + len * 7, y + len * 3, len)
+      // square(x - len * 7, y - len, len)
+      // square(x - len * 7, y - len * 2, len)
+      // square(x + len * 7, y - len, len)
+      // square(x + len * 7, y - len * 2, len)
 
-      square(x - len * 8, y, len)
-      square(x - len * 8, y + len, len)
-      square(x + len * 8, y, len)
-      square(x + len * 8, y + len, len)
+      // square(x - len * 8, y, len)
+      // square(x - len * 8, y + len, len)
+      // square(x + len * 8, y, len)
+      // square(x + len * 8, y + len, len)
 
-      square(x - len * 8, y + len * 2, len)
-      square(x - len * 8, y - len * 3, len)
-      square(x + len * 8, y + len * 2, len)
-      square(x + len * 8, y - len * 3, len)
-      square(x - len * 8, y - len, len)
-      square(x - len * 8, y - len * 2, len)
-      square(x + len * 8, y - len, len)
-      square(x + len * 8, y - len * 2, len)
+      // square(x - len * 8, y + len * 2, len)
+      // square(x - len * 8, y - len * 3, len)
+      // square(x + len * 8, y + len * 2, len)
+      // square(x + len * 8, y - len * 3, len)
+      // square(x - len * 8, y - len, len)
+      // square(x - len * 8, y - len * 2, len)
+      // square(x + len * 8, y - len, len)
+      // square(x + len * 8, y - len * 2, len)
 
-      square(x - len * 2, y - len * 4, len)
-      square(x + len * 2, y - len * 4, len)
-      square(x - len * 3, y - len * 4, len)
-      square(x + len * 3, y - len * 4, len)
+      // square(x - len * 2, y - len * 4, len)
+      // square(x + len * 2, y - len * 4, len)
+      // square(x - len * 3, y - len * 4, len)
+      // square(x + len * 3, y - len * 4, len)
 
-      square(x - len * 3, y - len * 5, len)
-      square(x + len * 3, y - len * 5, len)
-      square(x - len * 4, y - len * 5, len)
-      square(x + len * 4, y - len * 5, len)
-      square(x - len * 5, y - len * 5, len)
-      square(x + len * 5, y - len * 5, len)
+      // square(x - len * 3, y - len * 5, len)
+      // square(x + len * 3, y - len * 5, len)
+      // square(x - len * 4, y - len * 5, len)
+      // square(x + len * 4, y - len * 5, len)
+      // square(x - len * 5, y - len * 5, len)
+      // square(x + len * 5, y - len * 5, len)
     } else {
       //VoidWalker
       stroke(255)
@@ -1822,6 +1674,19 @@ class Asteroid {
     this.vx = vx
     this.vy = vy
     this.size = size
+    this.mass = size * 0.01
+  }
+
+  reset() {
+    this.x = width * 1.1
+    let side = int(random(2))
+    if (side == 1) {
+      this.y = random(height / 4)
+    } else {
+      this.y = random((3 * height) / 4, height)
+    }
+    this.vx = random(-3, -0.1)
+    this.vy = random(-6, 6)
   }
 
   move() {
@@ -1830,15 +1695,20 @@ class Asteroid {
 
     // Check if offscreen and respawn
     if (this.x < 0 || this.y < 0 || this.y > height) {
-      this.x = width
-      this.y = random(height)
-      this.vx = random(-2, 2)
-      this.vy = random(-2, 2)
+      this.reset()
     }
   }
 
   draw() {
-    fill(255)
+    noStroke(0)
+
+    for (let i = 0; i < 5; i++) {
+      fill(255, 240, 10, 180 - i * 20)
+      ellipse(this.x, this.y, this.size + i, this.size + i)
+    }
+    fill(185, 185, 185)
+    strokeWeight(1)
+    stroke(0)
     ellipse(this.x, this.y, this.size, this.size)
   }
 }
@@ -2087,6 +1957,108 @@ function drawPsychBike(len, x, y) {
     x + wid * 0.15,
     y - wid * 0.1
   )
+}
+function drawCompiler(len, x, y) {
+  let wid = len * 6
+  let colorOne = color(0, 102, 255, 255)
+  let colorTwo = color(255, 188, 0, 255)
+  fill(colorTwo)
+  noStroke()
+  ellipse(x, y - wid * 0.2, wid * 0.7, wid * 0.7)
+  fill(colorOne)
+  triangle(
+    x - wid * 0.05,
+    y - wid * 0.25,
+    x - wid * 0.05,
+    y - wid * 0.4,
+    x - wid * 0.5,
+    y - wid * 0.6
+  )
+  triangle(
+    x + wid * 0.05,
+    y - wid * 0.25,
+    x + wid * 0.05,
+    y - wid * 0.4,
+    x + wid * 0.5,
+    y - wid * 0.6
+  )
+  stroke(colorTwo)
+  noFill()
+  strokeWeight(3)
+  translate(wid, 0)
+  curve(
+    x + wid * 4,
+    y,
+    x - wid * 1.5,
+    y - wid * 0.8,
+    x - wid * 1.5,
+    y + wid * 0.8,
+    x + wid * 4,
+    y
+  )
+  stroke(colorOne)
+  curve(
+    x + wid * 4,
+    y,
+    x - wid * 1.6,
+    y - wid * 0.8,
+    x - wid * 1.6,
+    y + wid * 0.8,
+    x + wid * 4,
+    y
+  )
+  stroke(colorTwo)
+  curve(
+    x + wid * 4,
+    y,
+    x - wid * 1.7,
+    y - wid * 0.8,
+    x - wid * 1.7,
+    y + wid * 0.8,
+    x + wid * 4,
+    y
+  )
+  translate(-wid * 2, 0)
+  curve(
+    x - wid * 4,
+    y,
+    x + wid * 1.5,
+    y - wid * 0.8,
+    x + wid * 1.5,
+    y + wid * 0.8,
+    x - wid * 4,
+    y
+  )
+  stroke(colorOne)
+  curve(
+    x - wid * 4,
+    y,
+    x + wid * 1.6,
+    y - wid * 0.8,
+    x + wid * 1.6,
+    y + wid * 0.8,
+    x - wid * 4,
+    y
+  )
+  stroke(colorTwo)
+  curve(
+    x - wid * 4,
+    y,
+    x + wid * 1.7,
+    y - wid * 0.8,
+    x + wid * 1.7,
+    y + wid * 0.8,
+    x - wid * 4,
+    y
+  )
+  translate(wid, 0)
+  stroke(colorOne)
+  strokeWeight(wid / 3.5)
+  line(x - wid * 1.16, y, x + wid * 1.16, y)
+  strokeWeight(2)
+  stroke(colorTwo)
+  line(x - wid * 1.13, y - wid * 0.19, x + wid * 1.13, y - wid * 0.19)
+  line(x - wid * 1.13, y + wid * 0.19, x + wid * 1.13, y + wid * 0.19)
 }
 function errData(err) {}
 
