@@ -75,6 +75,7 @@ const levelBlackHoles = [
     new BlackHole(1120, 360, 25, true, 0, 25), // One moving in circle (top right)
   ],
 ]
+
 var app = 0
 //Images
 let ratioX = 1
@@ -1383,173 +1384,68 @@ class Surfer {
     noStroke()
     len = width / 320
     if (quatro == 0) {
+      drawSuperbug(len, x, y)
       //Superbug
-      fill(255, 240, 0, 255)
-      square(x - len, y + 3 * len, len)
-      square(x + len, y + 3 * len, len)
-      square(x, y + 3 * len, len)
-      square(x - len * 2, y + 6 * len, len)
-      square(x + len * 2, y + 6 * len, len)
+      // fill(255, 240, 0, 255)
+      // square(x - len, y + 3 * len, len)
+      // square(x + len, y + 3 * len, len)
+      // square(x, y + 3 * len, len)
+      // square(x - len * 2, y + 6 * len, len)
+      // square(x + len * 2, y + 6 * len, len)
 
-      square(x + len * 2, y + len, len)
-      square(x + len * 2, y, len)
-      square(x + len * 2, y - len, len)
-      square(x + len * 2, y - len * 2, len)
-      square(x + len * 3, y - len * 3, len)
-      square(x + len * 3, y - len * 4, len)
-      square(x + len * 4, y - len * 4, len)
-      square(x + len * 4, y - len * 5, len)
-      square(x + len * 5, y - len * 5, len)
-      square(x + len * 3, y + len, len)
+      // square(x + len * 2, y + len, len)
+      // square(x + len * 2, y, len)
+      // square(x + len * 2, y - len, len)
+      // square(x + len * 2, y - len * 2, len)
+      // square(x + len * 3, y - len * 3, len)
+      // square(x + len * 3, y - len * 4, len)
+      // square(x + len * 4, y - len * 4, len)
+      // square(x + len * 4, y - len * 5, len)
+      // square(x + len * 5, y - len * 5, len)
+      // square(x + len * 3, y + len, len)
 
-      square(x - len * 2, y + len, len)
-      square(x - len * 2, y, len)
-      square(x - len * 2, y - len, len)
-      square(x - len * 2, y - len * 2, len)
-      square(x - len * 3, y - len * 3, len)
-      square(x - len * 3, y - len * 4, len)
-      square(x - len * 4, y - len * 4, len)
-      square(x - len * 4, y - len * 5, len)
-      square(x - len * 5, y - len * 5, len)
-      square(x - len * 3, y + len, len)
+      // square(x - len * 2, y + len, len)
+      // square(x - len * 2, y, len)
+      // square(x - len * 2, y - len, len)
+      // square(x - len * 2, y - len * 2, len)
+      // square(x - len * 3, y - len * 3, len)
+      // square(x - len * 3, y - len * 4, len)
+      // square(x - len * 4, y - len * 4, len)
+      // square(x - len * 4, y - len * 5, len)
+      // square(x - len * 5, y - len * 5, len)
+      // square(x - len * 3, y + len, len)
 
-      square(x - len * 5, y + len, len)
-      square(x - len * 5, y + len * 2, len)
-      square(x + len * 5, y + len, len)
-      square(x + len * 5, y + len * 2, len)
+      // square(x - len * 5, y + len, len)
+      // square(x - len * 5, y + len * 2, len)
+      // square(x + len * 5, y + len, len)
+      // square(x + len * 5, y + len * 2, len)
 
-      fill(255, 0, 0, 255)
-      square(x - len, y, len * 3)
-      square(x, y + 4 * len, len)
-      square(x, y + 4 * len, len)
-      square(x + len, y + 4 * len, len)
-      square(x - len, y + 4 * len, len)
-      square(x + len, y + 5 * len, len)
-      square(x, y + 5 * len, len)
-      square(x - len, y + 5 * len, len)
+      // fill(255, 0, 0, 255)
+      // square(x - len, y, len * 3)
+      // square(x, y + 4 * len, len)
+      // square(x, y + 4 * len, len)
+      // square(x + len, y + 4 * len, len)
+      // square(x - len, y + 4 * len, len)
+      // square(x + len, y + 5 * len, len)
+      // square(x, y + 5 * len, len)
+      // square(x - len, y + 5 * len, len)
 
-      square(x + 4 * len, y, len)
-      square(x + 4 * len, y + len, len)
-      square(x - 4 * len, y, len)
-      square(x - 4 * len, y + len, len)
+      // square(x + 4 * len, y, len)
+      // square(x + 4 * len, y + len, len)
+      // square(x - 4 * len, y, len)
+      // square(x - 4 * len, y + len, len)
 
-      square(x + 6 * len, y + len * 3, len)
-      square(x + 6 * len, y + len * 2, len)
-      square(x - 6 * len, y + len * 3, len)
-      square(x - 6 * len, y + len * 2, len)
-      square(x - 5 * len, y + len * 4, len)
-      square(x + 5 * len, y + len * 4, len)
+      // square(x + 6 * len, y + len * 3, len)
+      // square(x + 6 * len, y + len * 2, len)
+      // square(x - 6 * len, y + len * 3, len)
+      // square(x - 6 * len, y + len * 2, len)
+      // square(x - 5 * len, y + len * 4, len)
+      // square(x + 5 * len, y + len * 4, len)
     } else if (quatro == 1) {
       //Psych Bike
       drawPsychBike(len, x, y)
     } else if (quatro == 2) {
       drawCompiler(len, x, y)
-      //The Compiler
-      noStroke()
-      // fill(80, 230, 130, 255)
-      // square(x, y, len)
-      // square(x, y - len, len)
-      // square(x, y - len * 2, len)
-      // square(x, y - len * 3, len)
-      // square(x, y - len * 4, len)
-      // square(x, y + len, len)
-      // square(x, y + len * 2, len)
-      // square(x, y + len * 3, len)
-      // square(x, y + len * 4, len)
-      // square(x, y + len * 5, len)
-
-      // square(x - len, y, len)
-      // square(x - len, y - len, len)
-      // square(x - len, y - len * 2, len)
-      // square(x - len, y - len * 3, len)
-      // square(x - len, y + len, len)
-      // square(x - len, y + len * 2, len)
-      // square(x - len, y + len * 3, len)
-      // square(x - len, y + len * 4, len)
-
-      // square(x + len, y, len)
-      // square(x + len, y - len, len)
-      // square(x + len, y - len * 2, len)
-      // square(x + len, y - len * 3, len)
-      // square(x + len, y + len, len)
-      // square(x + len, y + len * 2, len)
-      // square(x + len, y + len * 3, len)
-      // square(x + len, y + len * 4, len)
-
-      // square(x + len * 2, y, len)
-      // square(x + len * 2, y - len, len)
-      // square(x + len * 2, y + len, len)
-      // square(x + len * 2, y + len * 2, len)
-      // square(x - len * 2, y, len)
-      // square(x - len * 2, y - len, len)
-      // square(x - len * 2, y + len, len)
-      // square(x - len * 2, y + len * 2, len)
-
-      // square(x + len * 3, y, len)
-      // square(x + len * 3, y + len, len)
-      // square(x + len * 3, y + len * 2, len)
-      // square(x - len * 3, y, len)
-      // square(x - len * 3, y + len, len)
-      // square(x - len * 3, y + len * 2, len)
-
-      // square(x - len * 5, y, len)
-      // square(x - len * 5, y + len, len)
-      // square(x + len * 5, y, len)
-      // square(x + len * 5, y + len, len)
-      // square(x - len * 6, y, len)
-      // square(x - len * 6, y + len, len)
-      // square(x + len * 6, y, len)
-      // square(x + len * 6, y + len, len)
-
-      // fill(1, 100, 87, 255)
-      // square(x - len * 3, y - len, len)
-      // square(x + len * 3, y - len, len)
-      // square(x + len * 4, y, len)
-      // square(x + len * 4, y + len, len)
-      // square(x + len * 4, y + len * 2, len)
-      // square(x - len * 4, y, len)
-      // square(x - len * 4, y + len, len)
-      // square(x - len * 4, y + len * 2, len)
-
-      // square(x - len * 7, y, len)
-      // square(x - len * 7, y + len, len)
-      // square(x + len * 7, y, len)
-      // square(x + len * 7, y + len, len)
-
-      // square(x - len * 7, y + len * 2, len)
-      // square(x - len * 7, y + len * 3, len)
-      // square(x + len * 7, y + len * 2, len)
-      // square(x + len * 7, y + len * 3, len)
-      // square(x - len * 7, y - len, len)
-      // square(x - len * 7, y - len * 2, len)
-      // square(x + len * 7, y - len, len)
-      // square(x + len * 7, y - len * 2, len)
-
-      // square(x - len * 8, y, len)
-      // square(x - len * 8, y + len, len)
-      // square(x + len * 8, y, len)
-      // square(x + len * 8, y + len, len)
-
-      // square(x - len * 8, y + len * 2, len)
-      // square(x - len * 8, y - len * 3, len)
-      // square(x + len * 8, y + len * 2, len)
-      // square(x + len * 8, y - len * 3, len)
-      // square(x - len * 8, y - len, len)
-      // square(x - len * 8, y - len * 2, len)
-      // square(x + len * 8, y - len, len)
-      // square(x + len * 8, y - len * 2, len)
-
-      // square(x - len * 2, y - len * 4, len)
-      // square(x + len * 2, y - len * 4, len)
-      // square(x - len * 3, y - len * 4, len)
-      // square(x + len * 3, y - len * 4, len)
-
-      // square(x - len * 3, y - len * 5, len)
-      // square(x + len * 3, y - len * 5, len)
-      // square(x - len * 4, y - len * 5, len)
-      // square(x + len * 4, y - len * 5, len)
-      // square(x - len * 5, y - len * 5, len)
-      // square(x + len * 5, y - len * 5, len)
     } else {
       //VoidWalker
       stroke(255)
@@ -1702,13 +1598,14 @@ class Asteroid {
   draw() {
     noStroke(0)
 
-    for (let i = 0; i < 5; i++) {
-      fill(255, 240, 10, 180 - i * 20)
-      ellipse(this.x, this.y, this.size + i, this.size + i)
+    for (let i = 0; i < 15; i++) {
+      fill(255, 255, 255, 100 - i * 6)
+      ellipse(this.x, this.y, this.size + i * 0.75, this.size + i * 0.75)
     }
-    fill(185, 185, 185)
-    strokeWeight(1)
-    stroke(0)
+    fill(195, 195, 195)
+    noStroke()
+    // strokeWeight(1)
+    // stroke(0)
     ellipse(this.x, this.y, this.size, this.size)
   }
 }
@@ -1960,15 +1857,16 @@ function drawPsychBike(len, x, y) {
 }
 function drawCompiler(len, x, y) {
   let wid = len * 6
-  let colorOne = color(0, 102, 255, 255)
-  let colorTwo = color(255, 188, 0, 255)
+  let colorOne = color(0, 255)
+  let colorTwo = color(80, 230, 130, 255)
   fill(colorTwo)
   noStroke()
   ellipse(x, y - wid * 0.2, wid * 0.7, wid * 0.7)
   fill(colorOne)
+  stroke(colorTwo)
   triangle(
     x - wid * 0.05,
-    y - wid * 0.25,
+    y - wid * 0.2,
     x - wid * 0.05,
     y - wid * 0.4,
     x - wid * 0.5,
@@ -1976,12 +1874,13 @@ function drawCompiler(len, x, y) {
   )
   triangle(
     x + wid * 0.05,
-    y - wid * 0.25,
+    y - wid * 0.2,
     x + wid * 0.05,
     y - wid * 0.4,
     x + wid * 0.5,
     y - wid * 0.6
   )
+
   stroke(colorTwo)
   noFill()
   strokeWeight(3)
@@ -2051,15 +1950,35 @@ function drawCompiler(len, x, y) {
     x - wid * 4,
     y
   )
+
   translate(wid, 0)
+  line(x + wid * 0.67, y - wid * 0.8, x + wid * 0.5, y - wid * 0.8)
+  line(x + wid * 0.67, y + wid * 0.8, x + wid * 0.5, y + wid * 0.8)
+  line(x - wid * 0.67, y + wid * 0.8, x - wid * 0.5, y + wid * 0.8)
+  line(x - wid * 0.67, y - wid * 0.8, x - wid * 0.5, y - wid * 0.8)
   stroke(colorOne)
-  strokeWeight(wid / 3.5)
+  strokeWeight(wid / 4.5)
   line(x - wid * 1.16, y, x + wid * 1.16, y)
-  strokeWeight(2)
+  strokeWeight(3)
   stroke(colorTwo)
-  line(x - wid * 1.13, y - wid * 0.19, x + wid * 1.13, y - wid * 0.19)
-  line(x - wid * 1.13, y + wid * 0.19, x + wid * 1.13, y + wid * 0.19)
+  line(x - wid * 1.13, y - wid * 0.17, x + wid * 1.13, y - wid * 0.17)
+  line(x - wid * 1.13, y + wid * 0.17, x + wid * 1.13, y + wid * 0.17)
+
+  strokeWeight(0.75)
+  line(x - wid * 1.1, y, x + wid * 1.1, y)
 }
+function drawSuperbug(len, x, y) {
+  let wid = len * 6
+  let colorOne = color(0, 102, 255, 255)
+  let colorTwo = color(255, 188, 0, 255)
+  fill(colorTwo)
+  noStroke()
+  ellipse(x, y + wid * 0.35, wid * 0.9, wid * 0.9)
+  fill(colorOne)
+  ellipse(x, y, wid * 0.8, wid * 0.9)
+  ellipse(x, y + wid * 0.7, wid * 0.6, wid * 0.7)
+}
+
 function errData(err) {}
 
 function changeLevel(newLevel) {
