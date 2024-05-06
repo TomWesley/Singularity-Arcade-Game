@@ -312,7 +312,7 @@ function draw() {
     input.remove()
     //incremental variable that increases by one each frame
     delay = delay + 1
-
+    textFont(title)
     if (GameOver === 0) {
       cursor(CROSS)
       if (gamePhase === 1) {
@@ -441,7 +441,7 @@ function draw() {
         }
         prevx = width / 12
         prevy = height / 2
-      } else if (gamePhase === 2) {
+      } else if (int(getItem('Stage')) == 2) {
         changeLevel(1)
 
         //Surfer Selection Page when gamePhase = 2
