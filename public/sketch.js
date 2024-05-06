@@ -13,7 +13,7 @@ class BlackHole {
     this.x = x
     this.y = y
     this.size = size
-    this.mass = size
+    this.mass = size * 1.5
     this.isMoving = isMoving
     this.moveAngle = moveAngle
     this.moveRadius = moveRadius
@@ -30,19 +30,35 @@ class BlackHole {
   }
 
   draw() {
+    noFill()
+    for (let i = 0; i < 50; i = i + 2) {
+      if (i == 0) {
+        stroke(255)
+      } else {
+        stroke(255, 50 - i)
+      }
+      strokeWeight(2)
+      ellipse(
+        this.x + this.offsetX,
+        this.y + this.offsetY,
+        this.size + i,
+        this.size + i
+      )
+    }
     fill(0)
-    strokeWeight(this.size / 20)
-    stroke(255)
+    noStroke()
     ellipse(this.x + this.offsetX, this.y + this.offsetY, this.size, this.size)
+    this.x = this.x + this.offsetX
+    this.y = this.y + this.offsetY
   }
 }
 const levelBlackHoles = [
   // Level 1 configuration (1 black hole)
-  [new BlackHole(640, 360, 250, false)],
+  [new BlackHole(640, 0, 300, false), new BlackHole(640, 720, 300, false)],
   // Level 2 configuration (2 black holes)
   [
-    new BlackHole(426.67, 360, 140, false),
-    new BlackHole(853.33, 360, 40, false),
+    new BlackHole(426.67, 360, 180, false),
+    new BlackHole(900, 360, 90, true, 3.14 / 2, 1.5),
   ],
   // Level 3 configuration (3 black holes)
   [
@@ -137,7 +153,7 @@ let xGravity = 0
 let yGravity = 0
 let xGravityAsteroid = 0
 let yGravityAsteroid = 0
-let gConstant = 700
+let gConstant = 1200
 let ratio = 0
 let ratiotwo = 0
 let prevxx = 0
@@ -193,9 +209,9 @@ function preload() {
 
 function setup() {
   finalPosition = createVector(0, 0)
-
+  //storeItem('Stage', 0)
   createCanvas(1280, 720)
-  //storeItem('nameIn', nameIn)
+
   //Create arrays of the class objects to be utilized in the draw phase
   for (let i = 0; i < 500; i++) {
     Stars[i] = new Star()
@@ -207,7 +223,7 @@ function setup() {
     let temp = new Asteroid(
       width * 1.1,
       random(height),
-      random(-5, -1),
+      random(-2, -1),
       random(-2, 2),
       width / 140
     )
@@ -250,8 +266,7 @@ function draw() {
   //Use a more visually appealing cursor - Possibly insert a custom cursor eventually
   cursor(CROSS)
 
-  //if (getItem('Stage') < 2) {
-  if (getItem('nameIn') != 1) {
+  if (getItem('Stage') === null) {
     background(0)
     speed = 0.8
     for (let i = 0; i < Stars.length; i++) {
@@ -341,10 +356,10 @@ function draw() {
           keyIsPressed = false
           gamePhase = 0
           delay = 0
+          storeItem('Stage', 1)
         }
       }
-      if (gamePhase == 0) {
-        storeItem('Stage', 2)
+      if (int(getItem('Stage')) == 1) {
         //Title Screen when gamePhase = 0
         background(0)
         textSize(32)
@@ -416,6 +431,7 @@ function draw() {
           ) {
             mouseIsPressed = false
             keyIsPressed = false
+            storeItem('Stage', 2)
             //fullscreen(full);
             //resizeCanvas(displayWidth, displayHeight);
             gamePhase = 2
@@ -427,7 +443,7 @@ function draw() {
         prevy = height / 2
       } else if (gamePhase === 2) {
         changeLevel(1)
-        storeItem('Stage', 3)
+
         //Surfer Selection Page when gamePhase = 2
         turnoff = 0
         background(0)
@@ -911,10 +927,11 @@ function draw() {
         background(0, 0, 0, 255)
         //finish line
         fill(255, 240, 10)
-
-        noStroke()
+        strokeWeight(5)
+        stroke(255, 255 * abs(sin(0.005 * timer * PI)))
+        translate(width * 0.015, 0)
         quad(
-          width * 0.91,
+          width * 0.92,
 
           height * 0.4,
 
@@ -924,11 +941,11 @@ function draw() {
           width * 0.985,
           height * 0.5,
 
-          width * 0.945,
+          width * 0.955,
           height * 0.5
         )
         quad(
-          width * 0.91,
+          width * 0.92,
 
           height * 0.6,
 
@@ -938,9 +955,67 @@ function draw() {
           width * 0.985,
           height * 0.5,
 
-          width * 0.945,
+          width * 0.955,
           height * 0.5
         )
+        quad(
+          width * 0.89,
+
+          height * 0.4,
+
+          width * 0.91,
+          height * 0.4,
+
+          width * 0.945,
+          height * 0.5,
+
+          width * 0.925,
+          height * 0.5
+        )
+        quad(
+          width * 0.89,
+
+          height * 0.6,
+
+          width * 0.91,
+          height * 0.6,
+
+          width * 0.945,
+          height * 0.5,
+
+          width * 0.925,
+          height * 0.5
+        )
+        quad(
+          width * 0.87,
+
+          height * 0.4,
+
+          width * 0.88,
+          height * 0.4,
+
+          width * 0.915,
+          height * 0.5,
+
+          width * 0.905,
+          height * 0.5
+        )
+        quad(
+          width * 0.87,
+
+          height * 0.6,
+
+          width * 0.88,
+          height * 0.6,
+
+          width * 0.915,
+          height * 0.5,
+
+          width * 0.905,
+          height * 0.5
+        )
+
+        translate(-width * 0.015, 0)
 
         noStroke()
 
@@ -1042,8 +1117,9 @@ function draw() {
           textSize(height / 6.3)
           stroke(0)
           fill(255, 240, 0, 255)
+          textAlign(CENTER)
           if (LevelChangeCount < 50) {
-            text('Level Complete', width / 9, height / 2.8)
+            text('Level Complete', width / 2, height / 2.8)
             noStroke()
             fill(150, 250, 180, 35)
             quad(0, 0, width, 0, width, height, 0, height)
@@ -1107,23 +1183,25 @@ function draw() {
           // xsurf = ratio * distance
           // ysurf = ratiotwo * distance
         } else {
+          textAlign(CENTER)
           if (levelStart == 0) {
             fill(255, 240, 0, 255)
             stroke(0)
             textSize(height / 7.5)
-            text('Awaiting Signal', width / 6.6, height / 3.5)
+
+            text('Awaiting Signal', width / 2, height / 3.5)
             var thisText = 'Lives: ' + lifeCount
             stroke(0)
-            text(thisText, width / 3, height / 1.8)
+            text(thisText, width / 2, height / 1.8)
           }
           if (noText == 1) {
             fill(255, 240, 0, 255)
             stroke(0)
             textSize(height / 7.5)
             let myText = 'Lives: ' + lifeCount
-            text('Engage Thrusters!', width / 8.25, height / 3.5)
+            text('Engage Thrusters!', width / 2, height / 3.5)
             //fill(255, 0, 0, 255);
-            text(myText, width / 3, height / 1.8)
+            text(myText, width / 2, height / 1.8)
           }
           xsurf = width / 12
           ysurf = height / 2
@@ -1135,19 +1213,20 @@ function draw() {
           GameOver = 0
         }
         //control for the mouse being too close to the surfer, SEPARATE X AND Y HERE
-        if (abs(mouseX - xsurf) > 3) {
+        if (abs(mouseX - xsurf) > 2) {
           finalPosition.x =
             xsurf +
             ((mouseX - xsurf) / abs(mouseX - xsurf)) * 1 * surferSpeed * ratioX
+          finalPosition.x = finalPosition.x + xGravity
         }
-        if (abs(mouseY - ysurf) > 3) {
+        if (abs(mouseY - ysurf) > 2) {
           finalPosition.y =
             ysurf +
             ((mouseY - ysurf) / abs(mouseY - ysurf)) * 1 * surferSpeed * ratioY
+          finalPosition.y = finalPosition.y + yGravity
         }
         //Add in the gravity
-        finalPosition.x = finalPosition.x + xGravity
-        finalPosition.y = finalPosition.y + yGravity
+
         //Control for the edges of the screen
         if (finalPosition.x > width) {
           finalPosition.x = width
@@ -1570,7 +1649,7 @@ class Asteroid {
     this.vx = vx
     this.vy = vy
     this.size = size
-    this.mass = size * 0.01
+    this.mass = size * 0.001
   }
 
   reset() {
@@ -1582,7 +1661,7 @@ class Asteroid {
       this.y = random((3 * height) / 4, height)
     }
     this.vx = random(-3, -0.1)
-    this.vy = random(-6, 6)
+    this.vy = random(-3, 3)
   }
 
   move() {
@@ -1598,11 +1677,11 @@ class Asteroid {
   draw() {
     noStroke(0)
 
-    for (let i = 0; i < 15; i++) {
-      fill(255, 255, 255, 100 - i * 6)
+    for (let i = 0; i < 10; i++) {
+      fill(135, 175, 255, 100 - i * 9)
       ellipse(this.x, this.y, this.size + i * 0.75, this.size + i * 0.75)
     }
-    fill(195, 195, 195)
+    fill(135, 175, 255)
     noStroke()
     // strokeWeight(1)
     // stroke(0)
