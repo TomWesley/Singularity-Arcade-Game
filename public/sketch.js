@@ -249,7 +249,7 @@ function setup() {
   app = firebase.initializeApp(firebaseConfig)
 
   input = createInput()
-  input.position(width / 3, (4 * height) / 9)
+  input.position(width / 2, (4.5 * height) / 9)
   input.size(width / 6, height / 9)
   input.style('font-size', '48px')
   input.style('background-color', '#ffffa1')
@@ -873,6 +873,7 @@ function draw() {
               surferSpeed = 13
               gamePhase = 4
               surfType = 0
+              storeItem('Stage', 3)
             } else if (
               mouseY < height - (2 * height) / 10 &&
               mouseY > height - (4 * height) / 10
@@ -881,6 +882,7 @@ function draw() {
               surfMass = 2.3
               surferSpeed = 14.5
               gamePhase = 4
+              storeItem('Stage', 3)
               surfType = 1
             } else if (
               mouseY < height - (4 * height) / 10 &&
@@ -890,6 +892,7 @@ function draw() {
               surfMass = 2.7
               surferSpeed = 16
               gamePhase = 4
+              storeItem('Stage', 3)
               surfType = 2
             } else if (
               mouseY < height - (6 * height) / 10 &&
@@ -900,6 +903,7 @@ function draw() {
               surferSpeed = 11.5
               gamePhase = 4
               surfType = 3
+              storeItem('Stage', 3)
             }
           }
         }
@@ -907,7 +911,7 @@ function draw() {
           //Use this to prevent an immediate selection by not accepting clicks in the first moments after entering the Surfer Selection Page
           Craftselectioncount = Craftselectioncount - 1
         }
-      } else if (gamePhase >= 4) {
+      } else if (getItem('Stage') >= 3) {
         storeItem('Stage', 4)
         if (gamePhase == 4) {
           prevx = width / 12
