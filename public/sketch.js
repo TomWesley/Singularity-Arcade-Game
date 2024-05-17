@@ -109,7 +109,7 @@ let finalPosition
 let Stars = []
 let Surfers = []
 let BlackHoles = []
-let blackholes = []
+let blackHoles = []
 let asteroids = []
 const numAsteroids = 13
 
@@ -175,7 +175,7 @@ let surferSpeed = 4
 let surfRed
 let surfBlue
 let surfGreen
-let surfType
+let surfType = 1
 let surfMass
 
 //Level Variables
@@ -913,113 +913,121 @@ function draw() {
         }
       } else if (getItem('Stage') >= 3) {
         storeItem('Stage', 4)
-        if (gamePhase == 4) {
+        if (turnoff < 11) {
           prevx = width / 12
           prevy = height / 2
-          levelTimer = 0
+          turnoff = turnoff + 1
           noText = 0
           levelStart = 0
-        }
-        if ((keyIsPressed || mouseIsPressed) && turnoff > 10) {
+          levelTimer = 0
+        } else if (keyIsPressed || mouseIsPressed) {
           gamePhase = 5
+          storeItem('Test', gamePhase)
           levelStart = 1
           noText = 1
         }
-        if (turnoff < 11) {
-          turnoff = turnoff + 1
-        }
         background(0, 0, 0, 255)
         //finish line
-        fill(255, 240, 10)
-        strokeWeight(5)
-        stroke(255, 255 * abs(sin(0.005 * timer * PI)))
-        translate(width * 0.015, 0)
-        quad(
-          width * 0.92,
+        for (let i = 0; i < 2; i++) {
+          if (i == 0) {
+            fill(255, 240, 10)
+            noStroke()
+          } else {
+            strokeWeight(5)
+            stroke(255, 255 * abs(cos(PI * timer * 0.005)))
+            fill(255, 255 * abs(cos(PI * timer * 0.005)))
+          }
 
-          height * 0.4,
+          // strokeWeight(5)
+          // stroke(255, 255 * abs(sin(0.005 * timer * PI)))
+          translate(width * 0.015, 0)
+          quad(
+            width * 0.92,
 
-          width * 0.95,
-          height * 0.4,
+            height * 0.4,
 
-          width * 0.985,
-          height * 0.5,
+            width * 0.95,
+            height * 0.4,
 
-          width * 0.955,
-          height * 0.5
-        )
-        quad(
-          width * 0.92,
+            width * 0.985,
+            height * 0.5,
 
-          height * 0.6,
+            width * 0.955,
+            height * 0.5
+          )
+          quad(
+            width * 0.92,
 
-          width * 0.95,
-          height * 0.6,
+            height * 0.6,
 
-          width * 0.985,
-          height * 0.5,
+            width * 0.95,
+            height * 0.6,
 
-          width * 0.955,
-          height * 0.5
-        )
-        quad(
-          width * 0.89,
+            width * 0.985,
+            height * 0.5,
 
-          height * 0.4,
+            width * 0.955,
+            height * 0.5
+          )
+          quad(
+            width * 0.89,
 
-          width * 0.91,
-          height * 0.4,
+            height * 0.4,
 
-          width * 0.945,
-          height * 0.5,
+            width * 0.91,
+            height * 0.4,
 
-          width * 0.925,
-          height * 0.5
-        )
-        quad(
-          width * 0.89,
+            width * 0.945,
+            height * 0.5,
 
-          height * 0.6,
+            width * 0.925,
+            height * 0.5
+          )
+          quad(
+            width * 0.89,
 
-          width * 0.91,
-          height * 0.6,
+            height * 0.6,
 
-          width * 0.945,
-          height * 0.5,
+            width * 0.91,
+            height * 0.6,
 
-          width * 0.925,
-          height * 0.5
-        )
-        quad(
-          width * 0.87,
+            width * 0.945,
+            height * 0.5,
 
-          height * 0.4,
+            width * 0.925,
+            height * 0.5
+          )
+          quad(
+            width * 0.87,
 
-          width * 0.88,
-          height * 0.4,
+            height * 0.4,
 
-          width * 0.915,
-          height * 0.5,
+            width * 0.88,
+            height * 0.4,
 
-          width * 0.905,
-          height * 0.5
-        )
-        quad(
-          width * 0.87,
+            width * 0.915,
+            height * 0.5,
 
-          height * 0.6,
+            width * 0.905,
+            height * 0.5
+          )
+          quad(
+            width * 0.87,
 
-          width * 0.88,
-          height * 0.6,
+            height * 0.6,
 
-          width * 0.915,
-          height * 0.5,
+            width * 0.88,
+            height * 0.6,
 
-          width * 0.905,
-          height * 0.5
-        )
+            width * 0.915,
+            height * 0.5,
 
-        translate(-width * 0.015, 0)
+            width * 0.905,
+            height * 0.5
+          )
+
+          translate(-width * 0.015, 0)
+        }
 
         noStroke()
 
@@ -1030,24 +1038,6 @@ function draw() {
         translate(-width / 2, -height / 2)
         //Galaxy Start
 
-        if (level < 3) {
-          image(imgOne, 0, height / 2 - width / 18, width / 6, width / 9)
-        } else if (level < 5) {
-          image(imgThree, 0, height / 2 - width / 12, width / 6, width / 6)
-        } else if (level < 7) {
-          image(imgFive, 0, height / 2 - width / 18, width / 6, width / 9)
-        } else if (level < 9) {
-          image(
-            imgSeven,
-            0,
-            height / 2 - width / 16.59,
-            width / 6,
-            width / 8.29
-          )
-        } else {
-          image(imgNine, 0, height / 2 - width / 13.31, width / 6, width / 6.66)
-        }
-
         //Black Holes/Asteroids
 
         let BHdistance
@@ -1055,6 +1045,7 @@ function draw() {
         let gforce
         let BHmass = 0
         let denom
+
         xGravity = 0
         yGravity = 0
         xGravityAsteroid = 0
@@ -1128,10 +1119,11 @@ function draw() {
             fill(150, 250, 180, 35)
             quad(0, 0, width, 0, width, height, 0, height)
           } else {
+            turnoff = 0
             LevelChangeTrigger = 0
             gamePhase = 4
-
             level = level + 1
+            storeItem('Level', level)
             changeLevel(level)
             //Change the next value here to reflect the last level which will trigger the victory sequence
             if (level == 11) {
@@ -1174,19 +1166,7 @@ function draw() {
         let mouseVector
         mouseVector = createVector(mousex, mousey)
 
-        levelTimer = levelTimer + 1
-        if (levelTimer > 75) {
-          //NEES TO BE FIXED
-          if (abs(ysurf - mouseY) > 3 && abs(xsurf - mouseX) > 3) {
-            ratioX =
-              abs(xsurf - mouseX) / (abs(ysurf - mouseY) + abs(xsurf - mouseX))
-            ratioY =
-              abs(ysurf - mouseY) / (abs(ysurf - mouseY) + abs(xsurf - mouseX))
-          }
-          //  ratiotwo = ysurf / (abs(xsurf) + abs(ysurf))
-          // xsurf = ratio * distance
-          // ysurf = ratiotwo * distance
-        } else {
+        if (levelTimer < 75) {
           textAlign(CENTER)
           if (levelStart == 0) {
             fill(255, 240, 0, 255)
@@ -1197,6 +1177,8 @@ function draw() {
             var thisText = 'Lives: ' + lifeCount
             stroke(0)
             text(thisText, width / 2, height / 1.8)
+          } else {
+            levelTimer = levelTimer + 1
           }
           if (noText == 1) {
             fill(255, 240, 0, 255)
@@ -1217,13 +1199,18 @@ function draw() {
           GameOver = 0
         }
         //control for the mouse being too close to the surfer, SEPARATE X AND Y HERE
+
         if (abs(mouseX - xsurf) > 2) {
+          ratioX =
+            abs(xsurf - mouseX) / (abs(ysurf - mouseY) + abs(xsurf - mouseX))
           finalPosition.x =
             xsurf +
             ((mouseX - xsurf) / abs(mouseX - xsurf)) * 1 * surferSpeed * ratioX
           finalPosition.x = finalPosition.x + xGravity
         }
         if (abs(mouseY - ysurf) > 2) {
+          ratioY =
+            abs(ysurf - mouseY) / (abs(ysurf - mouseY) + abs(xsurf - mouseX))
           finalPosition.y =
             ysurf +
             ((mouseY - ysurf) / abs(mouseY - ysurf)) * 1 * surferSpeed * ratioY
@@ -2074,5 +2061,4 @@ function changeLevel(newLevel) {
       levelBlackHoles.length
     )
   }
-  print(currentLevel)
 }
