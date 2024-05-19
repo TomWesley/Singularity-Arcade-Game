@@ -910,6 +910,7 @@ function draw() {
         }
       } else if (getItem('Stage') >= 3) {
         storeItem('Stage', 4)
+        background(0, 0, 0, 255)
         if (turnoff < 11) {
           prevx = width / 12
           prevy = height / 2
@@ -923,14 +924,13 @@ function draw() {
           levelStart = 1
           noText = 1
         }
-        background(0, 0, 0, 255)
         //finish line
         for (let i = 0; i < 2; i++) {
           if (i == 0) {
             fill(255, 240, 10)
             noStroke()
           } else {
-            strokeWeight(5)
+            strokeWeight(1)
             stroke(255, 255 * abs(cos(PI * timer * 0.005)))
             fill(255, 255 * abs(cos(PI * timer * 0.005)))
           }
@@ -1181,10 +1181,9 @@ function draw() {
             fill(255, 240, 0, 255)
             stroke(0)
             textSize(height / 7.5)
-            let myText = 'Lives: ' + lifeCount
-            text('Engage Thrusters!', width / 2, height / 3.5)
+
+            text('Engage Thrusters!', width / 2, height / 2)
             //fill(255, 0, 0, 255);
-            text(myText, width / 2, height / 1.8)
           }
           xsurf = width / 12
           ysurf = height / 2
@@ -1230,9 +1229,7 @@ function draw() {
         xsurf = finalPosition.x
         ysurf = finalPosition.y
         let force = p5.Vector.sub(finalPosition, mouseVector)
-        // let distanceSq = force.magSq();
-        // let G = 1;
-        // let strength = G *
+
         Surfers[int(surfType)].render(
           finalPosition.x,
           finalPosition.y,
