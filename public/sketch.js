@@ -176,7 +176,6 @@ let surfRed
 let surfBlue
 let surfGreen
 let surfType = 1
-let surfMass
 
 //Level Variables
 let levelTimer = 0
@@ -216,9 +215,7 @@ function setup() {
   for (let i = 0; i < 500; i++) {
     Stars[i] = new Star()
   }
-  for (let i = 0; i < 10; i++) {
-    BlackHoles[i] = new BH()
-  }
+
   for (let i = 0; i < numAsteroids; i++) {
     let temp = new Asteroid(
       width * 1.1,
@@ -869,7 +866,7 @@ function draw() {
           if (mouseIsPressed) {
             if (mouseY < height && mouseY > height - (2 * height) / 10) {
               //SuperBug
-              surfMass = 2.6
+
               surferSpeed = 13
               gamePhase = 4
               surfType = 0
@@ -879,7 +876,7 @@ function draw() {
               mouseY > height - (4 * height) / 10
             ) {
               //Psych Bike
-              surfMass = 2.3
+
               surferSpeed = 14.5
               gamePhase = 4
               storeItem('Stage', 3)
@@ -889,7 +886,7 @@ function draw() {
               mouseY > height - (6 * height) / 10
             ) {
               //The Compiler
-              surfMass = 2.7
+
               surferSpeed = 16
               gamePhase = 4
               storeItem('Stage', 3)
@@ -899,7 +896,7 @@ function draw() {
               mouseY > height - (8 * height) / 10
             ) {
               //Voidwalker
-              surfMass = 2.5
+
               surferSpeed = 11.5
               gamePhase = 4
               surfType = 3
@@ -1062,7 +1059,7 @@ function draw() {
           //Gravity between the black hole and surfer
           BHdistance = dist(blackHoles[i].x, blackHoles[i].y, prevx, prevy)
           gforce =
-            (surfMass * gConstant * blackHoles[i].mass) /
+            (Surfers[int(surfType)].mass * gConstant * blackHoles[i].mass) /
             (BHdistance * BHdistance + 1)
           denom =
             abs(prevx - blackHoles[i].x) + abs(prevy - blackHoles[i].y) + 1
@@ -1447,13 +1444,16 @@ class Star {
 }
 
 class Surfer {
-  constructor() {}
+  constructor() {
+    this.mass = 0
+  }
   update() {}
   render(x, y, len, quatro, red, blue, green) {
     //Color parameters are not yet utilized
     noStroke()
     len = width / 320
     if (quatro == 0) {
+      this.mass = 2.3
       drawSuperbug(len, x, y)
       //Superbug
       // fill(255, 240, 0, 255)
@@ -1513,10 +1513,13 @@ class Surfer {
       // square(x + 5 * len, y + len * 4, len)
     } else if (quatro == 1) {
       //Psych Bike
+      this.mass = 2.1
       drawPsychBike(len, x, y)
     } else if (quatro == 2) {
+      this.mass = 2.7
       drawCompiler(len, x, y)
     } else {
+      this.mass = 2.5
       //VoidWalker
       stroke(255)
       fill(100, 14, 237, 255)
@@ -1610,29 +1613,6 @@ class Surfer {
   }
 }
 
-class BH {
-  //float gravity;
-
-  constructor(constant) {
-    this.gravity = constant
-    this.xx = 0
-    this.yy = 0
-  }
-  applyForce() {}
-  render(mass, x, y, quatro) {
-    let radius = ((width / 1280) * mass) / 2
-    this.xx = x
-    this.yy = y
-    // for (let r = 15; r > 1; r = r - 0.25) {
-    //   fill(255, 255 - noise(delay) * 40, 255 - noise(delay) * 100, sqrt(50 * r))
-    //   ellipse(x, y, (radius * r) / 13.04, (radius * r) / 13.04)
-    // }
-    strokeWeight(5)
-    stroke(255)
-    fill(0)
-    ellipse(x, y, radius, radius)
-  }
-}
 class Asteroid {
   constructor(x, y, vx, vy, size) {
     this.x = x
