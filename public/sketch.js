@@ -64,14 +64,14 @@ const levelBlackHoles = [
   [
     new BlackHole(426.67, 120, 130, false),
     new BlackHole(426.67, 600, 130, false),
-    new BlackHole(853.33, 360, 80, true, 0, 50), // One moving in circle
+    new BlackHole(853.33, 360, 80, true, 0, 20), // One moving in circle
   ],
   // Level 4 configuration (4 black holes)
   [
     new BlackHole(320, 120, 125, false),
     new BlackHole(960, 120, 125, false),
     new BlackHole(320, 600, 75, false),
-    new BlackHole(960, 600, 75, true, 3.14 / 2, 30), // One moving horizontally
+    new BlackHole(960, 600, 75, true, 3.14 / 2, 10), // One moving horizontally
   ],
   // Level 5 configuration (5 black holes)
   [
@@ -137,7 +137,7 @@ let LINE_O = 360
 let radius
 
 let title
-let gamePhase = 0
+
 let prevx = 0
 let prevy = 0
 
@@ -167,7 +167,7 @@ let AsteroidDestroyed = 0
 let xsurf = 0
 let ysurf = 0
 let surfergravity = 0
-let Craftselectioncount //Helps so a mouse click on the opening screen doesn't also select your craft
+let Craftselectioncount = 15 //Helps so a mouse click on the opening screen doesn't also select your craft
 let lifeCount = 1
 let extraLife = 1
 let displayExtraLife = 0
@@ -199,11 +199,6 @@ let craftLost = 0 //counter to ensure the craft lost sequences are timed correct
 function preload() {
   title = loadFont('volt.ttf')
   //External Sprites Used in the game
-  imgOne = loadImage('YellowGal.jpg')
-  imgThree = loadImage('BlueNStar.jpg')
-  imgFive = loadImage('SpiralGal.jpg')
-  imgSeven = loadImage('BlueGal.jpg')
-  imgNine = loadImage('WDwarf.jpg')
 }
 
 function setup() {
@@ -312,7 +307,7 @@ function draw() {
     textFont(title)
     if (GameOver === 0) {
       cursor(CROSS)
-      if (gamePhase === 1) {
+      if (getItem('Stage') == 'Leaderboard') {
         //Leaderboard
         background(0)
         speed = 0.9
@@ -351,13 +346,12 @@ function draw() {
         if (mouseIsPressed || keyIsPressed) {
           mouseIsPressed = false
           keyIsPressed = false
-          gamePhase = 0
+
           delay = 0
           storeItem('Stage', 1)
         }
       }
       if (int(getItem('Stage')) == 1) {
-        //Title Screen when gamePhase = 0
         background(0)
         textSize(32)
         textFont(title)
@@ -408,7 +402,7 @@ function draw() {
             mouseY > height - height / 3 &&
             mouseY < height - height / 6
           ) {
-            gamePhase = -1
+            storeItem('Stage', 1)
             loadDB = 1
             mouseIsPressed = false
             keyIsPressed = false
@@ -431,17 +425,11 @@ function draw() {
             storeItem('Stage', 2)
             //fullscreen(full);
             //resizeCanvas(displayWidth, displayHeight);
-            gamePhase = 2
-            Craftselectioncount = 15
             extraLife = 1
           }
         }
-        prevx = width / 12
-        prevy = height / 2
       } else if (int(getItem('Stage')) == 2) {
         changeLevel(1)
-
-        //Surfer Selection Page when gamePhase = 2
         turnoff = 0
         background(0)
         translate(width / 2, height / 2)
@@ -868,7 +856,7 @@ function draw() {
               //SuperBug
 
               surferSpeed = 13
-              gamePhase = 4
+
               surfType = 0
               storeItem('Stage', 3)
             } else if (
@@ -878,7 +866,7 @@ function draw() {
               //Psych Bike
 
               surferSpeed = 14.5
-              gamePhase = 4
+
               storeItem('Stage', 3)
               surfType = 1
             } else if (
@@ -888,7 +876,7 @@ function draw() {
               //The Compiler
 
               surferSpeed = 16
-              gamePhase = 4
+
               storeItem('Stage', 3)
               surfType = 2
             } else if (
@@ -896,9 +884,7 @@ function draw() {
               mouseY > height - (8 * height) / 10
             ) {
               //Voidwalker
-
               surferSpeed = 11.5
-              gamePhase = 4
               surfType = 3
               storeItem('Stage', 3)
             }
@@ -919,8 +905,6 @@ function draw() {
           levelStart = 0
           levelTimer = 0
         } else if (keyIsPressed || mouseIsPressed) {
-          gamePhase = 5
-          storeItem('Test', gamePhase)
           levelStart = 1
           noText = 1
         }
@@ -1118,7 +1102,7 @@ function draw() {
           } else {
             turnoff = 0
             LevelChangeTrigger = 0
-            gamePhase = 4
+
             level = level + 1
             storeItem('Level', level)
             changeLevel(level)
@@ -1266,7 +1250,6 @@ function draw() {
         if (craftLost > 105) {
           lifeCount = lifeCount - 1
           if (lifeCount > 0) {
-            gamePhase = 4
             GameOver = 0
           }
         }
@@ -1337,7 +1320,7 @@ function draw() {
         translate(-width / 2, -height / 3)
         if (keyIsPressed || mouseIsPressed) {
           GameOver = 0
-          gamePhase = 0
+
           delay = 0
         }
       }
@@ -1353,7 +1336,7 @@ function draw() {
       rotate(-PI * delay * 0.0001)
       if (mouseIsPressed || keyIsPressed) {
         GameOver = 0
-        gamePhase = 0
+
         delay = 0
       }
       flareon = 300 * cos(radians(delay / 2))
@@ -1812,7 +1795,7 @@ function gotData(data) {
   }
   textFont(title)
   textSize(width / 18.5)
-  //Leaderboard when gamePhase==-1
+
   for (var j = 0; j < 10; j++) {
     if (arr[j][2] == 0) {
       fill(255, 0, 0, 255)
