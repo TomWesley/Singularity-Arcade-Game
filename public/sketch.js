@@ -91,7 +91,7 @@ const levelBlackHoles = [
     new BlackHole(1120, 360, 25, true, 0, 25), // One moving in circle (top right)
   ],
 ]
-
+let finishLineAlpha = 0
 var app = 0
 //Images
 let ratioX = 1
@@ -909,106 +909,115 @@ function draw() {
           noText = 1
         }
         //finish line
-        for (let i = 0; i < 2; i++) {
-          if (i == 0) {
-            fill(255, 240, 10)
-            noStroke()
-          } else {
-            strokeWeight(1)
-            stroke(255, 255 * abs(cos(PI * timer * 0.005)))
-            fill(255, 255 * abs(cos(PI * timer * 0.005)))
-          }
+        // for (let i = 0; i < 2; i++) {
+        //   if (i == 0) {
+        //     fill(255, 240, 10)
+        //     noStroke()
+        //   } else {
+        //     strokeWeight(1)
+        //     stroke(255, 255 * abs(cos(PI * timer * 0.005)))
+        //     fill(255, 255 * abs(cos(PI * timer * 0.005)))
+        //   }
 
-          // strokeWeight(5)
-          // stroke(255, 255 * abs(sin(0.005 * timer * PI)))
-          translate(width * 0.015, 0)
-          quad(
-            width * 0.92,
-
-            height * 0.4,
-
-            width * 0.95,
-            height * 0.4,
-
-            width * 0.985,
-            height * 0.5,
-
-            width * 0.955,
-            height * 0.5
-          )
-          quad(
-            width * 0.92,
-
-            height * 0.6,
-
-            width * 0.95,
-            height * 0.6,
-
-            width * 0.985,
-            height * 0.5,
-
-            width * 0.955,
-            height * 0.5
-          )
-          quad(
-            width * 0.89,
-
-            height * 0.4,
-
-            width * 0.91,
-            height * 0.4,
-
-            width * 0.945,
-            height * 0.5,
-
-            width * 0.925,
-            height * 0.5
-          )
-          quad(
-            width * 0.89,
-
-            height * 0.6,
-
-            width * 0.91,
-            height * 0.6,
-
-            width * 0.945,
-            height * 0.5,
-
-            width * 0.925,
-            height * 0.5
-          )
-          quad(
-            width * 0.87,
-
-            height * 0.4,
-
-            width * 0.88,
-            height * 0.4,
-
-            width * 0.915,
-            height * 0.5,
-
-            width * 0.905,
-            height * 0.5
-          )
-          quad(
-            width * 0.87,
-
-            height * 0.6,
-
-            width * 0.88,
-            height * 0.6,
-
-            width * 0.915,
-            height * 0.5,
-
-            width * 0.905,
-            height * 0.5
-          )
-
-          translate(-width * 0.015, 0)
+        // strokeWeight(5)
+        // stroke(255, 255 * abs(sin(0.005 * timer * PI)))
+        finishLineAlpha = finishLineAlpha + 2
+        if (timer % 255 == 0) {
+          finishLineAlpha = 0
         }
+        noStroke()
+        translate(width * 0.015, 0)
+        fill(255, 240, 10, finishLineAlpha - 160)
+        quad(
+          width * 0.92,
+
+          height * 0.4,
+
+          width * 0.95,
+          height * 0.4,
+
+          width * 0.985,
+          height * 0.5,
+
+          width * 0.955,
+          height * 0.5
+        )
+        quad(
+          width * 0.92,
+
+          height * 0.6,
+
+          width * 0.95,
+          height * 0.6,
+
+          width * 0.985,
+          height * 0.5,
+
+          width * 0.955,
+          height * 0.5
+        )
+        fill(255, 240, 10, finishLineAlpha - 80)
+
+        quad(
+          width * 0.89,
+
+          height * 0.4,
+
+          width * 0.91,
+          height * 0.4,
+
+          width * 0.945,
+          height * 0.5,
+
+          width * 0.925,
+          height * 0.5
+        )
+        quad(
+          width * 0.89,
+
+          height * 0.6,
+
+          width * 0.91,
+          height * 0.6,
+
+          width * 0.945,
+          height * 0.5,
+
+          width * 0.925,
+          height * 0.5
+        )
+        fill(255, 240, 10, finishLineAlpha)
+        quad(
+          width * 0.87,
+
+          height * 0.4,
+
+          width * 0.88,
+          height * 0.4,
+
+          width * 0.915,
+          height * 0.5,
+
+          width * 0.905,
+          height * 0.5
+        )
+        quad(
+          width * 0.87,
+
+          height * 0.6,
+
+          width * 0.88,
+          height * 0.6,
+
+          width * 0.915,
+          height * 0.5,
+
+          width * 0.905,
+          height * 0.5
+        )
+
+        translate(-width * 0.015, 0)
+        // }
 
         noStroke()
 
@@ -1999,14 +2008,22 @@ function drawCompiler(len, x, y) {
 }
 function drawSuperbug(len, x, y) {
   let wid = len * 6
-  let colorOne = color(0, 102, 255, 255)
-  let colorTwo = color(255, 188, 0, 255)
+  let colorOne = color(255, 100, 34, 255)
+  let colorTwo = color(255, 200, 100, 255)
+  strokeWeight(3)
   fill(colorTwo)
   noStroke()
+  ellipse(x + wid * 0.2, y + wid * 0.95, wid * 0.3, wid * 0.3)
+  ellipse(x - wid * 0.2, y + wid * 0.95, wid * 0.3, wid * 0.3)
   ellipse(x, y + wid * 0.35, wid * 0.9, wid * 0.9)
   fill(colorOne)
   ellipse(x, y, wid * 0.8, wid * 0.9)
   ellipse(x, y + wid * 0.7, wid * 0.6, wid * 0.7)
+  stroke(colorTwo)
+  line(x + wid * 0.4, y + wid * 0.3, x + wid * 0.4, y - wid * 0.4)
+  line(x - wid * 0.4, y + wid * 0.3, x - wid * 0.4, y - wid * 0.4)
+  line(x + wid * 0.4, y - wid * 0.4, x + wid * 0.8, y - wid * 0.8)
+  line(x - wid * 0.4, y - wid * 0.4, x - wid * 0.8, y - wid * 0.8)
 }
 
 function errData(err) {}
