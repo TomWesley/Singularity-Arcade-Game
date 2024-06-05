@@ -2009,7 +2009,7 @@ function drawCompiler(len, x, y) {
 function drawSuperbug(len, x, y) {
   let wid = len * 6
   let colorOne = color(255, 100, 34, 255)
-  let colorTwo = color(255, 200, 100, 255)
+  let colorTwo = color(255, 200, 110, 255)
   strokeWeight(3)
   fill(colorTwo)
   noStroke()
