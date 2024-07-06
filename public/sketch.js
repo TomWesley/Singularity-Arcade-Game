@@ -2008,22 +2008,68 @@ function drawCompiler(len, x, y) {
 }
 function drawSuperbug(len, x, y) {
   let wid = len * 6
-  let colorOne = color(255, 100, 34, 255)
-  let colorTwo = color(255, 200, 110, 255)
+  let colorOne = color(255, 120, 0, 255)
+  let colorTwo = color(255, 240, 0, 255)
   strokeWeight(3)
   fill(colorTwo)
   noStroke()
-  ellipse(x + wid * 0.2, y + wid * 0.95, wid * 0.3, wid * 0.3)
-  ellipse(x - wid * 0.2, y + wid * 0.95, wid * 0.3, wid * 0.3)
+  // ellipse(x + wid * 0.2, y + wid * 0.95, wid * 0.3, wid * 0.3)
+  // ellipse(x - wid * 0.2, y + wid * 0.95, wid * 0.3, wid * 0.3)
+  ellipse(x, y - wid * 0.25, wid * 0.8, wid * 0.8)
   ellipse(x, y + wid * 0.35, wid * 0.9, wid * 0.9)
   fill(colorOne)
-  ellipse(x, y, wid * 0.8, wid * 0.9)
-  ellipse(x, y + wid * 0.7, wid * 0.6, wid * 0.7)
+  quad(
+    x + wid * 0.7,
+    y - wid * 0.1,
+    x + wid * 0.4,
+    y + wid * 0.2,
+    x + wid * 0.4,
+    y - wid * 0.4,
+    x + wid * 0.8,
+    y - wid * 0.8
+  )
+  quad(
+    x - wid * 0.7,
+    y - wid * 0.1,
+    x - wid * 0.4,
+    y + wid * 0.2,
+    x - wid * 0.4,
+    y - wid * 0.4,
+    x - wid * 0.8,
+    y - wid * 0.8
+  )
+  ellipse(x, y, wid * 0.8, wid * 1)
+  // ellipse(x, y + wid * 0.7, wid * 0.6, wid * 0.6)
   stroke(colorTwo)
   line(x + wid * 0.4, y + wid * 0.3, x + wid * 0.4, y - wid * 0.4)
   line(x - wid * 0.4, y + wid * 0.3, x - wid * 0.4, y - wid * 0.4)
   line(x + wid * 0.4, y - wid * 0.4, x + wid * 0.8, y - wid * 0.8)
   line(x - wid * 0.4, y - wid * 0.4, x - wid * 0.8, y - wid * 0.8)
+  line(x - wid * 0.4, y - wid * 0.4, x - wid * 0.8, y - wid * 0.8)
+  line(x - wid * 0.4, y - wid * 0.1, x - wid * 0.75, y - wid * 0.45)
+  line(x + wid * 0.4, y - wid * 0.1, x + wid * 0.75, y - wid * 0.45)
+  line(x - wid * 0.4, y + wid * 0.2, x - wid * 0.7, y - wid * 0.1)
+  line(x + wid * 0.4, y + wid * 0.2, x + wid * 0.7, y - wid * 0.1)
+  fill(colorTwo)
+  triangle(
+    x + wid * 0.225,
+    y + wid * 0.7,
+    x - wid * 0.225,
+    y + wid * 0.7,
+    x,
+    y + wid * 1
+  )
+
+  // curve(
+  //   x - wid,
+  //   y - wid,
+  //   x - wid * 0.3,
+  //   y + wid * 0.4,
+  //   x - wid * 0.8,
+  //   y - wid * 0.3,
+  //   x - wid,
+  //   y - wid * 2
+  // )
 }
 
 function errData(err) {}
