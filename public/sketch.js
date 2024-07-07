@@ -1,7 +1,7 @@
 //Copyright © 2019 Tom Wesley
 //SINGULARITY: This original novelty arcade game allows users pilot a Spacecraft which surfs on the gravitational waves of black holes to explore various galaxies.
 //Coder: Thomas Wesley
-//Last Edit 4/4/2024
+//Last Edit 7/6/2024
 //Notes - Add some aliens in the top left corner that shoots every 3 seconds, for levels 10-15. Change the galaxy color based on level.
 //Current Level Count - 10
 
@@ -143,7 +143,7 @@ let prevy = 0
 
 let mousex
 let mousey
-let GameOver = 0
+
 let LevelChangeCount = 0
 let LevelChangeTrigger = 0
 let noText = 0
@@ -153,7 +153,7 @@ let xGravity = 0
 let yGravity = 0
 let xGravityAsteroid = 0
 let yGravityAsteroid = 0
-let gConstant = 1200
+let gConstant = 300
 let ratio = 0
 let ratiotwo = 0
 let prevxx = 0
@@ -171,7 +171,7 @@ let Craftselectioncount = 15 //Helps so a mouse click on the opening screen does
 let lifeCount = 1
 let extraLife = 1
 let displayExtraLife = 0
-let surferSpeed = 4
+
 let surfRed
 let surfBlue
 let surfGreen
@@ -250,6 +250,7 @@ function setup() {
 
 //The draw function runs through the actions within it continuously
 function draw() {
+  delay = delay + 1
   timer = timer + 1
 
   const database = app.database()
@@ -303,949 +304,944 @@ function draw() {
   } else {
     input.remove()
     //incremental variable that increases by one each frame
-    delay = delay + 1
     textFont(title)
-    if (GameOver === 0) {
-      cursor(CROSS)
-      if (getItem('Stage') == 'Leaderboard') {
-        //Leaderboard
-        background(0)
-        speed = 0.9
+    if (getItem('Stage') == 'Leaderboard') {
+      //Leaderboard
+      background(0)
+      speed = 0.9
 
-        translate(width / 2, height / 2)
-        rotate((delay * PI) / 2000)
-        for (let i = 0; i < Stars.length; i++) {
-          Stars[i].update()
-          Stars[i].show(255, 255, 255, 255)
-        }
-        rotate((-delay * PI) / 2000)
-        translate(-width / 2, -height / 2)
-
-        if (loadDB == 1) {
-          var led = database.ref('scores')
-          led.on('value', gotData, errData)
-        } else {
-          loadDB = 0
-        }
-
-        textFont(title)
-        fill(255, 240, 0, 255)
-        textSize(width / 14.3)
-        text('Global Leaderboard', width / 8, height / 8.9)
-        for (let aj = 0; aj < 25; aj = aj + 5) {
-          stroke(255, 255, 255, 255)
-          strokeWeight(1)
-          line(
-            width / 9 + aj * 2,
-            height / 7 + aj,
-            width - width / 9 - aj * 2,
-            height / 7.2 + aj
-          )
-        }
-
-        if (mouseIsPressed || keyIsPressed) {
-          mouseIsPressed = false
-          keyIsPressed = false
-
-          delay = 0
-          storeItem('Stage', 1)
-        }
+      translate(width / 2, height / 2)
+      rotate((delay * PI) / 2000)
+      for (let i = 0; i < Stars.length; i++) {
+        Stars[i].update()
+        Stars[i].show(255, 255, 255, 255)
       }
-      if (int(getItem('Stage')) == 1) {
-        background(0)
-        textSize(32)
-        textFont(title)
-        translate(width / 2, height / 2)
-        if (10 + delay / 220 < 10000) {
-          //The Stars speed will increase over time
-          speed = delay / 500
-        } else {
-          //Fix a maximum speed
-          speed = 20
-        }
-        for (let i = 0; i < Stars.length; i++) {
-          Stars[i].update()
-          Stars[i].show(255, 255, 255, 255)
-        }
+      rotate((-delay * PI) / 2000)
+      translate(-width / 2, -height / 2)
 
-        translate(-width / 2, -height / 2)
-        lifeCount = 3 //Reset the number of lives each time the game is restarted
-        level = 1 //Reset the game to level 1(Change for debugging)
-        textSize(width / 7.2)
-        if (delay < 255) {
-          fill(255, 240, 0, 255 - (255 - delay))
-        } else {
-          fill(255, 240, 0, 255)
-        }
+      if (loadDB == 1) {
+        var led = database.ref('scores')
+        led.on('value', gotData, errData)
+      } else {
+        loadDB = 0
+      }
+
+      textFont(title)
+      fill(255, 240, 0, 255)
+      textSize(width / 14.3)
+      text('Global Leaderboard', width / 8, height / 8.9)
+      for (let aj = 0; aj < 25; aj = aj + 5) {
+        stroke(255, 255, 255, 255)
         strokeWeight(1)
-        stroke(0, 255 - (255 - delay))
-        textAlign(CENTER)
-        text('SINGULARITY', width / 2, height / 2)
+        line(
+          width / 9 + aj * 2,
+          height / 7 + aj,
+          width - width / 9 - aj * 2,
+          height / 7.2 + aj
+        )
+      }
 
-        if (delay > 150) {
-          textSize(width / 19.5)
-          text('View Leaderboard', width / 2, height - height / 4)
-          stroke(255, 255)
-          fill(255, 150)
-          if (
-            mouseX < (3 * width) / 4 &&
-            mouseX > (width * 1) / 4 &&
-            mouseY > height - height / 3 &&
-            mouseY < height - height / 6
-          ) {
-            rect((1 * width) / 4, height - height / 3, width / 2, height / 9)
-          }
-          if (
-            mouseIsPressed &&
-            mouseX < (3 * width) / 4 &&
-            mouseX > (width * 1) / 4 &&
-            mouseY > height - height / 3 &&
-            mouseY < height - height / 6
-          ) {
-            storeItem('Stage', 1)
-            loadDB = 1
-            mouseIsPressed = false
-            keyIsPressed = false
-          }
-        }
-        textAlign(LEFT)
-        if (delay > 40) {
-          //Delay the ability to exit the selection screen so the previous click does not trigger it accidentally
+      if (mouseIsPressed || keyIsPressed) {
+        mouseIsPressed = false
+        keyIsPressed = false
 
-          if (
-            keyIsPressed ||
-            (mouseIsPressed &&
-              (mouseX > (3 * width) / 4 ||
-                mouseX < (width * 1) / 4 ||
-                mouseY < height - height / 3 ||
-                mouseY > height - height / 3 + height / 9))
-          ) {
-            mouseIsPressed = false
-            keyIsPressed = false
-            storeItem('Stage', 2)
-            //fullscreen(full);
-            //resizeCanvas(displayWidth, displayHeight);
-            extraLife = 1
-          }
-        }
-      } else if (int(getItem('Stage')) == 2) {
-        changeLevel(1)
-        turnoff = 0
-        background(0)
-        translate(width / 2, height / 2)
-        rotate((PI * delay) / 900)
-        for (let i = 0; i < Stars.length; i++) {
-          Stars[i].show(255, 255, 255, 255)
-        }
-        rotate((-PI * delay) / 900)
+        delay = 0
+        storeItem('Stage', 1)
+      }
+    }
+    if (int(getItem('Stage')) == 1) {
+      background(0)
+      textSize(32)
+      textFont(title)
+      translate(width / 2, height / 2)
+      if (10 + delay / 220 < 10000) {
+        //The Stars speed will increase over time
+        speed = delay / 500
+      } else {
+        //Fix a maximum speed
+        speed = 20
+      }
+      for (let i = 0; i < Stars.length; i++) {
+        Stars[i].update()
+        Stars[i].show(255, 255, 255, 255)
+      }
 
-        translate(-width / 2, -height / 2)
-        textSize(height / 8.5)
+      translate(-width / 2, -height / 2)
+      lifeCount = 3 //Reset the number of lives each time the game is restarted
+      level = 1 //Reset the game to level 1(Change for debugging)
+      textSize(width / 7.2)
+      if (delay < 255) {
+        fill(255, 240, 0, 255 - (255 - delay))
+      } else {
         fill(255, 240, 0, 255)
-        noStroke()
-        textAlign(CENTER)
-        text('Select A Surfer', width / 2, height / 6)
-        textAlign(LEFT)
-        stroke(255, 240, 0, 255)
-        line(width / 7, height / 5, width - width / 7, height / 5) //Underline
-        //Display the surfer sprites and stats here
+      }
+      strokeWeight(1)
+      stroke(0, 255 - (255 - delay))
+      textAlign(CENTER)
+      text('SINGULARITY', width / 2, height / 2)
+
+      if (delay > 150) {
+        textSize(width / 19.5)
+        text('View Leaderboard', width / 2, height - height / 4)
         stroke(255, 255)
         fill(255, 150)
-        if (mouseY < height && mouseY > height - (2 * height) / 10) {
-          quad(
-            0,
-            height - (2 * height) / 10,
-            0,
-            height,
-            width,
-            height,
-            width,
-            height - (2 * height) / 10
-          )
+        if (
+          mouseX < (3 * width) / 4 &&
+          mouseX > (width * 1) / 4 &&
+          mouseY > height - height / 3 &&
+          mouseY < height - height / 6
+        ) {
+          rect((1 * width) / 4, height - height / 3, width / 2, height / 9)
         }
         if (
-          mouseY < height - (2 * height) / 10 &&
-          mouseY > height - (4 * height) / 10
+          mouseIsPressed &&
+          mouseX < (3 * width) / 4 &&
+          mouseX > (width * 1) / 4 &&
+          mouseY > height - height / 3 &&
+          mouseY < height - height / 6
         ) {
-          quad(
-            0,
-            height - (2 * height) / 10,
-            0,
-            height - (4 * height) / 10,
-            width,
-            height - (4 * height) / 10,
-            width,
-            height - (2 * height) / 10
-          )
+          storeItem('Stage', 1)
+          loadDB = 1
+          mouseIsPressed = false
+          keyIsPressed = false
         }
+      }
+      textAlign(LEFT)
+      if (delay > 40) {
+        //Delay the ability to exit the selection screen so the previous click does not trigger it accidentally
+
         if (
-          mouseY < height - (4 * height) / 10 &&
-          mouseY > height - (6 * height) / 10
+          keyIsPressed ||
+          (mouseIsPressed &&
+            (mouseX > (3 * width) / 4 ||
+              mouseX < (width * 1) / 4 ||
+              mouseY < height - height / 3 ||
+              mouseY > height - height / 3 + height / 9))
         ) {
-          quad(
-            0,
-            height - (4 * height) / 10,
-            0,
-            height - (6 * height) / 10,
-            width,
-            height - (6 * height) / 10,
-            width,
-            height - (4 * height) / 10
-          )
+          mouseIsPressed = false
+          keyIsPressed = false
+          storeItem('Stage', 2)
+          //fullscreen(full);
+          //resizeCanvas(displayWidth, displayHeight);
+          extraLife = 1
         }
-        if (
-          mouseY < height - (6 * height) / 10 &&
-          mouseY > height - (8 * height) / 10
-        ) {
-          quad(
-            0,
-            height - (6 * height) / 10,
-            0,
-            height - (8 * height) / 10,
-            width,
-            height - (8 * height) / 10,
-            width,
-            height - (6 * height) / 10
-          )
-        }
-        textSize(height / 14.5)
-        noStroke()
-        fill(255, 255, 255, 255)
-        text('Superbug', width / 4, height - (1 * height) / 13)
-        text('Psych Bike', width / 4, height - (3.6 * height) / 13)
-        text('The Compiler', width / 4, height - (6.2 * height) / 13)
-        text('Voidwalker', width / 4, height - (8.8 * height) / 13)
-        textSize(height / 19.5)
-        text('Speed', width - width / 3.5, height - (1.5 * height) / 13)
-        text('Mass', width - width / 3.5, height - (0.7 * height) / 13)
-        translate(0, -(height / 13) * 2.6)
-        text('Speed', width - width / 3.5, height - (1.5 * height) / 13)
-        text('Mass', width - width / 3.5, height - (0.7 * height) / 13)
-        translate(0, (height / 13) * 2.6)
-        translate(0, -(height / 13) * 2.6 * 2)
-        text('Speed', width - width / 3.5, height - (1.5 * height) / 13)
-        text('Mass', width - width / 3.5, height - (0.7 * height) / 13)
-        translate(0, (height / 13) * 2.6 * 2)
-        translate(0, -(height / 13) * 2.6 * 3)
-        text('Speed', width - width / 3.5, height - (1.5 * height) / 13)
-        text('Mass', width - width / 3.5, height - (0.7 * height) / 13)
-        translate(0, (height / 13) * 2.6 * 3)
+      }
+    }
+    if (int(getItem('Stage')) == 2) {
+      changeLevel(1)
+      turnoff = 0
+      background(0)
+      translate(width / 2, height / 2)
+      rotate((PI * delay) / 900)
+      for (let i = 0; i < Stars.length; i++) {
+        Stars[i].show(255, 255, 255, 255)
+      }
+      rotate((-PI * delay) / 900)
 
-        stroke(255)
-        //Superbug Stats
-        rectangle(
-          width - width / 6,
-          height - (0.915 * height) / 13,
-          height / 60,
-          height / 30,
-          255,
-          240,
+      translate(-width / 2, -height / 2)
+      textSize(height / 8.5)
+      fill(255, 240, 0, 255)
+      noStroke()
+      textAlign(CENTER)
+      text('Select A Surfer', width / 2, height / 6)
+      textAlign(LEFT)
+      stroke(255, 240, 0, 255)
+      line(width / 7, height / 5, width - width / 7, height / 5) //Underline
+      //Display the surfer sprites and stats here
+      stroke(255, 255)
+      fill(255, 150)
+      if (mouseY < height && mouseY > height - (2 * height) / 10) {
+        quad(
           0,
-          255
-        )
-        rectangle(
-          width - width / 6.5,
-          height - (0.915 * height) / 13,
-          height / 60,
-          height / 30,
-          255,
-          240,
+          height - (2 * height) / 10,
           0,
-          255
+          height,
+          width,
+          height,
+          width,
+          height - (2 * height) / 10
         )
-        rectangle(
-          width - width / 6.5 + abs(width / 6.5 - width / 6),
-          height - (0.915 * height) / 13,
-          height / 60,
-          height / 30,
-          255,
-          240,
+      }
+      if (
+        mouseY < height - (2 * height) / 10 &&
+        mouseY > height - (4 * height) / 10
+      ) {
+        quad(
           0,
-          255
-        )
-        rectangle(
-          width - width / 6.5 + 2 * abs(width / 6.5 - width / 6),
-          height - (0.915 * height) / 13,
-          height / 60,
-          height / 30,
-          255,
-          240,
+          height - (2 * height) / 10,
           0,
-          255
+          height - (4 * height) / 10,
+          width,
+          height - (4 * height) / 10,
+          width,
+          height - (2 * height) / 10
         )
-        rectangle(
-          width - width / 6,
-          height - (1.715 * height) / 13,
-          height / 60,
-          height / 30,
-          255,
-          240,
+      }
+      if (
+        mouseY < height - (4 * height) / 10 &&
+        mouseY > height - (6 * height) / 10
+      ) {
+        quad(
           0,
-          255
-        )
-        rectangle(
-          width - width / 6.5,
-          height - (1.715 * height) / 13,
-          height / 60,
-          height / 30,
-          255,
-          240,
+          height - (4 * height) / 10,
           0,
-          255
+          height - (6 * height) / 10,
+          width,
+          height - (6 * height) / 10,
+          width,
+          height - (4 * height) / 10
         )
-        rectangle(
-          width - width / 6.5 + abs(width / 6.5 - width / 6),
-          height - (1.715 * height) / 13,
-          height / 60,
-          height / 30,
-          255,
-          240,
+      }
+      if (
+        mouseY < height - (6 * height) / 10 &&
+        mouseY > height - (8 * height) / 10
+      ) {
+        quad(
           0,
-          255
+          height - (6 * height) / 10,
+          0,
+          height - (8 * height) / 10,
+          width,
+          height - (8 * height) / 10,
+          width,
+          height - (6 * height) / 10
         )
-        //Psych Bike Stats
-        rectangle(
-          width - width / 6,
-          height - (3.505 * height) / 13,
-          height / 60,
-          height / 30,
-          255,
-          174,
-          204,
-          255
-        )
-        rectangle(
-          width - width / 6,
-          height -
-            (3.505 * height) / 13 -
-            abs((1.715 * height) / 13 - (0.915 * height) / 13),
-          height / 60,
-          height / 30,
-          255,
-          174,
-          204,
-          255
-        )
-        rectangle(
-          width - width / 6.5,
-          height -
-            (3.505 * height) / 13 -
-            abs((1.715 * height) / 13 - (0.915 * height) / 13),
-          height / 60,
-          height / 30,
-          255,
-          174,
-          204,
-          255
-        )
-        rectangle(
-          width - width / 6.5 + abs(width / 6.5 - width / 6),
-          height -
-            (3.505 * height) / 13 -
-            abs((1.715 * height) / 13 - (0.915 * height) / 13),
-          height / 60,
-          height / 30,
-          255,
-          174,
-          204,
-          255
-        )
-        rectangle(
-          width - width / 6.5 + 2 * abs(width / 6.5 - width / 6),
-          height -
-            (3.505 * height) / 13 -
-            abs((1.715 * height) / 13 - (0.915 * height) / 13),
-          height / 60,
-          height / 30,
-          255,
-          174,
-          204,
-          255
-        )
-        //Compiler Stats
-        translate(0, -(height / 13) * 2.6)
-        rectangle(
-          width - width / 6,
-          height - (3.505 * height) / 13,
-          height / 60,
-          height / 30,
-          80,
-          230,
-          130,
-          255
-        )
-        rectangle(
-          width - width / 6 + abs(width / 6.5 - width / 6),
-          height - (3.505 * height) / 13,
-          height / 60,
-          height / 30,
-          80,
-          230,
-          130,
-          255
-        )
-        rectangle(
-          width - width / 6 + 2 * abs(width / 6.5 - width / 6),
-          height - (3.505 * height) / 13,
-          height / 60,
-          height / 30,
-          80,
-          230,
-          130,
-          255
-        )
-        rectangle(
-          width - width / 6 + 3 * abs(width / 6.5 - width / 6),
-          height - (3.505 * height) / 13,
-          height / 60,
-          height / 30,
-          80,
-          230,
-          130,
-          255
-        )
-        rectangle(
-          width - width / 6 + 4 * abs(width / 6.5 - width / 6),
-          height - (3.505 * height) / 13,
-          height / 60,
-          height / 30,
-          80,
-          230,
-          130,
-          255
-        )
-        rectangle(
-          width - width / 6,
-          height -
-            (3.505 * height) / 13 -
-            abs((1.715 * height) / 13 - (0.915 * height) / 13),
-          height / 60,
-          height / 30,
-          80,
-          230,
-          130,
-          255
-        )
-        rectangle(
-          width - width / 6.5,
-          height -
-            (3.505 * height) / 13 -
-            abs((1.715 * height) / 13 - (0.915 * height) / 13),
-          height / 60,
-          height / 30,
-          80,
-          230,
-          130,
-          255
-        )
-        rectangle(
-          width - width / 6.5 + abs(width / 6.5 - width / 6),
-          height -
-            (3.505 * height) / 13 -
-            abs((1.715 * height) / 13 - (0.915 * height) / 13),
-          height / 60,
-          height / 30,
-          80,
-          230,
-          130,
-          255
-        )
-        rectangle(
-          width - width / 6.5 + 2 * abs(width / 6.5 - width / 6),
-          height -
-            (3.505 * height) / 13 -
-            abs((1.715 * height) / 13 - (0.915 * height) / 13),
-          height / 60,
-          height / 30,
-          80,
-          230,
-          130,
-          255
-        )
-        rectangle(
-          width - width / 6.5 + 3 * abs(width / 6.5 - width / 6),
-          height -
-            (3.505 * height) / 13 -
-            abs((1.715 * height) / 13 - (0.915 * height) / 13),
-          height / 60,
-          height / 30,
-          80,
-          230,
-          130,
-          255
-        )
-        translate(0, (height / 13) * 2.6)
-        //VoidWalker Stats
-        translate(0, -(height / 13) * 2.6 * 2)
-        rectangle(
-          width - width / 6,
-          height - (3.505 * height) / 13,
-          height / 60,
-          height / 30,
-          100,
-          14,
-          237,
-          255
-        )
-        rectangle(
-          width - width / 6 + abs(width / 6.5 - width / 6),
-          height - (3.505 * height) / 13,
-          height / 60,
-          height / 30,
-          100,
-          14,
-          237,
-          255
-        )
-        rectangle(
-          width - width / 6 + 2 * abs(width / 6.5 - width / 6),
-          height - (3.505 * height) / 13,
-          height / 60,
-          height / 30,
-          100,
-          14,
-          237,
-          255
-        )
-        rectangle(
-          width - width / 6,
-          height -
-            (3.505 * height) / 13 -
-            abs((1.715 * height) / 13 - (0.915 * height) / 13),
-          height / 60,
-          height / 30,
-          100,
-          14,
-          237,
-          255
-        )
-        //Render the Sprites
-        translate(0, (height / 13) * 2.6 * 2)
+      }
+      textSize(height / 14.5)
+      noStroke()
+      fill(255, 255, 255, 255)
+      text('Superbug', width / 4, height - (1 * height) / 13)
+      text('Psych Bike', width / 4, height - (3.6 * height) / 13)
+      text('The Compiler', width / 4, height - (6.2 * height) / 13)
+      text('Voidwalker', width / 4, height - (8.8 * height) / 13)
+      textSize(height / 19.5)
+      text('Speed', width - width / 3.5, height - (1.5 * height) / 13)
+      text('Mass', width - width / 3.5, height - (0.7 * height) / 13)
+      translate(0, -(height / 13) * 2.6)
+      text('Speed', width - width / 3.5, height - (1.5 * height) / 13)
+      text('Mass', width - width / 3.5, height - (0.7 * height) / 13)
+      translate(0, (height / 13) * 2.6)
+      translate(0, -(height / 13) * 2.6 * 2)
+      text('Speed', width - width / 3.5, height - (1.5 * height) / 13)
+      text('Mass', width - width / 3.5, height - (0.7 * height) / 13)
+      translate(0, (height / 13) * 2.6 * 2)
+      translate(0, -(height / 13) * 2.6 * 3)
+      text('Speed', width - width / 3.5, height - (1.5 * height) / 13)
+      text('Mass', width - width / 3.5, height - (0.7 * height) / 13)
+      translate(0, (height / 13) * 2.6 * 3)
 
-        Surfers[0].render(width / 8, height - height / 10, 10, 0, 255, 255, 255)
-        Surfers[1].render(
-          width / 8,
-          height - (3 * height) / 10,
-          10,
-          1,
-          255,
-          255,
-          255
-        )
-        Surfers[2].render(
-          width / 8,
-          height - (5 * height) / 10,
-          10,
-          2,
-          255,
-          255,
-          255
-        )
-        Surfers[3].render(
-          width / 8,
-          height - (7 * height) / 10,
-          10,
-          3,
-          255,
-          255,
-          255
-        )
-        if (Craftselectioncount < 0) {
-          if (mouseIsPressed) {
-            if (mouseY < height && mouseY > height - (2 * height) / 10) {
-              //SuperBug
+      stroke(255)
+      //Superbug Stats
+      rectangle(
+        width - width / 6,
+        height - (0.915 * height) / 13,
+        height / 60,
+        height / 30,
+        255,
+        240,
+        0,
+        255
+      )
+      rectangle(
+        width - width / 6.5,
+        height - (0.915 * height) / 13,
+        height / 60,
+        height / 30,
+        255,
+        240,
+        0,
+        255
+      )
+      rectangle(
+        width - width / 6.5 + abs(width / 6.5 - width / 6),
+        height - (0.915 * height) / 13,
+        height / 60,
+        height / 30,
+        255,
+        240,
+        0,
+        255
+      )
+      rectangle(
+        width - width / 6.5 + 2 * abs(width / 6.5 - width / 6),
+        height - (0.915 * height) / 13,
+        height / 60,
+        height / 30,
+        255,
+        240,
+        0,
+        255
+      )
+      rectangle(
+        width - width / 6,
+        height - (1.715 * height) / 13,
+        height / 60,
+        height / 30,
+        255,
+        240,
+        0,
+        255
+      )
+      rectangle(
+        width - width / 6.5,
+        height - (1.715 * height) / 13,
+        height / 60,
+        height / 30,
+        255,
+        240,
+        0,
+        255
+      )
+      rectangle(
+        width - width / 6.5 + abs(width / 6.5 - width / 6),
+        height - (1.715 * height) / 13,
+        height / 60,
+        height / 30,
+        255,
+        240,
+        0,
+        255
+      )
+      //Psych Bike Stats
+      rectangle(
+        width - width / 6,
+        height - (3.505 * height) / 13,
+        height / 60,
+        height / 30,
+        255,
+        174,
+        204,
+        255
+      )
+      rectangle(
+        width - width / 6,
+        height -
+          (3.505 * height) / 13 -
+          abs((1.715 * height) / 13 - (0.915 * height) / 13),
+        height / 60,
+        height / 30,
+        255,
+        174,
+        204,
+        255
+      )
+      rectangle(
+        width - width / 6.5,
+        height -
+          (3.505 * height) / 13 -
+          abs((1.715 * height) / 13 - (0.915 * height) / 13),
+        height / 60,
+        height / 30,
+        255,
+        174,
+        204,
+        255
+      )
+      rectangle(
+        width - width / 6.5 + abs(width / 6.5 - width / 6),
+        height -
+          (3.505 * height) / 13 -
+          abs((1.715 * height) / 13 - (0.915 * height) / 13),
+        height / 60,
+        height / 30,
+        255,
+        174,
+        204,
+        255
+      )
+      rectangle(
+        width - width / 6.5 + 2 * abs(width / 6.5 - width / 6),
+        height -
+          (3.505 * height) / 13 -
+          abs((1.715 * height) / 13 - (0.915 * height) / 13),
+        height / 60,
+        height / 30,
+        255,
+        174,
+        204,
+        255
+      )
+      //Compiler Stats
+      translate(0, -(height / 13) * 2.6)
+      rectangle(
+        width - width / 6,
+        height - (3.505 * height) / 13,
+        height / 60,
+        height / 30,
+        80,
+        230,
+        130,
+        255
+      )
+      rectangle(
+        width - width / 6 + abs(width / 6.5 - width / 6),
+        height - (3.505 * height) / 13,
+        height / 60,
+        height / 30,
+        80,
+        230,
+        130,
+        255
+      )
+      rectangle(
+        width - width / 6 + 2 * abs(width / 6.5 - width / 6),
+        height - (3.505 * height) / 13,
+        height / 60,
+        height / 30,
+        80,
+        230,
+        130,
+        255
+      )
+      rectangle(
+        width - width / 6 + 3 * abs(width / 6.5 - width / 6),
+        height - (3.505 * height) / 13,
+        height / 60,
+        height / 30,
+        80,
+        230,
+        130,
+        255
+      )
+      rectangle(
+        width - width / 6 + 4 * abs(width / 6.5 - width / 6),
+        height - (3.505 * height) / 13,
+        height / 60,
+        height / 30,
+        80,
+        230,
+        130,
+        255
+      )
+      rectangle(
+        width - width / 6,
+        height -
+          (3.505 * height) / 13 -
+          abs((1.715 * height) / 13 - (0.915 * height) / 13),
+        height / 60,
+        height / 30,
+        80,
+        230,
+        130,
+        255
+      )
+      rectangle(
+        width - width / 6.5,
+        height -
+          (3.505 * height) / 13 -
+          abs((1.715 * height) / 13 - (0.915 * height) / 13),
+        height / 60,
+        height / 30,
+        80,
+        230,
+        130,
+        255
+      )
+      rectangle(
+        width - width / 6.5 + abs(width / 6.5 - width / 6),
+        height -
+          (3.505 * height) / 13 -
+          abs((1.715 * height) / 13 - (0.915 * height) / 13),
+        height / 60,
+        height / 30,
+        80,
+        230,
+        130,
+        255
+      )
+      rectangle(
+        width - width / 6.5 + 2 * abs(width / 6.5 - width / 6),
+        height -
+          (3.505 * height) / 13 -
+          abs((1.715 * height) / 13 - (0.915 * height) / 13),
+        height / 60,
+        height / 30,
+        80,
+        230,
+        130,
+        255
+      )
+      rectangle(
+        width - width / 6.5 + 3 * abs(width / 6.5 - width / 6),
+        height -
+          (3.505 * height) / 13 -
+          abs((1.715 * height) / 13 - (0.915 * height) / 13),
+        height / 60,
+        height / 30,
+        80,
+        230,
+        130,
+        255
+      )
+      translate(0, (height / 13) * 2.6)
+      //VoidWalker Stats
+      translate(0, -(height / 13) * 2.6 * 2)
+      rectangle(
+        width - width / 6,
+        height - (3.505 * height) / 13,
+        height / 60,
+        height / 30,
+        100,
+        14,
+        237,
+        255
+      )
+      rectangle(
+        width - width / 6 + abs(width / 6.5 - width / 6),
+        height - (3.505 * height) / 13,
+        height / 60,
+        height / 30,
+        100,
+        14,
+        237,
+        255
+      )
+      rectangle(
+        width - width / 6 + 2 * abs(width / 6.5 - width / 6),
+        height - (3.505 * height) / 13,
+        height / 60,
+        height / 30,
+        100,
+        14,
+        237,
+        255
+      )
+      rectangle(
+        width - width / 6,
+        height -
+          (3.505 * height) / 13 -
+          abs((1.715 * height) / 13 - (0.915 * height) / 13),
+        height / 60,
+        height / 30,
+        100,
+        14,
+        237,
+        255
+      )
+      //Render the Sprites
+      translate(0, (height / 13) * 2.6 * 2)
 
-              surferSpeed = 13
+      Surfers[0].render(width / 8, height - height / 10, 10, 0, 255, 255, 255)
+      Surfers[1].render(
+        width / 8,
+        height - (3 * height) / 10,
+        10,
+        1,
+        255,
+        255,
+        255
+      )
+      Surfers[2].render(
+        width / 8,
+        height - (5 * height) / 10,
+        10,
+        2,
+        255,
+        255,
+        255
+      )
+      Surfers[3].render(
+        width / 8,
+        height - (7 * height) / 10,
+        10,
+        3,
+        255,
+        255,
+        255
+      )
+      if (Craftselectioncount < 0) {
+        if (mouseIsPressed) {
+          if (mouseY < height && mouseY > height - (2 * height) / 10) {
+            //SuperBug
 
-              surfType = 0
-              storeItem('Stage', 3)
-            } else if (
-              mouseY < height - (2 * height) / 10 &&
-              mouseY > height - (4 * height) / 10
-            ) {
-              //Psych Bike
+            surfType = 0
+            localStorage.setItem(
+              'myObject',
+              JSON.stringify({ speed: 13, name: 'SuperBug', mass: 15 })
+            )
 
-              surferSpeed = 14.5
+            storeItem('Stage', 3)
+          } else if (
+            mouseY < height - (2 * height) / 10 &&
+            mouseY > height - (4 * height) / 10
+          ) {
+            //Psych Bike
 
-              storeItem('Stage', 3)
-              surfType = 1
-            } else if (
-              mouseY < height - (4 * height) / 10 &&
-              mouseY > height - (6 * height) / 10
-            ) {
-              //The Compiler
+            surferSpeed = 104.5
 
-              surferSpeed = 16
+            storeItem('Stage', 3)
+            surfType = 1
+          } else if (
+            mouseY < height - (4 * height) / 10 &&
+            mouseY > height - (6 * height) / 10
+          ) {
+            //The Compiler
 
-              storeItem('Stage', 3)
-              surfType = 2
-            } else if (
-              mouseY < height - (6 * height) / 10 &&
-              mouseY > height - (8 * height) / 10
-            ) {
-              //Voidwalker
-              surferSpeed = 11.5
-              surfType = 3
-              storeItem('Stage', 3)
-            }
+            surferSpeed = 16
+
+            storeItem('Stage', 3)
+            surfType = 2
+          } else if (
+            mouseY < height - (6 * height) / 10 &&
+            mouseY > height - (8 * height) / 10
+          ) {
+            //Voidwalker
+            surferSpeed = 11.5
+            surfType = 3
+            storeItem('Stage', 3)
           }
         }
-        if (Craftselectioncount != -5) {
-          //Use this to prevent an immediate selection by not accepting clicks in the first moments after entering the Surfer Selection Page
-          Craftselectioncount = Craftselectioncount - 1
-        }
-      } else if (getItem('Stage') >= 3) {
-        storeItem('Stage', 4)
-        background(0, 0, 0, 255)
-        if (turnoff < 11) {
-          prevx = width / 12
-          prevy = height / 2
-          turnoff = turnoff + 1
-          noText = 0
-          levelStart = 0
-          levelTimer = 0
-        } else if (keyIsPressed || mouseIsPressed) {
-          levelStart = 1
-          noText = 1
-        }
-        //finish line
-        // for (let i = 0; i < 2; i++) {
-        //   if (i == 0) {
-        //     fill(255, 240, 10)
-        //     noStroke()
-        //   } else {
-        //     strokeWeight(1)
-        //     stroke(255, 255 * abs(cos(PI * timer * 0.005)))
-        //     fill(255, 255 * abs(cos(PI * timer * 0.005)))
-        //   }
+      }
+      if (Craftselectioncount != -5) {
+        //Use this to prevent an immediate selection by not accepting clicks in the first moments after entering the Surfer Selection Page
+        Craftselectioncount = Craftselectioncount - 1
+      }
+    }
+    if (getItem('Stage') >= 3) {
+      storeItem('Stage', 4)
+      background(0, 0, 0, 255)
+      if (turnoff < 11) {
+        prevx = width / 12
+        prevy = height / 2
+        turnoff = turnoff + 1
+        noText = 0
+        levelStart = 0
+        levelTimer = 0
+      } else if (keyIsPressed || mouseIsPressed) {
+        levelStart = 1
+        noText = 1
+      }
+      //finish line
+      // for (let i = 0; i < 2; i++) {
+      //   if (i == 0) {
+      //     fill(255, 240, 10)
+      //     noStroke()
+      //   } else {
+      //     strokeWeight(1)
+      //     stroke(255, 255 * abs(cos(PI * timer * 0.005)))
+      //     fill(255, 255 * abs(cos(PI * timer * 0.005)))
+      //   }
 
-        // strokeWeight(5)
-        // stroke(255, 255 * abs(sin(0.005 * timer * PI)))
-        finishLineAlpha = finishLineAlpha + 2
-        if (timer % 255 == 0) {
-          finishLineAlpha = 0
-        }
-        noStroke()
-        translate(width * 0.015, 0)
-        fill(255, 240, 10, finishLineAlpha - 160)
-        quad(
-          width * 0.92,
+      // strokeWeight(5)
+      // stroke(255, 255 * abs(sin(0.005 * timer * PI)))
+      finishLineAlpha = finishLineAlpha + 2
+      if (timer % 255 == 0) {
+        finishLineAlpha = 0
+      }
+      noStroke()
+      translate(width * 0.015, 0)
+      fill(255, 240, 10, finishLineAlpha - 160)
+      quad(
+        width * 0.92,
 
-          height * 0.4,
+        height * 0.4,
 
-          width * 0.95,
-          height * 0.4,
+        width * 0.95,
+        height * 0.4,
 
-          width * 0.985,
-          height * 0.5,
+        width * 0.985,
+        height * 0.5,
 
-          width * 0.955,
-          height * 0.5
-        )
-        quad(
-          width * 0.92,
+        width * 0.955,
+        height * 0.5
+      )
+      quad(
+        width * 0.92,
 
-          height * 0.6,
+        height * 0.6,
 
-          width * 0.95,
-          height * 0.6,
+        width * 0.95,
+        height * 0.6,
 
-          width * 0.985,
-          height * 0.5,
+        width * 0.985,
+        height * 0.5,
 
-          width * 0.955,
-          height * 0.5
-        )
-        fill(255, 240, 10, finishLineAlpha - 80)
+        width * 0.955,
+        height * 0.5
+      )
+      fill(255, 240, 10, finishLineAlpha - 80)
 
-        quad(
-          width * 0.89,
+      quad(
+        width * 0.89,
 
-          height * 0.4,
+        height * 0.4,
 
-          width * 0.91,
-          height * 0.4,
+        width * 0.91,
+        height * 0.4,
 
-          width * 0.945,
-          height * 0.5,
+        width * 0.945,
+        height * 0.5,
 
-          width * 0.925,
-          height * 0.5
-        )
-        quad(
-          width * 0.89,
+        width * 0.925,
+        height * 0.5
+      )
+      quad(
+        width * 0.89,
 
-          height * 0.6,
+        height * 0.6,
 
-          width * 0.91,
-          height * 0.6,
+        width * 0.91,
+        height * 0.6,
 
-          width * 0.945,
-          height * 0.5,
+        width * 0.945,
+        height * 0.5,
 
-          width * 0.925,
-          height * 0.5
-        )
-        fill(255, 240, 10, finishLineAlpha)
-        quad(
-          width * 0.87,
+        width * 0.925,
+        height * 0.5
+      )
+      fill(255, 240, 10, finishLineAlpha)
+      quad(
+        width * 0.87,
 
-          height * 0.4,
+        height * 0.4,
 
-          width * 0.88,
-          height * 0.4,
+        width * 0.88,
+        height * 0.4,
 
-          width * 0.915,
-          height * 0.5,
+        width * 0.915,
+        height * 0.5,
 
-          width * 0.905,
-          height * 0.5
-        )
-        quad(
-          width * 0.87,
+        width * 0.905,
+        height * 0.5
+      )
+      quad(
+        width * 0.87,
 
-          height * 0.6,
+        height * 0.6,
 
-          width * 0.88,
-          height * 0.6,
+        width * 0.88,
+        height * 0.6,
 
-          width * 0.915,
-          height * 0.5,
+        width * 0.915,
+        height * 0.5,
 
-          width * 0.905,
-          height * 0.5
-        )
+        width * 0.905,
+        height * 0.5
+      )
 
-        translate(-width * 0.015, 0)
-        // }
+      translate(-width * 0.015, 0)
+      // }
 
-        noStroke()
+      noStroke()
 
-        translate(width / 2, height / 2)
-        for (let i = 0; i < Stars.length; i++) {
-          Stars[i].show(255, 255, 255, 255)
-        }
-        translate(-width / 2, -height / 2)
-        //Galaxy Start
+      translate(width / 2, height / 2)
+      for (let i = 0; i < Stars.length; i++) {
+        Stars[i].show(255, 255, 255, 255)
+      }
+      translate(-width / 2, -height / 2)
+      //Galaxy Start
 
-        //Black Holes/Asteroids
+      //Black Holes/Asteroids
 
-        let BHdistance
+      let BHdistance
 
-        let gforce
-        let BHmass = 0
-        let denom
+      let gforce
+      let BHmass = 0
+      let denom
 
-        xGravity = 0
-        yGravity = 0
-        xGravityAsteroid = 0
-        yGravityAsteroid = 0
+      xGravity = 0
+      yGravity = 0
+      xGravityAsteroid = 0
+      yGravityAsteroid = 0
 
-        for (let i = 0; i < asteroids.length; i++) {
-          asteroids[i].move()
-          asteroids[i].draw()
-        }
-        for (let i = 0; i < blackHoles.length; i++) {
-          blackHoles[i].move()
-          blackHoles[i].draw()
+      for (let i = 0; i < asteroids.length; i++) {
+        asteroids[i].move()
+        asteroids[i].draw()
+      }
+      for (let i = 0; i < blackHoles.length; i++) {
+        blackHoles[i].move()
+        blackHoles[i].draw()
 
-          //Gravity between the black hole and surfer
-          BHdistance = dist(blackHoles[i].x, blackHoles[i].y, prevx, prevy)
+        //Gravity between the black hole and surfer
+        BHdistance = dist(blackHoles[i].x, blackHoles[i].y, prevx, prevy)
+        gforce =
+          (Surfers[int(surfType)].mass * gConstant * blackHoles[i].mass) /
+          (BHdistance * BHdistance + 1)
+        denom = abs(prevx - blackHoles[i].x) + abs(prevy - blackHoles[i].y) + 1
+        ratio = (blackHoles[i].x - prevx) / denom
+        ratiotwo = (blackHoles[i].y - prevy) / denom
+        xGravity = xGravity + ratio * gforce
+        yGravity = yGravity + ratiotwo * gforce
+        for (let j = 0; j < asteroids.length; j++) {
+          BHdistance = dist(
+            blackHoles[i].x,
+            blackHoles[i].y,
+            asteroids[j].x,
+            asteroids[j].y
+          )
+          if (BHdistance < blackHoles[i].size / 2) {
+            asteroids[j].reset()
+          }
           gforce =
-            (Surfers[int(surfType)].mass * gConstant * blackHoles[i].mass) /
+            (asteroids[j].mass * gConstant * blackHoles[i].mass) /
             (BHdistance * BHdistance + 1)
           denom =
-            abs(prevx - blackHoles[i].x) + abs(prevy - blackHoles[i].y) + 1
-          ratio = (blackHoles[i].x - prevx) / denom
-          ratiotwo = (blackHoles[i].y - prevy) / denom
-          xGravity = xGravity + ratio * gforce
-          yGravity = yGravity + ratiotwo * gforce
-          for (let j = 0; j < asteroids.length; j++) {
-            BHdistance = dist(
-              blackHoles[i].x,
-              blackHoles[i].y,
-              asteroids[j].x,
-              asteroids[j].y
-            )
-            if (BHdistance < blackHoles[i].size / 2) {
-              asteroids[j].reset()
-            }
-            gforce =
-              (asteroids[j].mass * gConstant * blackHoles[i].mass) /
-              (BHdistance * BHdistance + 1)
-            denom =
-              abs(asteroids[j].x - blackHoles[i].x) +
-              abs(asteroids[j].y - blackHoles[i].y) +
-              1
-            ratio = (blackHoles[i].x - asteroids[j].x) / denom
-            ratiotwo = (blackHoles[i].y - asteroids[j].y) / denom
-            xGravityAsteroid = ratio * gforce
-            yGravityAsteroid = ratiotwo * gforce
-            asteroids[j].vx = asteroids[j].vx + xGravityAsteroid
-            asteroids[j].vy = asteroids[j].vy + yGravityAsteroid
-          }
+            abs(asteroids[j].x - blackHoles[i].x) +
+            abs(asteroids[j].y - blackHoles[i].y) +
+            1
+          ratio = (blackHoles[i].x - asteroids[j].x) / denom
+          ratiotwo = (blackHoles[i].y - asteroids[j].y) / denom
+          xGravityAsteroid = ratio * gforce
+          yGravityAsteroid = ratiotwo * gforce
+          asteroids[j].vx = asteroids[j].vx + xGravityAsteroid
+          asteroids[j].vy = asteroids[j].vy + yGravityAsteroid
         }
-
-        //The trigger for beating the level, indicate the level completion and have brief break
-        if (
-          LevelChangeTrigger == 0 &&
-          GameOver == 0 &&
-          (44 * width) / 50 < prevx &&
-          prevy < height / 2 + width / 17.8 &&
-          prevy > height / 2 - width / 17.8
-        ) {
-          LevelChangeCount = 0
-          LevelChangeTrigger = 1
-        }
-        if (LevelChangeTrigger == 1) {
-          GameOver = 0
-          textSize(height / 6.3)
-          stroke(0)
-          fill(255, 240, 0, 255)
-          textAlign(CENTER)
-          if (LevelChangeCount < 50) {
-            text('Level Complete', width / 2, height / 2.8)
-            noStroke()
-            fill(150, 250, 180, 35)
-            quad(0, 0, width, 0, width, height, 0, height)
-          } else {
-            turnoff = 0
-            LevelChangeTrigger = 0
-
-            level = level + 1
-            storeItem('Level', level)
-            changeLevel(level)
-            //Change the next value here to reflect the last level which will trigger the victory sequence
-            if (level == 11) {
-              GameOver = 2
-              DBEntry = 1
-            }
-          }
-          LevelChangeCount = LevelChangeCount + 1
-        }
-        //Extra Life Section(Only on level 5)
-        if (level == 5) {
-          if (extraLife == 1) {
-            let len = width / 320
-            extraLifeSprite(len)
-          }
-
-          if (
-            prevx < width / 2 + 39 &&
-            prevx > width / 2 - 35 &&
-            prevy < height / 2 + 39 &&
-            prevy > height / 2 - 35 &&
-            extraLife == 1
-          ) {
-            lifeCount = lifeCount + 1
-            extraLife = 0
-            displayExtraLife = 25
-          }
-          if (displayExtraLife > 0) {
-            fill(120, 255, 140, 255)
-            stroke(0)
-            textSize(height / 7.5)
-            text('Extra Life +', width / 4.2, height / 3.5)
-            displayExtraLife = displayExtraLife - 1
-          }
-        }
-
-        //Surfer
-        let mousex = mouseX
-        let mousey = mouseY
-        let mouseVector
-        mouseVector = createVector(mousex, mousey)
-
-        if (levelTimer < 75) {
-          textAlign(CENTER)
-          if (levelStart == 0) {
-            fill(255, 240, 0, 255)
-            stroke(0)
-            textSize(height / 7.5)
-
-            text('Awaiting Signal', width / 2, height / 3.5)
-            var thisText = 'Lives: ' + lifeCount
-            stroke(0)
-            text(thisText, width / 2, height / 1.8)
-          } else {
-            levelTimer = levelTimer + 1
-          }
-          if (noText == 1) {
-            fill(255, 240, 0, 255)
-            stroke(0)
-            textSize(height / 7.5)
-
-            text('Engage Thrusters!', width / 2, height / 2)
-            //fill(255, 0, 0, 255);
-          }
-          xsurf = width / 12
-          ysurf = height / 2
-          xGravity = 0
-          yGravity = 0
-
-          finalPosition.x = width / 12
-          finalPosition.y = height / 2
-          GameOver = 0
-        }
-        //control for the mouse being too close to the surfer, SEPARATE X AND Y HERE
-
-        if (abs(mouseX - xsurf) > 2) {
-          ratioX =
-            abs(xsurf - mouseX) / (abs(ysurf - mouseY) + abs(xsurf - mouseX))
-          finalPosition.x =
-            xsurf +
-            ((mouseX - xsurf) / abs(mouseX - xsurf)) * 1 * surferSpeed * ratioX
-          finalPosition.x = finalPosition.x + xGravity
-        }
-        if (abs(mouseY - ysurf) > 2) {
-          ratioY =
-            abs(ysurf - mouseY) / (abs(ysurf - mouseY) + abs(xsurf - mouseX))
-          finalPosition.y =
-            ysurf +
-            ((mouseY - ysurf) / abs(mouseY - ysurf)) * 1 * surferSpeed * ratioY
-          finalPosition.y = finalPosition.y + yGravity
-        }
-        //Add in the gravity
-
-        //Control for the edges of the screen
-        if (finalPosition.x > width) {
-          finalPosition.x = width
-        } else if (finalPosition.x < 0) {
-          finalPosition.x = 0
-        }
-
-        if (finalPosition.y > height) {
-          finalPosition.y = height
-        } else if (finalPosition.y < 0) {
-          finalPosition.y = 0
-        }
-        xsurf = finalPosition.x
-        ysurf = finalPosition.y
-        let force = p5.Vector.sub(finalPosition, mouseVector)
-
-        Surfers[int(surfType)].render(
-          finalPosition.x,
-          finalPosition.y,
-          10,
-          surfType,
-          surfRed,
-          surfBlue,
-          surfGreen
-        )
-
-        prevx = finalPosition.x
-        prevy = finalPosition.y
-
-        //Display what level it is
-        fill(255, 240, 0, 255)
-        stroke(0)
-        textSize(height / 20)
-        text(int(level), width / 40, height / 20)
       }
-      craftLost = 0
+
+      //The trigger for beating the level, indicate the level completion and have brief break
+      if (
+        LevelChangeTrigger == 0 &&
+        (44 * width) / 50 < prevx &&
+        prevy < height / 2 + width / 17.8 &&
+        prevy > height / 2 - width / 17.8
+      ) {
+        LevelChangeCount = 0
+        LevelChangeTrigger = 1
+      }
+      if (LevelChangeTrigger == 1) {
+        textSize(height / 6.3)
+        stroke(0)
+        fill(255, 240, 0, 255)
+        textAlign(CENTER)
+        if (LevelChangeCount < 50) {
+          text('Level Complete', width / 2, height / 2.8)
+          noStroke()
+          fill(150, 250, 180, 35)
+          quad(0, 0, width, 0, width, height, 0, height)
+        } else {
+          turnoff = 0
+          LevelChangeTrigger = 0
+
+          level = level + 1
+          storeItem('Level', level)
+          changeLevel(level)
+          //Change the next value here to reflect the last level which will trigger the victory sequence
+          if (level == 11) {
+            DBEntry = 1
+          }
+        }
+        LevelChangeCount = LevelChangeCount + 1
+      }
+      //Extra Life Section(Only on level 5)
+      if (level == 5) {
+        if (extraLife == 1) {
+          let len = width / 320
+          extraLifeSprite(len)
+        }
+
+        if (
+          prevx < width / 2 + 39 &&
+          prevx > width / 2 - 35 &&
+          prevy < height / 2 + 39 &&
+          prevy > height / 2 - 35 &&
+          extraLife == 1
+        ) {
+          lifeCount = lifeCount + 1
+          extraLife = 0
+          displayExtraLife = 25
+        }
+        if (displayExtraLife > 0) {
+          fill(120, 255, 140, 255)
+          stroke(0)
+          textSize(height / 7.5)
+          text('Extra Life +', width / 4.2, height / 3.5)
+          displayExtraLife = displayExtraLife - 1
+        }
+      }
+
+      //Surfer
+      let mousex = mouseX
+      let mousey = mouseY
+      let mouseVector
+      mouseVector = createVector(mousex, mousey)
+
+      if (levelTimer < 75) {
+        textAlign(CENTER)
+        if (levelStart == 0) {
+          fill(255, 240, 0, 255)
+          stroke(0)
+          textSize(height / 7.5)
+
+          text('Awaiting Signal', width / 2, height / 3.5)
+          var thisText = 'Lives: ' + lifeCount
+          stroke(0)
+          text(thisText, width / 2, height / 1.8)
+        } else {
+          levelTimer = levelTimer + 1
+        }
+        if (noText == 1) {
+          fill(255, 240, 0, 255)
+          stroke(0)
+          textSize(height / 7.5)
+
+          text('Engage Thrusters!', width / 2, height / 2)
+          //fill(255, 0, 0, 255);
+        }
+        xsurf = width / 12
+        ysurf = height / 2
+        xGravity = 0
+        yGravity = 0
+
+        finalPosition.x = width / 12
+        finalPosition.y = height / 2
+        GameOver = 0
+      }
+      //control for the mouse being too close to the surfer, SEPARATE X AND Y HERE
+      let surferSpeed = JSON.parse(localStorage.getItem('myObject')).speed
+      if (abs(mouseX - xsurf) > 2) {
+        ratioX =
+          abs(xsurf - mouseX) / (abs(ysurf - mouseY) + abs(xsurf - mouseX))
+        finalPosition.x =
+          xsurf +
+          ((mouseX - xsurf) / abs(mouseX - xsurf)) * 1 * surferSpeed * ratioX
+        finalPosition.x = finalPosition.x + xGravity
+      }
+      if (abs(mouseY - ysurf) > 2) {
+        ratioY =
+          abs(ysurf - mouseY) / (abs(ysurf - mouseY) + abs(xsurf - mouseX))
+        finalPosition.y =
+          ysurf +
+          ((mouseY - ysurf) / abs(mouseY - ysurf)) * 1 * surferSpeed * ratioY
+        finalPosition.y = finalPosition.y + yGravity
+      }
+      //Add in the gravity
+
+      //Control for the edges of the screen
+      if (finalPosition.x > width) {
+        finalPosition.x = width
+      } else if (finalPosition.x < 0) {
+        finalPosition.x = 0
+      }
+
+      if (finalPosition.y > height) {
+        finalPosition.y = height
+      } else if (finalPosition.y < 0) {
+        finalPosition.y = 0
+      }
+      xsurf = finalPosition.x
+      ysurf = finalPosition.y
+      let force = p5.Vector.sub(finalPosition, mouseVector)
+
+      Surfers[int(surfType)].render(
+        finalPosition.x,
+        finalPosition.y,
+        10,
+        surfType,
+        surfRed,
+        surfBlue,
+        surfGreen
+      )
+
+      prevx = finalPosition.x
+      prevy = finalPosition.y
+
+      //Display what level it is
+      fill(255, 240, 0, 255)
+      stroke(0)
+      textSize(height / 20)
+      text(int(level), width / 40, height / 20)
     }
-    //What happens after being eaten by a black hole or destroyed by an asteroid, have different sequences that occur - mini graphics splash
-    else if (GameOver == 1) {
+    if (getItem('Stage') == 'Lost Life') {
       if (lifeCount > 0) {
         textSize(height / 4.5)
         fill(255, 240, 0, 255)
@@ -1259,7 +1255,6 @@ function draw() {
         if (craftLost > 105) {
           lifeCount = lifeCount - 1
           if (lifeCount > 0) {
-            GameOver = 0
           }
         }
         craftLost = craftLost + 1
@@ -1328,14 +1323,11 @@ function draw() {
         }
         translate(-width / 2, -height / 3)
         if (keyIsPressed || mouseIsPressed) {
-          GameOver = 0
-
           delay = 0
         }
       }
     }
-    //Set Gameover to 2 in order to reach the victory sequence, do this after the level reaches one over the total number
-    else {
+    if (getItem('Stage') == 'Victory') {
       background(0)
       translate(width / 2, height / 2)
       rotate(PI * delay * 0.0001)
@@ -1344,8 +1336,6 @@ function draw() {
       }
       rotate(-PI * delay * 0.0001)
       if (mouseIsPressed || keyIsPressed) {
-        GameOver = 0
-
         delay = 0
       }
       flareon = 300 * cos(radians(delay / 2))
@@ -1444,62 +1434,6 @@ class Surfer {
     if (quatro == 0) {
       this.mass = 2.3
       drawSuperbug(len, x, y)
-      //Superbug
-      // fill(255, 240, 0, 255)
-      // square(x - len, y + 3 * len, len)
-      // square(x + len, y + 3 * len, len)
-      // square(x, y + 3 * len, len)
-      // square(x - len * 2, y + 6 * len, len)
-      // square(x + len * 2, y + 6 * len, len)
-
-      // square(x + len * 2, y + len, len)
-      // square(x + len * 2, y, len)
-      // square(x + len * 2, y - len, len)
-      // square(x + len * 2, y - len * 2, len)
-      // square(x + len * 3, y - len * 3, len)
-      // square(x + len * 3, y - len * 4, len)
-      // square(x + len * 4, y - len * 4, len)
-      // square(x + len * 4, y - len * 5, len)
-      // square(x + len * 5, y - len * 5, len)
-      // square(x + len * 3, y + len, len)
-
-      // square(x - len * 2, y + len, len)
-      // square(x - len * 2, y, len)
-      // square(x - len * 2, y - len, len)
-      // square(x - len * 2, y - len * 2, len)
-      // square(x - len * 3, y - len * 3, len)
-      // square(x - len * 3, y - len * 4, len)
-      // square(x - len * 4, y - len * 4, len)
-      // square(x - len * 4, y - len * 5, len)
-      // square(x - len * 5, y - len * 5, len)
-      // square(x - len * 3, y + len, len)
-
-      // square(x - len * 5, y + len, len)
-      // square(x - len * 5, y + len * 2, len)
-      // square(x + len * 5, y + len, len)
-      // square(x + len * 5, y + len * 2, len)
-
-      // fill(255, 0, 0, 255)
-      // square(x - len, y, len * 3)
-      // square(x, y + 4 * len, len)
-      // square(x, y + 4 * len, len)
-      // square(x + len, y + 4 * len, len)
-      // square(x - len, y + 4 * len, len)
-      // square(x + len, y + 5 * len, len)
-      // square(x, y + 5 * len, len)
-      // square(x - len, y + 5 * len, len)
-
-      // square(x + 4 * len, y, len)
-      // square(x + 4 * len, y + len, len)
-      // square(x - 4 * len, y, len)
-      // square(x - 4 * len, y + len, len)
-
-      // square(x + 6 * len, y + len * 3, len)
-      // square(x + 6 * len, y + len * 2, len)
-      // square(x - 6 * len, y + len * 3, len)
-      // square(x - 6 * len, y + len * 2, len)
-      // square(x - 5 * len, y + len * 4, len)
-      // square(x + 5 * len, y + len * 4, len)
     } else if (quatro == 1) {
       //Psych Bike
       this.mass = 2.1
