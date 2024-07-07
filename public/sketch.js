@@ -429,6 +429,7 @@ function draw() {
     }
     if (int(getItem('Stage')) == 2) {
       changeLevel(1)
+
       turnoff = 0
       background(0)
       translate(width / 2, height / 2)
@@ -930,18 +931,6 @@ function draw() {
         noText = 1
       }
       //finish line
-      // for (let i = 0; i < 2; i++) {
-      //   if (i == 0) {
-      //     fill(255, 240, 10)
-      //     noStroke()
-      //   } else {
-      //     strokeWeight(1)
-      //     stroke(255, 255 * abs(cos(PI * timer * 0.005)))
-      //     fill(255, 255 * abs(cos(PI * timer * 0.005)))
-      //   }
-
-      // strokeWeight(5)
-      // stroke(255, 255 * abs(sin(0.005 * timer * PI)))
       finishLineAlpha = finishLineAlpha + 2
       if (timer % 255 == 0) {
         finishLineAlpha = 0
@@ -951,7 +940,6 @@ function draw() {
       fill(255, 240, 10, finishLineAlpha - 160)
       quad(
         width * 0.92,
-
         height * 0.4,
 
         width * 0.95,
@@ -965,7 +953,6 @@ function draw() {
       )
       quad(
         width * 0.92,
-
         height * 0.6,
 
         width * 0.95,
@@ -981,7 +968,6 @@ function draw() {
 
       quad(
         width * 0.89,
-
         height * 0.4,
 
         width * 0.91,
@@ -995,7 +981,6 @@ function draw() {
       )
       quad(
         width * 0.89,
-
         height * 0.6,
 
         width * 0.91,
@@ -1010,7 +995,6 @@ function draw() {
       fill(255, 240, 10, finishLineAlpha)
       quad(
         width * 0.87,
-
         height * 0.4,
 
         width * 0.88,
@@ -1024,7 +1008,6 @@ function draw() {
       )
       quad(
         width * 0.87,
-
         height * 0.6,
 
         width * 0.88,
@@ -1048,15 +1031,12 @@ function draw() {
       }
       translate(-width / 2, -height / 2)
       //Galaxy Start
-
       //Black Holes/Asteroids
-
       let BHdistance
-
       let gforce
       let BHmass = 0
       let denom
-
+      blackHoles = levelBlackHoles[int(getItem('Level')) - 1]
       xGravity = 0
       yGravity = 0
       xGravityAsteroid = 0
@@ -1066,6 +1046,7 @@ function draw() {
         asteroids[i].move()
         asteroids[i].draw()
       }
+
       for (let i = 0; i < blackHoles.length; i++) {
         blackHoles[i].move()
         blackHoles[i].draw()
@@ -1134,6 +1115,7 @@ function draw() {
           level = level + 1
           storeItem('Level', level)
           changeLevel(level)
+
           //Change the next value here to reflect the last level which will trigger the victory sequence
           if (level == 11) {
             DBEntry = 1
@@ -2027,7 +2009,7 @@ function errData(err) {}
 function changeLevel(newLevel) {
   if (newLevel >= 1 && newLevel <= 10) {
     currentLevel = newLevel
-    blackHoles = levelBlackHoles[currentLevel - 1]
+    // blackHoles = levelBlackHoles[currentLevel - 1]
   } else {
     console.error(
       'Invalid level number. Please choose between 1 and 10',
