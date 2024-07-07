@@ -175,7 +175,7 @@ let displayExtraLife = 0
 let surfRed
 let surfBlue
 let surfGreen
-let surfType = 1
+let surfType
 
 //Level Variables
 let levelTimer = 0
@@ -821,16 +821,8 @@ function draw() {
       //Render the Sprites
       translate(0, (height / 13) * 2.6 * 2)
 
-      Surfers[0].render(width / 8, height - height / 10, 10, 0, 255, 255, 255)
-      Surfers[1].render(
-        width / 8,
-        height - (3 * height) / 10,
-        10,
-        1,
-        255,
-        255,
-        255
-      )
+      Surfers[0].render(width / 8, height - height / 10, 10, 0)
+      Surfers[1].render(width / 8, height - (3 * height) / 10, 10, 1)
       Surfers[2].render(
         width / 8,
         height - (5 * height) / 10,
@@ -854,10 +846,14 @@ function draw() {
           if (mouseY < height && mouseY > height - (2 * height) / 10) {
             //SuperBug
 
-            surfType = 0
             localStorage.setItem(
               'myObject',
-              JSON.stringify({ speed: 13, name: 'SuperBug', mass: 15 })
+              JSON.stringify({
+                speed: 13,
+                name: 'SuperBug',
+                mass: 5,
+                surfType: 0,
+              })
             )
 
             storeItem('Stage', 3)
@@ -867,27 +863,49 @@ function draw() {
           ) {
             //Psych Bike
 
-            surferSpeed = 104.5
-
+            localStorage.setItem(
+              'myObject',
+              JSON.stringify({
+                speed: 14.5,
+                name: 'Psych Bike',
+                mass: 3,
+                surfType: 1,
+              })
+            )
             storeItem('Stage', 3)
-            surfType = 1
           } else if (
             mouseY < height - (4 * height) / 10 &&
             mouseY > height - (6 * height) / 10
           ) {
             //The Compiler
 
-            surferSpeed = 16
-
+            // surferSpeed = 16
+            localStorage.setItem(
+              'myObject',
+              JSON.stringify({
+                speed: 16,
+                name: 'Compiler',
+                mass: 8,
+                surfType: 2,
+              })
+            )
             storeItem('Stage', 3)
-            surfType = 2
           } else if (
             mouseY < height - (6 * height) / 10 &&
             mouseY > height - (8 * height) / 10
           ) {
             //Voidwalker
-            surferSpeed = 11.5
-            surfType = 3
+            // surferSpeed = 11.5
+
+            localStorage.setItem(
+              'myObject',
+              JSON.stringify({
+                speed: 11.5,
+                name: 'Voidwalker',
+                mass: 6,
+                surfType: 3,
+              })
+            )
             storeItem('Stage', 3)
           }
         }
@@ -1053,9 +1071,10 @@ function draw() {
         blackHoles[i].draw()
 
         //Gravity between the black hole and surfer
+        let surferMass = JSON.parse(localStorage.getItem('myObject')).mass
         BHdistance = dist(blackHoles[i].x, blackHoles[i].y, prevx, prevy)
         gforce =
-          (Surfers[int(surfType)].mass * gConstant * blackHoles[i].mass) /
+          (surferMass * gConstant * blackHoles[i].mass) /
           (BHdistance * BHdistance + 1)
         denom = abs(prevx - blackHoles[i].x) + abs(prevy - blackHoles[i].y) + 1
         ratio = (blackHoles[i].x - prevx) / denom
@@ -1221,12 +1240,14 @@ function draw() {
       xsurf = finalPosition.x
       ysurf = finalPosition.y
       let force = p5.Vector.sub(finalPosition, mouseVector)
-
-      Surfers[int(surfType)].render(
+      let surferType = int(
+        JSON.parse(localStorage.getItem('myObject')).surfType
+      )
+      Surfers[surferType].render(
         finalPosition.x,
         finalPosition.y,
         10,
-        surfType,
+        surferType,
         surfRed,
         surfBlue,
         surfGreen
@@ -1423,26 +1444,21 @@ class Star {
 }
 
 class Surfer {
-  constructor() {
-    this.mass = 0
-  }
+  constructor() {}
   update() {}
-  render(x, y, len, quatro, red, blue, green) {
+  render(x, y, len, quatro) {
     //Color parameters are not yet utilized
     noStroke()
     len = width / 320
     if (quatro == 0) {
-      this.mass = 2.3
       drawSuperbug(len, x, y)
     } else if (quatro == 1) {
       //Psych Bike
-      this.mass = 2.1
+
       drawPsychBike(len, x, y)
     } else if (quatro == 2) {
-      this.mass = 2.7
       drawCompiler(len, x, y)
     } else {
-      this.mass = 2.5
       //VoidWalker
       stroke(255)
       fill(100, 14, 237, 255)
@@ -1540,10 +1556,10 @@ class Asteroid {
   constructor(x, y, vx, vy, size) {
     this.x = x
     this.y = y
-    this.vx = vx
-    this.vy = vy
+    this.vx = random(-10, -0.1)
+    this.vy = random(-4, 4)
     this.size = size
-    this.mass = size * 0.001
+    this.mass = size * 0.007
   }
 
   reset() {
@@ -1554,8 +1570,8 @@ class Asteroid {
     } else {
       this.y = random((3 * height) / 4, height)
     }
-    this.vx = random(-3, -0.1)
-    this.vy = random(-3, 3)
+    this.vx = random(-10, -0.1)
+    this.vy = random(-4, 4)
   }
 
   move() {
