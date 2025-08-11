@@ -1,0 +1,35 @@
+{
+  "levelNumber": 2,
+  "name": "Dynamic Challenge",
+  "description": "Navigate between a stable and moving black hole",
+  "blackHoles": [
+    {
+      "x": 0.333,
+      "y": 0.5,
+      "size": 0.167,
+      "isMoving": false,
+      "moveAngle": 0,
+      "moveRadius": 0
+    },
+    {
+      "x": 0.703,
+      "y": 0.5,
+      "size": 0.083,
+      "isMoving": true,
+      "moveAngle": 1.571,
+      "moveRadius": 0.0014
+    }
+  ],
+  "asteroids": {
+    "count": 13,
+    "spawnSides": ["right", "top", "bottom"],
+    "excludeCenter": true
+  },
+  "specialItems": [],
+  "finishLine": {
+    "x": 0.92,
+    "y": 0.5,
+    "width": 0.065,
+    "height": 0.2
+  }
+}

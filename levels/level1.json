@@ -1,0 +1,35 @@
+{
+  "levelNumber": 1,
+  "name": "Training Course",
+  "description": "Learn to navigate between two stable black holes",
+  "blackHoles": [
+    {
+      "x": 0.5,
+      "y": 0,
+      "size": 0.278,
+      "isMoving": false,
+      "moveAngle": 0,
+      "moveRadius": 0
+    },
+    {
+      "x": 0.5,
+      "y": 1,
+      "size": 0.278,
+      "isMoving": false,
+      "moveAngle": 0,
+      "moveRadius": 0
+    }
+  ],
+  "asteroids": {
+    "count": 13,
+    "spawnSides": ["right", "top", "bottom"],
+    "excludeCenter": true
+  },
+  "specialItems": [],
+  "finishLine": {
+    "x": 0.92,
+    "y": 0.5,
+    "width": 0.065,
+    "height": 0.2
+  }
+}

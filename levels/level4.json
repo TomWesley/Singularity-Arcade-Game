@@ -1,0 +1,51 @@
+{
+  "levelNumber": 4,
+  "name": "Quad Formation",
+  "description": "Four black holes in corner formation with moving element",
+  "blackHoles": [
+    {
+      "x": 0.25,
+      "y": 0.167,
+      "size": 0.116,
+      "isMoving": false,
+      "moveAngle": 0,
+      "moveRadius": 0
+    },
+    {
+      "x": 0.75,
+      "y": 0.167,
+      "size": 0.116,
+      "isMoving": false,
+      "moveAngle": 0,
+      "moveRadius": 0
+    },
+    {
+      "x": 0.25,
+      "y": 0.833,
+      "size": 0.069,
+      "isMoving": false,
+      "moveAngle": 0,
+      "moveRadius": 0
+    },
+    {
+      "x": 0.75,
+      "y": 0.833,
+      "size": 0.069,
+      "isMoving": true,
+      "moveAngle": 1.571,
+      "moveRadius": 0.009
+    }
+  ],
+  "asteroids": {
+    "count": 13,
+    "spawnSides": ["right", "top", "bottom"],
+    "excludeCenter": true
+  },
+  "specialItems": [],
+  "finishLine": {
+    "x": 0.92,
+    "y": 0.5,
+    "width": 0.065,
+    "height": 0.2
+  }
+}

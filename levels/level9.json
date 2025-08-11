@@ -1,0 +1,91 @@
+{
+  "levelNumber": 9,
+  "name": "Near Impossible",
+  "description": "Nine black holes creating a deadly maze",
+  "blackHoles": [
+    {
+      "x": 0.2,
+      "y": 0.167,
+      "size": 0.042,
+      "isMoving": false,
+      "moveAngle": 0,
+      "moveRadius": 0
+    },
+    {
+      "x": 0.2,
+      "y": 0.5,
+      "size": 0.042,
+      "isMoving": true,
+      "moveAngle": 0,
+      "moveRadius": 0.019
+    },
+    {
+      "x": 0.2,
+      "y": 0.833,
+      "size": 0.042,
+      "isMoving": false,
+      "moveAngle": 0,
+      "moveRadius": 0
+    },
+    {
+      "x": 0.5,
+      "y": 0.167,
+      "size": 0.042,
+      "isMoving": true,
+      "moveAngle": 1.571,
+      "moveRadius": 0.023
+    },
+    {
+      "x": 0.5,
+      "y": 0.5,
+      "size": 0.065,
+      "isMoving": false,
+      "moveAngle": 0,
+      "moveRadius": 0
+    },
+    {
+      "x": 0.5,
+      "y": 0.833,
+      "size": 0.042,
+      "isMoving": true,
+      "moveAngle": 4.712,
+      "moveRadius": 0.023
+    },
+    {
+      "x": 0.8,
+      "y": 0.167,
+      "size": 0.042,
+      "isMoving": false,
+      "moveAngle": 0,
+      "moveRadius": 0
+    },
+    {
+      "x": 0.8,
+      "y": 0.5,
+      "size": 0.042,
+      "isMoving": true,
+      "moveAngle": 3.142,
+      "moveRadius": 0.019
+    },
+    {
+      "x": 0.8,
+      "y": 0.833,
+      "size": 0.042,
+      "isMoving": false,
+      "moveAngle": 0,
+      "moveRadius": 0
+    }
+  ],
+  "asteroids": {
+    "count": 20,
+    "spawnSides": ["right", "top", "bottom"],
+    "excludeCenter": false
+  },
+  "specialItems": [],
+  "finishLine": {
+    "x": 0.92,
+    "y": 0.5,
+    "width": 0.065,
+    "height": 0.2
+  }
+}

@@ -1,0 +1,67 @@
+{
+  "levelNumber": 6,
+  "name": "Orbital Dance",
+  "description": "Six black holes with dual orbital patterns",
+  "blackHoles": [
+    {
+      "x": 0.333,
+      "y": 0.125,
+      "size": 0.028,
+      "isMoving": false,
+      "moveAngle": 0,
+      "moveRadius": 0
+    },
+    {
+      "x": 0.667,
+      "y": 0.125,
+      "size": 0.028,
+      "isMoving": false,
+      "moveAngle": 0,
+      "moveRadius": 0
+    },
+    {
+      "x": 0.333,
+      "y": 0.875,
+      "size": 0.028,
+      "isMoving": false,
+      "moveAngle": 0,
+      "moveRadius": 0
+    },
+    {
+      "x": 0.667,
+      "y": 0.875,
+      "size": 0.028,
+      "isMoving": false,
+      "moveAngle": 0,
+      "moveRadius": 0
+    },
+    {
+      "x": 0.125,
+      "y": 0.5,
+      "size": 0.023,
+      "isMoving": true,
+      "moveAngle": 3.142,
+      "moveRadius": 0.023
+    },
+    {
+      "x": 0.875,
+      "y": 0.5,
+      "size": 0.023,
+      "isMoving": true,
+      "moveAngle": 0,
+      "moveRadius": 0.023
+    }
+  ],
+  "asteroids": {
+    "count": 13,
+    "spawnSides": ["right", "top", "bottom"],
+    "excludeCenter": true
+  },
+  "specialItems": [],
+  "finishLine": {
+    "x": 0.92,
+    "y": 0.5,
+    "width": 0.065,
+    "height": 0.2
+  }
+}

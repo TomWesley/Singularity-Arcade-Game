@@ -1,0 +1,99 @@
+{
+  "levelNumber": 10,
+  "name": "Singularity Storm",
+  "description": "Final challenge - ten black holes in chaotic formation",
+  "blackHoles": [
+    {
+      "x": 0.15,
+      "y": 0.2,
+      "size": 0.037,
+      "isMoving": true,
+      "moveAngle": 0,
+      "moveRadius": 0.028
+    },
+    {
+      "x": 0.35,
+      "y": 0.15,
+      "size": 0.028,
+      "isMoving": false,
+      "moveAngle": 0,
+      "moveRadius": 0
+    },
+    {
+      "x": 0.55,
+      "y": 0.25,
+      "size": 0.037,
+      "isMoving": true,
+      "moveAngle": 2.094,
+      "moveRadius": 0.023
+    },
+    {
+      "x": 0.75,
+      "y": 0.2,
+      "size": 0.028,
+      "isMoving": false,
+      "moveAngle": 0,
+      "moveRadius": 0
+    },
+    {
+      "x": 0.25,
+      "y": 0.45,
+      "size": 0.042,
+      "isMoving": false,
+      "moveAngle": 0,
+      "moveRadius": 0
+    },
+    {
+      "x": 0.65,
+      "y": 0.5,
+      "size": 0.037,
+      "isMoving": true,
+      "moveAngle": 4.712,
+      "moveRadius": 0.019
+    },
+    {
+      "x": 0.15,
+      "y": 0.7,
+      "size": 0.028,
+      "isMoving": false,
+      "moveAngle": 0,
+      "moveRadius": 0
+    },
+    {
+      "x": 0.45,
+      "y": 0.75,
+      "size": 0.037,
+      "isMoving": true,
+      "moveAngle": 1.047,
+      "moveRadius": 0.032
+    },
+    {
+      "x": 0.75,
+      "y": 0.8,
+      "size": 0.028,
+      "isMoving": false,
+      "moveAngle": 0,
+      "moveRadius": 0
+    },
+    {
+      "x": 0.85,
+      "y": 0.5,
+      "size": 0.046,
+      "isMoving": true,
+      "moveAngle": 3.142,
+      "moveRadius": 0.014
+    }
+  ],
+  "asteroids": {
+    "count": 25,
+    "spawnSides": ["right", "top", "bottom", "left"],
+    "excludeCenter": false
+  },
+  "specialItems": [],
+  "finishLine": {
+    "x": 0.92,
+    "y": 0.5,
+    "width": 0.065,
+    "height": 0.2
+  }
+}

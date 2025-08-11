@@ -1,0 +1,43 @@
+{
+  "levelNumber": 3,
+  "name": "Triple Threat",
+  "description": "Three black holes with one orbital pattern",
+  "blackHoles": [
+    {
+      "x": 0.333,
+      "y": 0.167,
+      "size": 0.120,
+      "isMoving": false,
+      "moveAngle": 0,
+      "moveRadius": 0
+    },
+    {
+      "x": 0.333,
+      "y": 0.833,
+      "size": 0.120,
+      "isMoving": false,
+      "moveAngle": 0,
+      "moveRadius": 0
+    },
+    {
+      "x": 0.667,
+      "y": 0.5,
+      "size": 0.074,
+      "isMoving": true,
+      "moveAngle": 0,
+      "moveRadius": 0.019
+    }
+  ],
+  "asteroids": {
+    "count": 13,
+    "spawnSides": ["right", "top", "bottom"],
+    "excludeCenter": true
+  },
+  "specialItems": [],
+  "finishLine": {
+    "x": 0.92,
+    "y": 0.5,
+    "width": 0.065,
+    "height": 0.2
+  }
+}
