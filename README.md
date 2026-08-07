@@ -2,6 +2,8 @@
 
 A space adventure game where players pilot spacecraft through gravitational fields created by black holes to reach portals at the end of each level.
 
+**▶ Play it live: [singularity-c216f.web.app](https://singularity-c216f.web.app)**
+
 ## Game Overview
 
 **Singularity** is an original arcade-style game that challenges players to navigate through 10 increasingly difficult levels filled with black holes, asteroids, and gravitational forces. Players can choose from four different spacecraft, each with unique characteristics, and must use skill and physics to surf gravitational waves to victory.
