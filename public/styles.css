@@ -1,0 +1,36 @@
+/* The canvas is the game. Everything visual is drawn by the engine; this file
+   only has to get out of the way. Fonts and theme variables are injected at
+   runtime by the Arcade Graphics Engine's ThemeProvider. */
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: #000;
+  overflow: hidden;
+}
+
+body {
+  /* The craft follows the cursor, so the cursor is the game's control surface
+     and should not look like a text pointer. */
+  cursor: crosshair;
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#stage {
+  display: block;
+  width: 100vw;
+  height: 100vh;
+}
+
+#boot-error {
+  position: fixed;
+  inset: auto 0 24px 0;
+  margin: 0;
+  text-align: center;
+  font-family: 'Share Tech Mono', ui-monospace, monospace;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  color: #ff6b6b;
+}

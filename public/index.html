@@ -1,17 +1,16 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
-    <script src="p5.js"></script>
-    <link rel="stylesheet" type="text/css" href="style.css" />
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Singularity - Arcade Game</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Singularity</title>
+    <meta name="description" content="Surf the gravitational waves of real black holes. A Wesley Arcade game." />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <div>
-      <script src="classes.js"></script>
-      <script src="game.js"></script>
-      <script src="sketch.js"></script>
-    </div>
+    <canvas id="stage"></canvas>
+    <p id="boot-error" hidden></p>
+    <script type="module" src="src/main.js"></script>
   </body>
 </html>

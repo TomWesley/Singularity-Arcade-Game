@@ -1,35 +1,18 @@
 {
-  "levelNumber": 1,
+  "id": "level1",
   "name": "Training Course",
-  "description": "Learn to navigate between two stable black holes",
+  "subtitle": "Thread the channel. The small ones bite hardest.",
+  "seed": 1337,
+  "spawn": { "x": 0.075, "y": 0.5 },
   "blackHoles": [
+    { "x": 0.34, "y": 0.0, "solarMasses": 22 },
+    { "x": 0.34, "y": 1.0, "solarMasses": 22 },
+    { "x": 0.62, "y": 0.34, "solarMasses": 3.5 },
     {
-      "x": 0.5,
-      "y": 0,
-      "size": 0.278,
-      "isMoving": false,
-      "moveAngle": 0,
-      "moveRadius": 0
-    },
-    {
-      "x": 0.5,
-      "y": 1,
-      "size": 0.278,
-      "isMoving": false,
-      "moveAngle": 0,
-      "moveRadius": 0
+      "x": 0.74, "y": 0.62, "solarMasses": 3,
+      "orbit": { "radius": 0.10, "period": 8.5, "phase": 0.6 }
     }
   ],
-  "asteroids": {
-    "count": 13,
-    "spawnSides": ["right", "top", "bottom"],
-    "excludeCenter": true
-  },
-  "specialItems": [],
-  "finishLine": {
-    "x": 0.92,
-    "y": 0.5,
-    "width": 0.065,
-    "height": 0.2
-  }
+  "asteroids": { "count": 14 },
+  "gate": { "x": 0.94, "y": 0.5, "width": 0.045, "height": 0.26 }
 }

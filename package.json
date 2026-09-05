@@ -1,24 +1,24 @@
 {
   "name": "singularity-arcade-game",
-  "version": "2.0.0",
-  "description": "A space adventure arcade game with gravitational physics and responsive design",
+  "version": "3.0.0",
+  "description": "Surf the gravitational waves of real black holes. Built on the Arcade Graphics Engine.",
+  "type": "module",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js",
-    "dev": "node server.js"
+    "dev": "node server.js",
+    "physics": "node tools/physics-report.mjs",
+    "simulate": "node tools/simulate.mjs",
+    "vendor:engine": "rm -rf public/vendor/arcade-graphics-engine && mkdir -p public/vendor/arcade-graphics-engine && cp -r ../ArcadeGraphicsEngineAndLibrary/dist/. public/vendor/arcade-graphics-engine/ && find public/vendor/arcade-graphics-engine -type f \\( -name '*.cjs' -o -name '*.map' -o -name '*.d.ts' -o -name '*.d.cts' \\) -delete && echo 'Re-vendored arcade-graphics-engine from sibling checkout.'"
   },
   "keywords": [
     "game",
     "arcade",
-    "p5js",
     "physics",
-    "space",
-    "responsive"
+    "black-holes",
+    "canvas",
+    "gravity"
   ],
   "author": "Tom Wesley",
-  "license": "ISC",
-  "dependencies": {
-    "express": "^4.17.1"
-  }
+  "license": "ISC"
 }

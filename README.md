@@ -1,165 +1,109 @@
-# Singularity Arcade Game
+# Singularity
 
-A space adventure game where players pilot spacecraft through gravitational fields created by black holes to reach portals at the end of each level.
+Pilot a craft through the gravity wells of real black holes. The cursor is where
+you want to be; the field decides how much say you get.
 
 **▶ Play it live: [wesleyarcade.com/singularity](https://wesleyarcade.com/singularity/)**
 
-## Game Overview
+Originally written in 2019 in p5.js. Rebuilt in 2026 on the
+[Arcade Graphics Engine](https://github.com/TomWesley/ArcadeGraphicsEngineAndLibrary)
+with a real gravitational model — same premise, nothing else shared.
 
-**Singularity** is an original arcade-style game that challenges players to navigate through 10 increasingly difficult levels filled with black holes, asteroids, and gravitational forces. Players can choose from four different spacecraft, each with unique characteristics, and must use skill and physics to surf gravitational waves to victory.
+## The physics
 
-## Features
+The game does not invent a gravity number. A level authors a black hole by one
+value, its **mass in solar masses**, and every other property is derived from it
+using the actual constants:
 
-- **Responsive Design**: Locked 1280x720 aspect ratio that scales perfectly to any screen size
-- **4 Unique Spacecraft**: Each with different speed and mass characteristics
-- **10 Challenging Levels**: Progressively difficult scenarios with moving black holes
-- **Physics-Based Gameplay**: Realistic gravitational forces affect both player and asteroids
-- **JSON Level System**: Easy-to-edit level configurations
-- **Clean Architecture**: Modular code structure for maintainability
+| Quantity | Formula | 10 M☉ |
+|---|---|---|
+| Schwarzschild radius | `r_s = 2GM/c²` | 29.5 km |
+| Photon sphere | `1.5 r_s` | where light orbits |
+| Innermost stable circular orbit | `3 r_s` | no stable orbit inside |
 
-## Spacecraft Types
+Gravity uses the **Paczyński–Wiita potential**, the standard pseudo-Newtonian
+approximation from accretion astrophysics:
 
-1. **Superbug** - Balanced craft with good speed and moderate mass
-2. **Psych Bike** - High speed, low mass - fast but easily affected by gravity
-3. **The Compiler** - Maximum speed, high mass - powerful but harder to control
-4. **Voidwalker** - Lower speed, moderate mass - stable and predictable
+```
+Φ(r) = −GM / (r − r_s)          a(r) = GM / (r − r_s)²
+```
 
-## Local Development Setup
+It costs one subtraction over Newton and buys the three things that make a black
+hole a black hole: the potential diverges at the horizon, so it is a true point
+of no return rather than somewhere a big enough engine can escape; it reproduces
+the ISCO at exactly `3 r_s`; and it puts the marginally bound orbit at `4 r_s`,
+as in the exact solution. Far away, `r_s` becomes negligible and it relaxes into
+Newtonian `1/r²`.
 
-### Prerequisites
-- A modern web browser (Chrome, Firefox, Safari, Edge)
-- A local web server (optional but recommended)
+> Paczyński, B. & Wiita, P. J. (1980), *Thick accretion disks and supercritical
+> luminosities*, Astronomy & Astrophysics **88**, 23.
 
-### Quick Start
+Two consequences worth knowing before you fly:
 
-1. **Clone or Download** the repository
-2. **Navigate** to the project directory
-3. **Serve the files** using one of these methods:
+- **Craft mass does not affect how you fall.** Gravitational acceleration is
+  independent of the mass being accelerated, so every hull follows the same arc.
+  Mass divides *thrust* instead (`a = F/m`), so a heavy craft shares the light
+  one's fate but has less authority to argue with it.
+- **Small black holes are far more dangerous than large ones.** Surface gravity
+  goes as `1/r_s`, so a 3 M☉ hole 12 px across has a fiercer well than a 22 M☉
+  one at 88 px. The big ones are terrain; the small ones are ambushes.
 
-#### Option 1: Using Node.js (Recommended)
+Every ring drawn around a hole is one of these radii, not decoration. A pilot who
+learns to read them is learning orbital mechanics.
+
+### Integration
+
+Fixed 120 Hz timestep with an accumulator, integrated by semi-implicit
+(symplectic) Euler — velocity first, then position from the *new* velocity.
+Explicit Euler pumps energy into an orbit and makes it spiral outward
+artificially; the symplectic form conserves it well enough to hold a clean arc.
+The renderer interpolates between steps, so motion is smooth on any display and
+the simulation runs identically at 60 Hz and 144 Hz.
+
+## The craft
+
+Gravity treats all four identically. What differs is thrust authority
+(`thrust/mass`), top speed, and damping.
+
+| Craft | thrust/mass | max vel | damping | Feel |
+|---|---|---|---|---|
+| Superbug | 2600 | 520 | 0.90 | Balanced, forgiving |
+| Psych Bike | 3065 | 610 | 0.62 | Light and twitchy, quickest to turn |
+| The Compiler | 2471 | 560 | 1.05 | Heavy frame, huge engine, commits to a line |
+| Voidwalker | 2320 | 470 | 1.55 | Heavily damped, goes exactly where aimed |
+
+## Running it
+
 ```bash
-# Install dependencies
-npm install
-
-# Start the development server
-npm start
-```
-The game will be available at `http://localhost:3000`
-
-#### Option 2: Using Python (if you have Python installed)
-```bash
-# Python 3
-python -m http.server 8000
-
-# Python 2
-python -m SimpleHTTPServer 8000
-```
-Then open `http://localhost:8000/public/` in your browser
-
-#### Option 3: Using VS Code Live Server
-1. Install the "Live Server" extension in VS Code
-2. Right-click on `public/index.html`
-3. Select "Open with Live Server"
-
-#### Option 4: Direct File Access (Limited functionality)
-You can open `public/index.html` directly in your browser, but level loading may not work due to CORS restrictions.
-
-### File Structure
-
-```
-Singularity-Arcade-Game/
-├── public/
-│   ├── index.html          # Main HTML file
-│   ├── sketch.js           # Main P5.js entry point
-│   ├── game.js             # Core game logic and state management
-│   ├── classes.js          # Game object classes
-│   ├── style.css           # Styles
-│   ├── volt.ttf            # Game font
-│   └── p5.js               # P5.js library
-├── levels/
-│   ├── level1.json         # Level configurations
-│   ├── level2.json
-│   └── ... (level1-10.json)
-├── package.json            # Node.js dependencies
-└── README.md              # This file
+npm start                  # http://localhost:3000 — zero dependencies
+npm run physics            # geometry table for a range of black hole masses
+npm run simulate           # autopilot balance report for levels/level1.json
+node tools/smoke.mjs       # headless wiring + physics assertions
+npm run vendor:engine      # re-copy the graphics engine from the sibling checkout
 ```
 
-## Game Controls
+`tools/simulate.mjs` flies the **real** `Game` class — same physics, same
+integrator, same collision rules — under an autopilot sweeping hundreds of
+routes. It reports the share that survive per craft, which is what catches a
+level that is unfair, trivial, or completable by only one hull.
 
-- **Mouse**: Move your spacecraft by moving the mouse cursor
-- **Click**: Navigate through menus and select spacecraft
-- **Objective**: Reach the glowing finish line at the right side of each level
+## Layout
 
-## Level Configuration
-
-Levels are stored as JSON files in the `levels/` directory. Each level defines:
-
-- **Black holes** with positions, sizes, and movement patterns
-- **Asteroid spawn** configurations
-- **Special items** like extra lives
-- **Finish line** position and dimensions
-
-### Example Level Structure
-```json
-{
-  "levelNumber": 1,
-  "name": "Training Course",
-  "blackHoles": [
-    {
-      "x": 0.5,        // X position (0-1 normalized)
-      "y": 0.5,        // Y position (0-1 normalized)  
-      "size": 0.278,   // Size (normalized to screen height)
-      "isMoving": false,
-      "moveAngle": 0,
-      "moveRadius": 0
-    }
-  ],
-  "asteroids": {
-    "count": 13,
-    "spawnSides": ["right", "top", "bottom"]
-  }
-}
+```
+public/
+  index.html  styles.css  favicon.svg
+  src/
+    core/      viewport (letterboxing), fixed-timestep loop, input, PRNG
+    game/      constants, physics, entities, crafts, level, game state
+    render/    theme, starfield, gravity field, black holes, asteroids,
+               craft, HUD, screens
+  vendor/arcade-graphics-engine/    vendored ESM build, see npm run vendor:engine
+levels/        level1.json, plus the 2019 levels under archive/
+tools/         physics report, balance simulator, smoke test
 ```
 
-## Development Notes
-
-### Responsive Scaling System
-The game uses a normalized coordinate system (1280x720) that automatically scales to fit any screen size while maintaining the correct aspect ratio. All positions and sizes are calculated relative to these base dimensions.
-
-### Physics Implementation
-- Black holes exert gravitational force on both the player and asteroids
-- Force calculations use realistic physics equations
-- Moving black holes create dynamic gravitational fields
-
-### Architecture
-- **game.js**: Main game state management and rendering coordination
-- **classes.js**: Individual game object definitions (BlackHole, Star, Asteroid, Player)
-- **sketch.js**: P5.js integration and event handling
-
-## Customization
-
-### Adding New Levels
-1. Create a new JSON file in the `levels/` directory (e.g., `level11.json`)
-2. Follow the existing level structure
-3. Update the victory condition in `game.js` to handle additional levels
-
-### Modifying Spacecraft
-Edit the `getCraftData()` method in the `Player` class in `classes.js` to adjust speed, mass, or add new craft types.
-
-### Adjusting Physics
-Modify the `gConstant` value in the `updateGravity()` method to change the strength of gravitational effects.
-
-## Browser Compatibility
-
-- Chrome/Chromium: Full support
-- Firefox: Full support  
-- Safari: Full support
-- Edge: Full support
-- Mobile browsers: Supported with responsive scaling
-
-## Performance Notes
-
-The game is optimized for smooth 60fps gameplay on modern devices. The responsive scaling system ensures consistent performance across different screen sizes and resolutions.
+Native ES modules, canvas 2D, no bundler and no build step — the deploy copies
+these files verbatim. There are no runtime dependencies.
 
 ## Deployment & Firebase Architecture
 
@@ -202,10 +146,13 @@ their *shape* but not their *authenticity* -- a determined player can post a
 fabricated time. Closing that requires a Cloud Function, which requires the
 Blaze plan. Noted as a known tradeoff rather than an oversight.
 
+
 ## Version History
 
-- **2025**: Complete refactor with responsive design, JSON levels, and clean architecture
-- **2019-2024**: Original development and iterations
+- **2026**: Full rebuild — Arcade Graphics Engine, Paczyński–Wiita gravity,
+  fixed-timestep symplectic integration, p5.js removed
+- **2025**: Responsive refactor, JSON levels
+- **2019–2024**: Original development
 
 ---
 
