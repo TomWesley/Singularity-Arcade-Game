@@ -1,0 +1,71 @@
+rules_version = '2';
+
+// Firestore rules for the "singularitythegame" project.
+//
+// This project holds ONLY auth + game data. Hosting for the game is owned by
+// the WesleyArcadeSite repo (project singularity-c216f), which serves the
+// built files at wesleyarcade.com/singularity/. Nothing here is deployed by
+// that repo, and nothing there is deployed by this one -- that separation is
+// the whole point of the split.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    function isValidName(name) {
+      return name is string && name.size() >= 1 && name.size() <= 32;
+    }
+
+    // Player profiles. Readable by anyone because the leaderboard renders
+    // display names next to scores.
+    match /users/{uid} {
+      allow read: if true;
+
+      allow create: if isOwner(uid)
+        && request.resource.data.keys().hasOnly(['displayName', 'photoURL', 'createdAt', 'updatedAt'])
+        && isValidName(request.resource.data.displayName)
+        && request.resource.data.createdAt == request.time;
+
+      allow update: if isOwner(uid)
+        && request.resource.data.keys().hasOnly(['displayName', 'photoURL', 'createdAt', 'updatedAt'])
+        && isValidName(request.resource.data.displayName)
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.updatedAt == request.time;
+
+      allow delete: if isOwner(uid);
+    }
+
+    // Leaderboard entries, one per completed run. Append-only: a run either
+    // happened or it didn't, so nothing may edit or remove it afterwards.
+    match /scores/{scoreId} {
+      allow read: if true;
+
+      allow create: if isOwner(request.resource.data.uid)
+        && request.resource.data.keys().hasOnly(['uid', 'displayName', 'level', 'timeMs', 'ship', 'createdAt'])
+        && isValidName(request.resource.data.displayName)
+        && request.resource.data.level is int
+        && request.resource.data.level >= 1
+        && request.resource.data.level <= 10
+        && request.resource.data.timeMs is int
+        && request.resource.data.timeMs > 0
+        && request.resource.data.timeMs < 3600000
+        && request.resource.data.ship is string
+        && request.resource.data.ship.size() <= 32
+        && request.resource.data.createdAt == request.time;
+
+      allow update, delete: if false;
+    }
+
+    // Anything not matched above is closed.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

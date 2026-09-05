@@ -2,7 +2,7 @@
 
 A space adventure game where players pilot spacecraft through gravitational fields created by black holes to reach portals at the end of each level.
 
-**▶ Play it live: [singularity-c216f.web.app](https://singularity-c216f.web.app)**
+**▶ Play it live: [wesleyarcade.com/singularity](https://wesleyarcade.com/singularity/)**
 
 ## Game Overview
 
@@ -160,6 +160,47 @@ Modify the `gConstant` value in the `updateGravity()` method to change the stren
 ## Performance Notes
 
 The game is optimized for smooth 60fps gameplay on modern devices. The responsive scaling system ensures consistent performance across different screen sizes and resolutions.
+
+## Deployment & Firebase Architecture
+
+This repo owns the game and its data. It does **not** own its own hosting.
+
+| Concern | Where it lives | Deployed by |
+| --- | --- | --- |
+| Hosting (`wesleyarcade.com/singularity/`) | Firebase project `singularity-c216f` | `TomWesley/WesleyArcadeSite` CI |
+| Auth + Firestore (leaderboard) | Firebase project `singularitythegame` | this repo |
+
+The arcade's hub repo (`WesleyArcadeSite`) checks this repo out during its
+GitHub Actions deploy, copies `public/` and `levels/` into `dist/singularity/`,
+and publishes the whole site. Pushing to `main` here fires a
+`repository_dispatch` at the hub, which triggers that deploy.
+
+**The `firebase.json` in this repo deliberately has no `hosting` block.** That
+is not an oversight. A Firebase custom domain maps to exactly one Hosting site,
+so every arcade game must be served from the hub's site -- but Firestore rules
+are per-project, so each game keeps its own. Adding a `hosting` block here, or
+pointing `.firebaserc` at `singularity-c216f`, would put this game's rules back
+in the shared project where an unrelated deploy can overwrite them.
+
+```bash
+# Safe from this repo -- only ever touches the singularitythegame project.
+firebase deploy --only firestore:rules,firestore:indexes
+
+# Local emulators for auth + firestore.
+firebase emulators:start
+```
+
+### Leaderboard data model
+
+- `users/{uid}` -- public profile (`displayName`, `photoURL`). Owner-writable.
+- `scores/{scoreId}` -- one document per completed run (`uid`, `displayName`,
+  `level`, `timeMs`, `ship`). Publicly readable, append-only: no updates or
+  deletes, by anyone.
+
+Scores are written straight from the client, so `firestore.rules` can validate
+their *shape* but not their *authenticity* -- a determined player can post a
+fabricated time. Closing that requires a Cloud Function, which requires the
+Blaze plan. Noted as a known tradeoff rather than an oversight.
 
 ## Version History
 
