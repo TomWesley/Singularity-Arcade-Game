@@ -9,7 +9,7 @@ import { Game, STATE } from './game/game.js'
 import { loadLevel } from './game/level.js'
 import { CRAFTS } from './game/crafts.js'
 
-import { initTheme, palette, rgbaToCss, withAlpha } from './render/theme.js'
+import { initTheme } from './render/theme.js'
 import { Starfield } from './render/starfield.js'
 import { drawBlackHole } from './render/blackhole.js'
 import { drawAsteroid } from './render/asteroid.js'
@@ -72,14 +72,9 @@ function render (alpha) {
 
   viewport.apply(ctx)
 
-  // Board field: a near-black with a violet undertone, never flat black.
-  const bg = ctx.createRadialGradient(
-    DESIGN_WIDTH / 2, DESIGN_HEIGHT / 2, 80,
-    DESIGN_WIDTH / 2, DESIGN_HEIGHT / 2, DESIGN_WIDTH * 0.72
-  )
-  bg.addColorStop(0, rgbaToCss(withAlpha(palette.primary.core, 0.07)))
-  bg.addColorStop(1, '#04030a')
-  ctx.fillStyle = bg
+  // The field is black. Not near-black with an undertone -- black. Everything
+  // that reads on this board reads because it is the only lit thing on it.
+  ctx.fillStyle = '#000000'
   ctx.fillRect(0, 0, DESIGN_WIDTH, DESIGN_HEIGHT)
 
   starfield.draw(ctx)
@@ -102,7 +97,7 @@ function render (alpha) {
       const heading = Math.atan2(game.body.vy, game.body.vx)
       const thrustMag = Math.min(1,
         Math.hypot(game.thrust.x, game.thrust.y) / (game.craft.thrust / game.craft.mass))
-      drawCraft(ctx, game.craft.id, x, y, heading, thrustMag, time, 1.45)
+      drawCraft(ctx, game.craft.id, x, y, heading, thrustMag, time, 1.5 * game.craft.artScale)
     }
   }
 

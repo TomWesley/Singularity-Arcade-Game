@@ -62,11 +62,14 @@ the simulation runs identically at 60 Hz and 144 Hz.
 
 ### Rendering
 
-The board holds a 60 Hz budget by staying spare. Each black hole's static
-geometry -- horizon, photon sphere, ISCO -- is rendered once into an offscreen
-canvas and blitted; only the accretion disk, a single stroked ellipse, is drawn
-live. Glow is expensive and therefore rationed: about 27 shadow-blurred draws
-per frame out of ~900 canvas calls total.
+The field is black and a black hole is an absence: a disc of true black with a
+white aura hugging the rim to say where the edge is, and nothing else. All of
+that geometry is static for a given mass, so each hole renders once into an
+offscreen canvas and is blitted. Glow is expensive and therefore rationed --
+roughly 27 shadow-blurred draws per frame out of ~900 canvas calls total.
+
+Colour belongs to the craft. The four hulls keep their 2019 shapes and their
+2019 palette exactly; only the rendering is new.
 
 An earlier pass drew each disk as 9 bands of 46 blurred arc segments, which came
 to 1,656 shadowed strokes a frame and ran at 5 fps. It was also simply worse to

@@ -4,10 +4,11 @@
 // imported with native browser modules -- no bundler, and it survives the
 // /singularity/ subpath deploy unchanged. Re-vendor with `npm run vendor:engine`.
 //
-// Palette: violet primary carries the chrome and the void; the original game's
-// signature gold survives as the secondary, which is where it always lived
-// best -- the title, the gate, and the hot inner edge of an accretion disk.
-// Cyan is the starfield, and the danger red is reserved for capture warnings.
+// Palette: gold primary, because that is the colour this game has always been
+// -- the 2019 title and HUD were pure yellow on black, and the board should read
+// the same way. Amber secondary, a cool pale blue for stars and debris, red for
+// capture warnings. The field itself is pure black; the black holes are drawn in
+// white and take no palette colour at all.
 
 import {
   ThemeProvider,
@@ -18,7 +19,7 @@ import {
   setupHiDPICanvas
 } from '../../vendor/arcade-graphics-engine/index.js'
 
-export const provider = ThemeProvider.custom('SINGULARITY', 272, 46, 196, 350)
+export const provider = ThemeProvider.custom('SINGULARITY', 48, 36, 205, 352)
 export const palette = provider.palette
 export const theme = provider.theme
 

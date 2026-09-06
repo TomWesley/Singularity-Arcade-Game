@@ -13,6 +13,9 @@
 //   drag           velocity decay per second; low drag = long, loose drifts
 //   responsiveness how hard it corrects toward the requested velocity
 //   arrivalRadius  distance at which it starts easing onto the cursor
+//   artScale       display-only multiplier; the 2019 silhouettes have very
+//                  different natural widths and this evens them out without
+//                  altering a single coordinate of the artwork
 
 export const CRAFTS = [
   {
@@ -25,7 +28,8 @@ export const CRAFTS = [
     drag: 0.9,
     responsiveness: 6.0,
     arrivalRadius: 90,
-    hull: 12
+    hull: 12,
+    artScale: 1.15
   },
   {
     id: 'psych-bike',
@@ -37,7 +41,8 @@ export const CRAFTS = [
     drag: 0.62,
     responsiveness: 7.5,
     arrivalRadius: 70,
-    hull: 10
+    hull: 10,
+    artScale: 0.95
   },
   {
     id: 'compiler',
@@ -49,7 +54,8 @@ export const CRAFTS = [
     drag: 1.05,
     responsiveness: 4.6,
     arrivalRadius: 120,
-    hull: 14
+    hull: 14,
+    artScale: 0.6
   },
   {
     id: 'voidwalker',
@@ -61,7 +67,8 @@ export const CRAFTS = [
     drag: 1.55,
     responsiveness: 6.4,
     arrivalRadius: 85,
-    hull: 13
+    hull: 13,
+    artScale: 0.8
   }
 ]
 

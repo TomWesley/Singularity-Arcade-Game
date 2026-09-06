@@ -98,7 +98,7 @@ export function drawCraftSelect (ctx, time, hoverIndex) {
     const cy = r.y + 82
     drawCraft(ctx, craft.id, r.x + r.width / 2, cy,
       -Math.PI / 2 + Math.sin(time * 1.1 + i) * 0.16,
-      hot ? 0.55 : 0.18, time, hot ? 2.9 : 2.6)
+      hot ? 0.5 : 0, time, (hot ? 2.7 : 2.5) * craft.artScale)
 
     ctx.save()
     ctx.textAlign = 'center'
