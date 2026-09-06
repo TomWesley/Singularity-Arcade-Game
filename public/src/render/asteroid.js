@@ -1,59 +1,57 @@
-// Asteroids as angular debris rather than the original's soft blobs: a faceted
-// silhouette with a thin glowing edge, a cold gradient core, and a velocity
-// trail that lengthens as a slingshot accelerates it. The trail is the tell for
-// which rocks have been flung by a hole and are now genuinely dangerous.
+// Asteroids.
+//
+// Silhouette, not texture: a hard-edged shard with a single stroke and a flat
+// translucent fill. No per-rock gradient, no shadow blur, no trail unless the
+// rock has actually been flung -- and then the trail is one line, because a
+// streak reads faster than a plume.
 
 import { palette, rgbaToCss, withAlpha } from './theme.js'
 
+// Pre-resolved so the hot path never rebuilds a colour string.
+let COOL = null
+let HOT = null
+let FILL = null
+
+function ensureColors () {
+  if (COOL) return
+  COOL = rgbaToCss(withAlpha(palette.tertiary.core, 0.85))
+  HOT = rgbaToCss(withAlpha(palette.danger.core, 0.9))
+  FILL = rgbaToCss(withAlpha(palette.tertiary.core, 0.13))
+}
+
 export function drawAsteroid (ctx, a) {
+  ensureColors()
   const speed = Math.hypot(a.vx, a.vy)
-  const hot = Math.min(1, speed / 520)
+  const flung = speed > 300
 
-  ctx.save()
-
-  // Motion trail, drawn behind and opposite the velocity vector.
-  if (speed > 40) {
+  if (speed > 120) {
     const ux = a.vx / speed
     const uy = a.vy / speed
-    const len = Math.min(46, speed * 0.075)
-    const g = ctx.createLinearGradient(a.x, a.y, a.x - ux * len, a.y - uy * len)
-    g.addColorStop(0, rgbaToCss(withAlpha(palette.tertiary.core, 0.30 + hot * 0.3)))
-    g.addColorStop(1, rgbaToCss(withAlpha(palette.tertiary.core, 0)))
-    ctx.strokeStyle = g
-    ctx.lineWidth = a.radius * 0.8
-    ctx.lineCap = 'round'
+    const len = Math.min(34, speed * 0.05)
+    ctx.strokeStyle = rgbaToCss(withAlpha(
+      flung ? palette.danger.core : palette.tertiary.core, 0.22))
+    ctx.lineWidth = 1
     ctx.beginPath()
     ctx.moveTo(a.x, a.y)
     ctx.lineTo(a.x - ux * len, a.y - uy * len)
     ctx.stroke()
   }
 
+  ctx.save()
   ctx.translate(a.x, a.y)
   ctx.rotate(a.spin)
-
   ctx.beginPath()
-  a.verts.forEach((v, i) => {
-    const px = Math.cos(v.a) * v.r
-    const py = Math.sin(v.a) * v.r
+  const v = a.verts
+  for (let i = 0; i < v.length; i++) {
+    const px = Math.cos(v[i].a) * v[i].r
+    const py = Math.sin(v[i].a) * v[i].r
     if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py)
-  })
+  }
   ctx.closePath()
-
-  const fill = ctx.createRadialGradient(-a.radius * 0.3, -a.radius * 0.3, 0, 0, 0, a.radius)
-  fill.addColorStop(0, rgbaToCss(withAlpha(palette.tertiary.core, 0.30)))
-  fill.addColorStop(1, rgbaToCss(withAlpha(palette.tertiary.dim, 0.10)))
-  ctx.fillStyle = fill
+  ctx.fillStyle = FILL
   ctx.fill()
-
-  // Rocks flung fast by a slingshot glow hotter, which is the warning.
-  ctx.strokeStyle = rgbaToCss(withAlpha(
-    hot > 0.6 ? palette.danger.core : palette.tertiary.core,
-    0.55 + hot * 0.4
-  ))
-  ctx.lineWidth = 1.1
-  ctx.shadowColor = rgbaToCss(withAlpha(palette.tertiary.glow, 0.6 + hot * 0.4))
-  ctx.shadowBlur = 5 + hot * 8
+  ctx.strokeStyle = flung ? HOT : COOL
+  ctx.lineWidth = 1
   ctx.stroke()
-
   ctx.restore()
 }

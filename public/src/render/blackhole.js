@@ -1,176 +1,136 @@
 // Black hole rendering.
 //
-// Every ring drawn here is a real radius the physics already computed, not a
-// decorative flourish: the horizon at r_s, the photon sphere at 1.5 r_s, the
-// innermost stable circular orbit at 3 r_s, and the craft-specific radius where
-// thrust can no longer beat the pull. The instrument reads the simulation --
-// which is the point, because a pilot who learns to read these rings is
-// learning actual orbital mechanics.
+// The reference is the Jupiter alignment in 2001: near-total blackness, a few
+// monumental shapes, hard edges, no fuss. A black hole should be the simplest
+// object on screen and the most arresting -- one absolute void, one bright ring,
+// one disk seen edge-on. Detail is what a lesser image uses instead of
+// composition.
+//
+// Every radius drawn is a real one the physics computed: the horizon at r_s,
+// the photon sphere at 1.5 r_s where light itself orbits, and the innermost
+// stable circular orbit at 3 r_s. Nothing here is invented for looks.
+//
+// Performance: the horizon, photon ring and ISCO circle never change for a given
+// mass, so they are rendered once into an offscreen canvas and blitted. Only the
+// accretion disk -- a single stroked ellipse -- is drawn live each frame. An
+// earlier version drew the disk as 9 bands x 46 shadowed arc segments per hole,
+// which cost 1,656 blurred strokes a frame and ran at 5fps.
 
-import { palette, rgbaToCss, withAlpha, canvasFont } from './theme.js'
+import { palette, rgbaToCss, withAlpha } from './theme.js'
 import { escapeLimit } from '../game/physics.js'
 
 const TAU = Math.PI * 2
 
-export function drawBlackHole (ctx, hole, craft, time) {
-  const { x, y, horizon, photonSphere, isco } = hole
+// Cached sprites keyed by horizon radius. Rendered at 2x so they stay crisp
+// when the board is letterboxed up on a large or high-DPI display.
+const SS = 2
+const spriteCache = new Map()
 
-  ctx.save()
+function staticSprite (hole) {
+  const key = hole.horizon.toFixed(2)
+  const hit = spriteCache.get(key)
+  if (hit) return hit
 
-  drawLensing(ctx, x, y, horizon, isco)
-  drawIscoRing(ctx, x, y, isco, hole, time)
-  if (craft) drawEscapeRing(ctx, x, y, hole, craft, time)
-  drawAccretionDisk(ctx, x, y, hole, time)
-  drawPhotonSphere(ctx, x, y, photonSphere)
-  drawHorizon(ctx, x, y, horizon)
+  const reach = hole.isco + 6
+  const size = Math.ceil(reach * 2 * SS)
+  const cv = document.createElement('canvas')
+  cv.width = size
+  cv.height = size
+  const c = cv.getContext('2d')
+  c.scale(SS, SS)
+  c.translate(reach, reach)
 
-  ctx.restore()
+  // ISCO — a single unbroken hairline. No ticks, no dashes, no label: it marks
+  // where stable orbits end, and that is enough for it to say.
+  c.strokeStyle = rgbaToCss(withAlpha(palette.primary.core, 0.20))
+  c.lineWidth = 1
+  c.beginPath()
+  c.arc(0, 0, hole.isco, 0, TAU)
+  c.stroke()
+
+  // Photon sphere — the hero line, and the only glow on the object.
+  c.strokeStyle = rgbaToCss(withAlpha(palette.secondary.core, 0.95))
+  c.lineWidth = 1.6
+  c.shadowColor = rgbaToCss(palette.secondary.glow)
+  c.shadowBlur = 16
+  c.beginPath()
+  c.arc(0, 0, hole.photonSphere, 0, TAU)
+  c.stroke()
+  c.shadowBlur = 0
+
+  // The horizon: an absolute void with a hard edge. Not a gradient, not a
+  // smudge -- an absence with a rim.
+  c.fillStyle = '#000000'
+  c.beginPath()
+  c.arc(0, 0, hole.horizon, 0, TAU)
+  c.fill()
+  c.strokeStyle = rgbaToCss(withAlpha(palette.primary.core, 0.55))
+  c.lineWidth = 1
+  c.beginPath()
+  c.arc(0, 0, hole.horizon, 0, TAU)
+  c.stroke()
+
+  const sprite = { canvas: cv, reach }
+  spriteCache.set(key, sprite)
+  return sprite
 }
 
-// Light bending around the hole reads as a faint bloom that darkens toward the
-// centre rather than brightening -- the opposite of a normal glow, because this
-// object emits nothing.
-function drawLensing (ctx, x, y, horizon, isco) {
-  const g = ctx.createRadialGradient(x, y, horizon * 0.9, x, y, isco * 1.15)
-  g.addColorStop(0, rgbaToCss(withAlpha(palette.primary.core, 0.16)))
-  g.addColorStop(0.35, rgbaToCss(withAlpha(palette.primary.core, 0.07)))
-  g.addColorStop(1, rgbaToCss(withAlpha(palette.primary.core, 0)))
-  ctx.fillStyle = g
-  ctx.beginPath()
-  ctx.arc(x, y, isco * 1.15, 0, TAU)
-  ctx.fill()
-}
+const DISK_MIN_HORIZON = 30
 
-// The ISCO drawn as a surveyor's ring: dashed, with bearing ticks and a label.
-// Inside it no circular orbit is stable, which is worth knowing before you fly
-// in there.
-function drawIscoRing (ctx, x, y, isco, hole, time) {
+function drawDisk (ctx, hole) {
+  const rx = hole.horizon * 2.1
+  const ry = rx * 0.26
+
   ctx.save()
-  ctx.strokeStyle = rgbaToCss(withAlpha(palette.primary.core, 0.22))
-  ctx.lineWidth = 1
-  ctx.setLineDash([5, 9])
-  ctx.lineDashOffset = -time * 9
+  ctx.translate(hole.x, hole.y)
+  ctx.rotate(hole.spin * 0.06)
+
+  const g = ctx.createLinearGradient(-rx, 0, rx, 0)
+  g.addColorStop(0, rgbaToCss(withAlpha(palette.primary.core, 0.10)))
+  g.addColorStop(0.5, rgbaToCss(withAlpha(palette.secondary.core, 0.30)))
+  g.addColorStop(1, rgbaToCss(withAlpha(palette.secondary.core, 0.85)))
+  ctx.strokeStyle = g
+  ctx.lineWidth = Math.max(2, hole.horizon * 0.07)
   ctx.beginPath()
-  ctx.arc(x, y, isco, 0, TAU)
-  ctx.stroke()
-  ctx.setLineDash([])
-
-  // Bearing ticks every 30 degrees.
-  ctx.strokeStyle = rgbaToCss(withAlpha(palette.primary.core, 0.3))
-  for (let i = 0; i < 12; i++) {
-    const a = (i / 12) * TAU
-    const long = i % 3 === 0
-    const r0 = isco - (long ? 7 : 4)
-    ctx.beginPath()
-    ctx.moveTo(x + Math.cos(a) * r0, y + Math.sin(a) * r0)
-    ctx.lineTo(x + Math.cos(a) * isco, y + Math.sin(a) * isco)
-    ctx.stroke()
-  }
-
-  if (isco > 70) {
-    ctx.fillStyle = rgbaToCss(withAlpha(palette.primary.core, 0.5))
-    ctx.font = canvasFont('micro', 9)
-    ctx.textAlign = 'center'
-    ctx.fillText('ISCO', x, y - isco - 7)
-    ctx.fillStyle = rgbaToCss(withAlpha(palette.primary.core, 0.32))
-    ctx.fillText(`${hole.solarMasses.toFixed(1)} M☉`, x, y + isco + 14)
-  }
-  ctx.restore()
-}
-
-// The radius where this craft's thrust exactly cancels the pull. Crossing it
-// means the engine has lost the argument, so it pulses in the danger colour.
-function drawEscapeRing (ctx, x, y, hole, craft, time) {
-  const r = escapeLimit(hole, craft)
-  const pulse = 0.30 + Math.sin(time * 3.2) * 0.10
-  ctx.save()
-  ctx.strokeStyle = rgbaToCss(withAlpha(palette.danger.core, pulse))
-  ctx.lineWidth = 1.25
-  ctx.shadowColor = rgbaToCss(withAlpha(palette.danger.glow, 0.5))
-  ctx.shadowBlur = 8
-  ctx.setLineDash([2, 6])
-  ctx.lineDashOffset = time * 14
-  ctx.beginPath()
-  ctx.arc(x, y, r, 0, TAU)
+  ctx.ellipse(0, 0, rx, ry, 0, 0, TAU)
   ctx.stroke()
   ctx.restore()
 }
 
-// Accretion disk: hot gold at the inner edge cooling to violet outward, with
-// relativistic beaming -- the side rotating toward the viewer really is
-// brighter, so the disk is deliberately asymmetric.
-function drawAccretionDisk (ctx, x, y, hole, time) {
-  const inner = hole.horizon * 1.18
-  const outer = hole.isco * 0.92
-  if (outer <= inner) return
+export function drawBlackHole (ctx, hole, craft, craftPos, time) {
+  const sprite = staticSprite(hole)
 
-  const spin = hole.spin
-  ctx.save()
-  ctx.translate(x, y)
-  ctx.rotate(spin * 0.12)
+  // Accretion disk: one ellipse, seen near edge-on, rotating. The gradient runs
+  // across it so one limb is bright and the other falls away -- relativistic
+  // beaming, the approaching side genuinely is brighter.
+  //
+  // Only the massive holes carry one. On a small hole the ellipse is a few
+  // pixels across and reads as a smudge hanging off the ring rather than a
+  // disk, and a stark unadorned point is the better image anyway -- the small
+  // ones should look like punctures, not planets.
+  if (hole.horizon >= DISK_MIN_HORIZON) drawDisk(ctx, hole)
 
-  const bands = 9
-  for (let i = 0; i < bands; i++) {
-    const t = i / (bands - 1)
-    const r = inner + (outer - inner) * t
-    // Inner bands are hotter (gold) and tighter; outer are cool violet.
-    const color = t < 0.5 ? palette.secondary.core : palette.primary.core
-    const heat = 1 - t
-    const baseAlpha = 0.05 + heat * 0.30
+  // Static geometry, one blit.
+  ctx.drawImage(
+    sprite.canvas,
+    hole.x - sprite.reach, hole.y - sprite.reach,
+    sprite.reach * 2, sprite.reach * 2
+  )
 
-    // Doppler beaming: brighten the approaching limb.
-    const segments = 46
-    ctx.lineWidth = 1 + heat * 1.8
-    for (let s = 0; s < segments; s++) {
-      const a0 = (s / segments) * TAU
-      const a1 = ((s + 1) / segments) * TAU
-      const beam = 0.45 + 0.55 * (0.5 + 0.5 * Math.sin(a0 + Math.PI / 2))
-      const alpha = baseAlpha * beam
-      if (alpha < 0.012) continue
-      ctx.strokeStyle = rgbaToCss(withAlpha(color, alpha))
-      ctx.shadowColor = rgbaToCss(withAlpha(color, alpha * 0.8))
-      ctx.shadowBlur = 6 * heat
+  // The one piece of live instrumentation kept: where this hull's thrust stops
+  // being able to answer the pull. It only appears once you are inside it.
+  if (craft && craftPos) {
+    const r = escapeLimit(hole, craft)
+    const d = Math.hypot(craftPos.x - hole.x, craftPos.y - hole.y)
+    if (Number.isFinite(d) && d < r * 1.35) {
+      ctx.save()
+      ctx.strokeStyle = rgbaToCss(withAlpha(palette.danger.core,
+        0.28 + Math.sin(time * 4) * 0.14))
+      ctx.lineWidth = 1
       ctx.beginPath()
-      // Slight ellipse so the disk reads as tilted, not face-on.
-      ctx.ellipse(0, 0, r, r * 0.82, 0, a0, a1)
+      ctx.arc(hole.x, hole.y, r, 0, TAU)
       ctx.stroke()
+      ctx.restore()
     }
   }
-  ctx.restore()
-}
-
-// Where light itself orbits. A single bright hairline -- the brightest thing
-// on the object, because in reality it is.
-function drawPhotonSphere (ctx, x, y, r) {
-  ctx.save()
-  ctx.strokeStyle = rgbaToCss(withAlpha(palette.secondary.core, 0.85))
-  ctx.lineWidth = 1.4
-  ctx.shadowColor = rgbaToCss(palette.secondary.glow)
-  ctx.shadowBlur = 14
-  ctx.beginPath()
-  ctx.arc(x, y, r, 0, TAU)
-  ctx.stroke()
-  ctx.restore()
-}
-
-// The horizon itself: not a dark circle but an absence. Punched out to a black
-// that is deeper than the background field, with a hard rim so it reads as an
-// edge rather than a smudge.
-function drawHorizon (ctx, x, y, r) {
-  ctx.save()
-  const g = ctx.createRadialGradient(x, y, r * 0.2, x, y, r)
-  g.addColorStop(0, '#000000')
-  g.addColorStop(0.82, '#000000')
-  g.addColorStop(1, rgbaToCss(withAlpha(palette.primary.dim, 0.55)))
-  ctx.fillStyle = g
-  ctx.beginPath()
-  ctx.arc(x, y, r, 0, TAU)
-  ctx.fill()
-
-  ctx.strokeStyle = rgbaToCss(withAlpha(palette.primary.core, 0.5))
-  ctx.lineWidth = 1
-  ctx.beginPath()
-  ctx.arc(x, y, r, 0, TAU)
-  ctx.stroke()
-  ctx.restore()
 }

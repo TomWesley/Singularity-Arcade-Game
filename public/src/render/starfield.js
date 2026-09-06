@@ -1,15 +1,18 @@
-// Parallax starfield. The original's warp-streak field was the best-looking
-// thing in the 2019 build, so it survives -- rebuilt as three deterministic
-// parallax layers that drift rather than a single flat scatter.
+// Starfield.
+//
+// 2001's stars are hard white points on absolute black, not soft glowing discs.
+// So these are single-pixel-ish rects, no arcs, no per-star gradients, no
+// twinkle: three parallax layers that drift and otherwise hold perfectly still.
+// Stillness is most of what makes the black feel deep.
 
 import { makeRng, randRange } from '../core/rng.js'
 import { DESIGN_WIDTH, DESIGN_HEIGHT } from '../core/viewport.js'
 import { palette, rgbaToCss, withAlpha } from './theme.js'
 
 const LAYERS = [
-  { count: 90, speed: 2.5, size: [0.5, 1.1], alpha: 0.30 },
-  { count: 55, speed: 6.5, size: [0.9, 1.7], alpha: 0.45 },
-  { count: 26, speed: 14, size: [1.3, 2.4], alpha: 0.65 }
+  { count: 70, speed: 1.6, size: 1, alpha: 0.34 },
+  { count: 40, speed: 4.5, size: 1.6, alpha: 0.55 },
+  { count: 16, speed: 10, size: 2.2, alpha: 0.85 }
 ]
 
 export class Starfield {
@@ -17,42 +20,45 @@ export class Starfield {
     const rng = makeRng(seed)
     this.layers = LAYERS.map(spec => ({
       spec,
-      stars: Array.from({ length: spec.count }, () => ({
-        x: randRange(rng, 0, DESIGN_WIDTH),
-        y: randRange(rng, 0, DESIGN_HEIGHT),
-        r: randRange(rng, spec.size[0], spec.size[1]),
-        // A few stars take the tertiary hue so the field is not monochrome.
-        warm: rng() > 0.82,
-        twinkle: randRange(rng, 0, Math.PI * 2)
-      }))
+      warm: [],
+      cool: []
     }))
+    this.layers.forEach((layer, li) => {
+      for (let i = 0; i < LAYERS[li].count; i++) {
+        const star = {
+          x: randRange(rng, 0, DESIGN_WIDTH),
+          y: randRange(rng, 0, DESIGN_HEIGHT)
+        }
+        // A handful take the warm hue; the rest are plain white-cool. Splitting
+        // them up front means two fillStyle changes per layer instead of one
+        // per star.
+        ;(rng() > 0.86 ? layer.warm : layer.cool).push(star)
+      }
+    })
+    this.rng = rng
   }
 
   update (dt) {
     for (const layer of this.layers) {
-      for (const s of layer.stars) {
-        s.x -= layer.spec.speed * dt
-        if (s.x < -4) {
-          s.x = DESIGN_WIDTH + 4
-          s.y = Math.random() * DESIGN_HEIGHT
+      for (const list of [layer.cool, layer.warm]) {
+        for (const s of list) {
+          s.x -= layer.spec.speed * dt
+          if (s.x < -3) {
+            s.x = DESIGN_WIDTH + 3
+            s.y = this.rng() * DESIGN_HEIGHT
+          }
         }
       }
     }
   }
 
-  draw (ctx, time) {
-    const cool = palette.tertiary.core
-    const warm = palette.secondary.core
-
+  draw (ctx) {
     for (const layer of this.layers) {
-      for (const s of layer.stars) {
-        const tw = 0.75 + Math.sin(time * 1.6 + s.twinkle) * 0.25
-        const a = layer.spec.alpha * tw
-        ctx.fillStyle = rgbaToCss(withAlpha(s.warm ? warm : cool, a))
-        ctx.beginPath()
-        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2)
-        ctx.fill()
-      }
+      const { size, alpha } = layer.spec
+      ctx.fillStyle = rgbaToCss(withAlpha(palette.tertiary.core, alpha))
+      for (const s of layer.cool) ctx.fillRect(s.x, s.y, size, size)
+      ctx.fillStyle = rgbaToCss(withAlpha(palette.secondary.core, alpha))
+      for (const s of layer.warm) ctx.fillRect(s.x, s.y, size, size)
     }
   }
 }

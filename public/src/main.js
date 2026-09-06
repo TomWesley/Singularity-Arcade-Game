@@ -9,9 +9,8 @@ import { Game, STATE } from './game/game.js'
 import { loadLevel } from './game/level.js'
 import { CRAFTS } from './game/crafts.js'
 
-import { initTheme, palette, theme, drawScanLines, rgbaToCss, withAlpha } from './render/theme.js'
+import { initTheme, palette, rgbaToCss, withAlpha } from './render/theme.js'
 import { Starfield } from './render/starfield.js'
-import { drawGravityField } from './render/field.js'
 import { drawBlackHole } from './render/blackhole.js'
 import { drawAsteroid } from './render/asteroid.js'
 import { drawCraft } from './render/craft.js'
@@ -83,18 +82,17 @@ function render (alpha) {
   ctx.fillStyle = bg
   ctx.fillRect(0, 0, DESIGN_WIDTH, DESIGN_HEIGHT)
 
-  starfield.draw(ctx, time)
+  starfield.draw(ctx)
 
   if (game.level) {
-    drawGravityField(ctx, game.level.holes, time)
     drawGate(ctx, game.level.gate, time)
 
     for (const a of game.level.asteroids) drawAsteroid(ctx, a)
 
-    const activeCraft = game.state === STATE.PLAYING || game.state === STATE.LOST
-      ? game.craft
-      : null
-    for (const h of game.level.holes) drawBlackHole(ctx, h, activeCraft, time)
+    const flying = game.state === STATE.PLAYING || game.state === STATE.LOST
+    const activeCraft = flying ? game.craft : null
+    const craftPos = flying ? game.body : null
+    for (const h of game.level.holes) drawBlackHole(ctx, h, activeCraft, craftPos, time)
 
     if (game.state === STATE.PLAYING) {
       // Interpolate between fixed steps so motion is smooth regardless of the
@@ -107,8 +105,6 @@ function render (alpha) {
       drawCraft(ctx, game.craft.id, x, y, heading, thrustMag, time, 1.45)
     }
   }
-
-  drawScanLines(ctx, DESIGN_WIDTH, DESIGN_HEIGHT, 0.05, 2)
 
   switch (game.state) {
     case STATE.TITLE: drawTitle(ctx, time); break

@@ -35,6 +35,14 @@ const ctx = new Proxy({}, {
   set () { return true }
 })
 
+// blackhole.js caches its static rings into an offscreen canvas, so headless
+// runs need a document.createElement('canvas') that returns something usable.
+globalThis.document = {
+  createElement () {
+    return { width: 0, height: 0, getContext: () => ctx }
+  }
+}
+
 const spec = JSON.parse(fs.readFileSync(new URL('../levels/level1.json', import.meta.url), 'utf8'))
 const level = buildLevel(spec)
 
@@ -48,7 +56,6 @@ console.log(`  ${level.asteroids.length} asteroids, gate at (${level.gate.x.toFi
 const { drawBlackHole } = await import('../public/src/render/blackhole.js')
 const { drawAsteroid } = await import('../public/src/render/asteroid.js')
 const { drawCraft } = await import('../public/src/render/craft.js')
-const { drawGravityField } = await import('../public/src/render/field.js')
 
 const STEP = 1 / 120
 let completed = 0
@@ -72,8 +79,7 @@ for (const craft of CRAFTS) {
   }
 
   // Draw one frame of everything with this craft active.
-  drawGravityField(ctx, game.level.holes, 1.0)
-  for (const h of game.level.holes) drawBlackHole(ctx, h, craft, 1.0)
+  for (const h of game.level.holes) drawBlackHole(ctx, h, craft, game.body, 1.0)
   for (const a of game.level.asteroids) drawAsteroid(ctx, a)
   drawCraft(ctx, craft.id, 400, 300, 0.4, 0.7, 1.0)
 }

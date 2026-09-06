@@ -60,6 +60,19 @@ artificially; the symplectic form conserves it well enough to hold a clean arc.
 The renderer interpolates between steps, so motion is smooth on any display and
 the simulation runs identically at 60 Hz and 144 Hz.
 
+### Rendering
+
+The board holds a 60 Hz budget by staying spare. Each black hole's static
+geometry -- horizon, photon sphere, ISCO -- is rendered once into an offscreen
+canvas and blitted; only the accretion disk, a single stroked ellipse, is drawn
+live. Glow is expensive and therefore rationed: about 27 shadow-blurred draws
+per frame out of ~900 canvas calls total.
+
+An earlier pass drew each disk as 9 bands of 46 blurred arc segments, which came
+to 1,656 shadowed strokes a frame and ran at 5 fps. It was also simply worse to
+look at. The reference is the Jupiter sequence in *2001*: a few monumental shapes
+on near-total black, hard edges, no texture standing in for composition.
+
 ## The craft
 
 Gravity treats all four identically. What differs is thrust authority
@@ -95,8 +108,7 @@ public/
   src/
     core/      viewport (letterboxing), fixed-timestep loop, input, PRNG
     game/      constants, physics, entities, crafts, level, game state
-    render/    theme, starfield, gravity field, black holes, asteroids,
-               craft, HUD, screens
+    render/    theme, starfield, black holes, asteroids, craft, HUD, screens
   vendor/arcade-graphics-engine/    vendored ESM build, see npm run vendor:engine
 levels/        level1.json, plus the 2019 levels under archive/
 tools/         physics report, balance simulator, smoke test
