@@ -15,7 +15,7 @@
 
 import { palette, rgbaToCss, withAlpha } from './theme.js'
 
-const MAX_TAIL = 210     // px; a long slingshot streak is capped here
+const MAX_TAIL = 105     // px; a long slingshot streak is capped here
 const FLUNG = 400        // px/s; past this a rock is a genuine problem
 
 let C = null

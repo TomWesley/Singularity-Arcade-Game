@@ -60,7 +60,7 @@ export class BlackHole {
 // speed -- and because it records where the rock has actually been, the tail
 // bends around a gravity well exactly as the trajectory does.
 export const TRAIL_INTERVAL = 1 / 45
-const TRAIL_POINTS = 46
+const TRAIL_POINTS = 23
 
 export class Asteroid {
   constructor (rng, holes) {
@@ -83,7 +83,7 @@ export class Asteroid {
   // Spawns off the right edge heading left, avoiding a birth inside a hole.
   reset (holes, initial = false) {
     const rng = this.rng
-    this.radius = randRange(rng, 7, 14)
+    this.radius = randRange(rng, 4.9, 9.8)
     this.spin = randRange(rng, 0, Math.PI * 2)
     this.spinRate = randRange(rng, -1.4, 1.4)
     // A recycled rock must not drag its old trail across the board.
