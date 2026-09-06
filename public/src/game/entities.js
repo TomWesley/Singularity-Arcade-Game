@@ -55,10 +55,19 @@ export class BlackHole {
   }
 }
 
+// How often a position is recorded for the tail, and how many are kept. A fixed
+// time step means the trail's length in pixels is automatically proportional to
+// speed -- and because it records where the rock has actually been, the tail
+// bends around a gravity well exactly as the trajectory does.
+export const TRAIL_INTERVAL = 1 / 45
+const TRAIL_POINTS = 46
+
 export class Asteroid {
   constructor (rng, holes) {
     this.rng = rng
     this.verts = []
+    this.facetOrigin = { x: 0, y: 0 }
+    this.faceShade = []
     this.spin = 0
     this.spinRate = 0
     this.radius = 0
@@ -66,26 +75,59 @@ export class Asteroid {
     this.y = 0
     this.vx = 0
     this.vy = 0
+    this.trail = []        // newest first
+    this.trailClock = 0
     this.reset(holes, true)
   }
 
   // Spawns off the right edge heading left, avoiding a birth inside a hole.
   reset (holes, initial = false) {
     const rng = this.rng
-    this.radius = randRange(rng, 5, 11)
+    this.radius = randRange(rng, 7, 14)
     this.spin = randRange(rng, 0, Math.PI * 2)
     this.spinRate = randRange(rng, -1.4, 1.4)
+    // A recycled rock must not drag its old trail across the board.
+    this.trail.length = 0
+    this.trailClock = 0
 
-    // Angular silhouette. Few vertices and wide radial variance so each rock
-    // reads as a chipped shard; a higher count with gentle variance just makes
-    // lumpy circles.
-    const n = 5 + Math.floor(rng() * 2)
+    // Silhouette. Three scales of variation, because any one alone fails: a
+    // low-frequency lobe term for broad irregular mass, per-vertex noise for the
+    // chipped edge, and occasional deep notches where a chunk has been knocked
+    // out. Gentle noise on many vertices just yields a pebble; few vertices
+    // yields a trapezoid.
+    const n = 13 + Math.floor(rng() * 4)
+    const lobes = 2 + Math.floor(rng() * 3)
+    const lobePhase = randRange(rng, 0, Math.PI * 2)
+    const lobeDepth = randRange(rng, 0.09, 0.19)
     this.verts = []
     for (let i = 0; i < n; i++) {
+      const a = (i / n) * Math.PI * 2 + randRange(rng, -0.13, 0.13)
+      const lobe = 1 + Math.sin(a * lobes + lobePhase) * lobeDepth
+      const notch = rng() < 0.12 ? randRange(rng, 0.66, 0.80) : 1
       this.verts.push({
-        a: (i / n) * Math.PI * 2 + randRange(rng, -0.22, 0.22),
-        r: this.radius * randRange(rng, 0.55, 1.4)
+        a,
+        r: this.radius * lobe * notch * randRange(rng, 0.84, 1.12)
       })
+    }
+
+    // Facet centre: an off-axis interior point. Fanning triangles from it to
+    // each hull edge turns the rock into a set of flat faces, which is what
+    // makes it read as a broken mineral body rather than a filled outline.
+    const fa = randRange(rng, 0, Math.PI * 2)
+    const fd = this.radius * randRange(rng, 0.20, 0.42)
+    this.facetOrigin = { x: Math.cos(fa) * fd, y: Math.sin(fa) * fd }
+
+    // Per-face shading, fixed at spawn so a rock's faces stay consistent as it
+    // tumbles. Lit from up-left, with a little per-face grain on top.
+    this.faceShade = []
+    for (let i = 0; i < n; i++) {
+      const v0 = this.verts[i]
+      const v1 = this.verts[(i + 1) % n]
+      const mx = (Math.cos(v0.a) * v0.r + Math.cos(v1.a) * v1.r) / 2
+      const my = (Math.sin(v0.a) * v0.r + Math.sin(v1.a) * v1.r) / 2
+      const ml = Math.hypot(mx, my) || 1
+      const lit = (mx / ml) * -0.55 + (my / ml) * -0.83   // light from up-left
+      this.faceShade.push(Math.max(0.16, Math.min(1, 0.52 + lit * 0.42 + randRange(rng, -0.09, 0.09))))
     }
 
     for (let attempt = 0; attempt < 12; attempt++) {
@@ -107,6 +149,13 @@ export class Asteroid {
     gravityAt(this.x, this.y, holes, accel)
     integrate(this, accel.x, accel.y, dt, 0)
     this.spin += this.spinRate * dt
+
+    this.trailClock += dt
+    if (this.trailClock >= TRAIL_INTERVAL) {
+      this.trailClock -= TRAIL_INTERVAL
+      this.trail.unshift({ x: this.x, y: this.y })
+      if (this.trail.length > TRAIL_POINTS) this.trail.pop()
+    }
 
     const eaten = holes.some(h => Math.hypot(this.x - h.x, this.y - h.y) < h.horizon)
     if (eaten || this.x < -140 || this.y < -160 || this.y > DESIGN_HEIGHT + 160) {

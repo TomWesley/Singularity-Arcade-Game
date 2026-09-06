@@ -71,6 +71,11 @@ roughly 27 shadow-blurred draws per frame out of ~900 canvas calls total.
 Colour belongs to the craft. The four hulls keep their 2019 shapes and their
 2019 palette exactly; only the rendering is new.
 
+Asteroid tails are drawn from a recorded position history rather than
+extrapolated along the velocity vector, so a rock whipping past a hole trails a
+curve that matches the path it actually flew. Sampling at a fixed interval also
+makes the tail's length proportional to speed for free.
+
 An earlier pass drew each disk as 9 bands of 46 blurred arc segments, which came
 to 1,656 shadowed strokes a frame and ran at 5 fps. It was also simply worse to
 look at. The reference is the Jupiter sequence in *2001*: a few monumental shapes
