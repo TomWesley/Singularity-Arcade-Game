@@ -94,6 +94,7 @@ Gravity treats all four identically. What differs is thrust authority
 npm start                  # http://localhost:3000 — zero dependencies
 npm run physics            # geometry table for a range of black hole masses
 npm run simulate           # autopilot balance report for levels/level1.json
+npm run speeds             # asteroid speed distribution, for tuning the tails
 node tools/smoke.mjs       # headless wiring + physics assertions
 npm run vendor:engine      # re-copy the graphics engine from the sibling checkout
 ```
@@ -114,7 +115,7 @@ public/
     render/    theme, starfield, black holes, asteroids, craft, HUD, screens
   vendor/arcade-graphics-engine/    vendored ESM build, see npm run vendor:engine
 levels/        level1.json, plus the 2019 levels under archive/
-tools/         physics report, balance simulator, smoke test
+tools/         physics report, balance simulator, speed sampler, smoke test
 ```
 
 Native ES modules, canvas 2D, no bundler and no build step — the deploy copies

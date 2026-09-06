@@ -97,7 +97,7 @@ function render (alpha) {
       const heading = Math.atan2(game.body.vy, game.body.vx)
       const thrustMag = Math.min(1,
         Math.hypot(game.thrust.x, game.thrust.y) / (game.craft.thrust / game.craft.mass))
-      drawCraft(ctx, game.craft.id, x, y, heading, thrustMag, time, 1.5 * game.craft.artScale)
+      drawCraft(ctx, game.craft.id, x, y, heading, thrustMag, time, game.craft.artScale)
     }
   }
 

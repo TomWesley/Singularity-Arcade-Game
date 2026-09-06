@@ -76,13 +76,15 @@ export class Asteroid {
     this.spin = randRange(rng, 0, Math.PI * 2)
     this.spinRate = randRange(rng, -1.4, 1.4)
 
-    // Angular silhouette -- a few radii perturbed around a circle.
-    const n = 7 + Math.floor(rng() * 3)
+    // Angular silhouette. Few vertices and wide radial variance so each rock
+    // reads as a chipped shard; a higher count with gentle variance just makes
+    // lumpy circles.
+    const n = 5 + Math.floor(rng() * 2)
     this.verts = []
     for (let i = 0; i < n; i++) {
       this.verts.push({
-        a: (i / n) * Math.PI * 2,
-        r: this.radius * randRange(rng, 0.72, 1.28)
+        a: (i / n) * Math.PI * 2 + randRange(rng, -0.22, 0.22),
+        r: this.radius * randRange(rng, 0.55, 1.4)
       })
     }
 
