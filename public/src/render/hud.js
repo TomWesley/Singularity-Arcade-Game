@@ -44,25 +44,18 @@ export function drawHud (ctx, game) {
   ctx.fillText(`${game.gForce.toFixed(0)}`, 236, 89)
   ctx.restore()
 
-  // ── Right: run clock and remaining craft ──
+  // ── Right: craft remaining ──
   drawPanel(ctx, theme, {
-    x: DESIGN_WIDTH - 200, y: 14, width: 184, height: 62,
-    title: 'RUN', cornerSize: 10, bgOpacity: 0.05
+    x: DESIGN_WIDTH - 200, y: 14, width: 184, height: 78,
+    title: 'CRAFT', cornerSize: 10, bgOpacity: 0.05
   })
-
-  ctx.save()
-  ctx.font = canvasFont('data', 22)
-  ctx.textAlign = 'right'
-  ctx.fillStyle = rgbaToCss(withAlpha(palette.secondary.core, 0.95))
-  ctx.fillText(formatTime(game.runTime), DESIGN_WIDTH - 26, 62)
-  ctx.restore()
 
   for (let i = 0; i < 3; i++) {
     const filled = i < game.lives
     drawIcon(
       ctx, 'craft',
-      DESIGN_WIDTH - 182 + i * 30, 96, 24,
-      withAlpha(filled ? palette.secondary.core : palette.primary.dim, filled ? 0.95 : 0.25)
+      DESIGN_WIDTH - 152 + i * 44, 62, 30,
+      withAlpha(filled ? palette.secondary.core : palette.primary.dim, filled ? 0.95 : 0.22)
     )
   }
 
@@ -98,6 +91,7 @@ function drawCaptureWarning (ctx, game) {
   ctx.restore()
 }
 
+/** Retained for tooling and the balance simulator; the HUD shows no clock. */
 export function formatTime (seconds) {
   const s = Math.floor(seconds)
   const cs = Math.floor((seconds - s) * 100)

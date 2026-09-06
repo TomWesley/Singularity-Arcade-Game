@@ -170,22 +170,28 @@ export class Game {
   checkHazards () {
     for (const h of this.level.holes) {
       if (Math.hypot(this.body.x - h.x, this.body.y - h.y) < h.horizon) {
-        this.loseCraft('CONSUMED')
+        this.loseCraft('CONSUMED', h)
         return true
       }
     }
     for (const a of this.level.asteroids) {
       if (Math.hypot(this.body.x - a.x, this.body.y - a.y) < a.radius + this.craft.hull * 0.5) {
-        this.loseCraft('IMPACT')
+        this.loseCraft('IMPACT', null)
         return true
       }
     }
     return false
   }
 
-  loseCraft (cause) {
+  // The loss point and the velocity carried into it are recorded so the wreck
+  // can be thrown from where the craft actually was, along the line it was
+  // actually travelling.
+  loseCraft (cause, hole) {
     this.lives -= 1
     this.lossCause = cause
+    this.lossHole = hole
+    this.lossPoint = { x: this.body.x, y: this.body.y }
+    this.lossVel = { x: this.body.vx, y: this.body.vy }
     this.state = STATE.LOST
     this.phaseTime = 0
   }

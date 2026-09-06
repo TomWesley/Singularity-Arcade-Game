@@ -9,11 +9,12 @@ import { Game, STATE } from './game/game.js'
 import { loadLevel } from './game/level.js'
 import { CRAFTS } from './game/crafts.js'
 
-import { initTheme } from './render/theme.js'
+import { initTheme, ensureFonts } from './render/theme.js'
 import { Starfield } from './render/starfield.js'
 import { drawBlackHole } from './render/blackhole.js'
 import { drawAsteroid } from './render/asteroid.js'
 import { drawCraft } from './render/craft.js'
+import { Impact } from './render/impact.js'
 import { drawHud } from './render/hud.js'
 import {
   drawTitle, drawCraftSelect, drawCraftLost, drawComplete, drawGameOver,
@@ -32,6 +33,8 @@ window.addEventListener('resize', () => viewport.resize())
 const input = new Input(canvas, viewport)
 const game = new Game()
 const starfield = new Starfield()
+const impact = new Impact()
+let lastState = game.state
 
 let hoverCraft = -1
 
@@ -60,6 +63,22 @@ function update (dt) {
     ? { x: input.x, y: input.y }
     : null
   game.update(dt, target)
+
+  // Fire the wreck effect on the transition into LOST, not while in it.
+  if (game.state === STATE.LOST && lastState !== STATE.LOST) {
+    impact.spawn({
+      x: game.lossPoint.x,
+      y: game.lossPoint.y,
+      vx: game.lossVel.x,
+      vy: game.lossVel.y,
+      cause: game.lossCause,
+      hole: game.lossHole,
+      craftId: game.craft.id
+    })
+  }
+  lastState = game.state
+  if (game.level) impact.update(dt, game.level.holes)
+
   if (game.state === STATE.SELECT) hoverCraft = craftAtPoint(input.x, input.y)
 }
 
@@ -99,6 +118,8 @@ function render (alpha) {
         Math.hypot(game.thrust.x, game.thrust.y) / (game.craft.thrust / game.craft.mass))
       drawCraft(ctx, game.craft.id, x, y, heading, thrustMag, time, game.craft.artScale)
     }
+
+    impact.draw(ctx)
   }
 
   switch (game.state) {
@@ -111,8 +132,8 @@ function render (alpha) {
   }
 }
 
-loadLevel('level1')
-  .then(level => {
+Promise.all([loadLevel('level1'), ensureFonts()])
+  .then(([level]) => {
     game.setLevel(level)
     startLoop({ update, render })
   })

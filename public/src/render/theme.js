@@ -37,6 +37,27 @@ export function initTheme () {
   injected = true
 }
 
+// Canvas text does not trigger webfont loading the way DOM text does: setting
+// ctx.font to a face the browser has not already fetched silently falls back,
+// with no error and no reflow to correct it later. injectCSS() adds the
+// stylesheet, but nothing on this page is DOM text, so only the weights that
+// happen to be requested elsewhere would ever arrive. Every weight the game
+// draws with has to be asked for explicitly, and awaited before the first frame.
+const REQUIRED_FACES = [
+  '900 56px Orbitron',
+  '700 26px Orbitron',
+  '600 13px Orbitron',
+  '600 14px Rajdhani',
+  '400 15px Rajdhani',
+  '400 13px "Share Tech Mono"'
+]
+
+export async function ensureFonts () {
+  if (typeof document === 'undefined' || !document.fonts) return
+  await Promise.all(REQUIRED_FACES.map(f => document.fonts.load(f).catch(() => {})))
+  try { await document.fonts.ready } catch { /* not fatal */ }
+}
+
 /** Stroke with a glow, the house look for every line in the game. */
 export function glowStroke (ctx, color, blur, width, drawPath) {
   ctx.save()

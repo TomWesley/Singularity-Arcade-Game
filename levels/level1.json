@@ -3,16 +3,44 @@
   "name": "Training Course",
   "subtitle": "Thread the channel. The small ones bite hardest.",
   "seed": 1337,
-  "spawn": { "x": 0.075, "y": 0.5 },
+  "spawn": {
+    "x": 0.075,
+    "y": 0.5
+  },
   "blackHoles": [
-    { "x": 0.34, "y": 0.0, "solarMasses": 22 },
-    { "x": 0.34, "y": 1.0, "solarMasses": 22 },
-    { "x": 0.62, "y": 0.34, "solarMasses": 3.5 },
     {
-      "x": 0.74, "y": 0.62, "solarMasses": 3,
-      "orbit": { "radius": 0.10, "period": 8.5, "phase": 0.6 }
+      "x": 0.34,
+      "y": 0.0,
+      "solarMasses": 22
+    },
+    {
+      "x": 0.34,
+      "y": 1.0,
+      "solarMasses": 22
+    },
+    {
+      "x": 0.62,
+      "y": 0.34,
+      "solarMasses": 3.5
+    },
+    {
+      "x": 0.74,
+      "y": 0.62,
+      "solarMasses": 3,
+      "orbit": {
+        "radius": 0.1,
+        "period": 8.5,
+        "phase": 0.6
+      }
     }
   ],
-  "asteroids": { "count": 14 },
-  "gate": { "x": 0.94, "y": 0.5, "width": 0.045, "height": 0.26 }
+  "asteroids": {
+    "count": 14
+  },
+  "gate": {
+    "x": 0.972,
+    "y": 0.5,
+    "width": 0.032,
+    "height": 0.3
+  }
 }

@@ -26,6 +26,14 @@ const WHITE = [255, 255, 255]
 
 const rgba = (c, a = 1) => `rgba(${c[0]}, ${c[1]}, ${c[2]}, ${a})`
 
+/** Each hull's signature colours, for effects that should match the ship. */
+export const CRAFT_COLORS = {
+  superbug: [SUPERBUG_YELLOW, SUPERBUG_ORANGE],
+  'psych-bike': [PSYCH_PINK, [255, 255, 255]],
+  compiler: [COMPILER_GREEN, [200, 255, 220]],
+  voidwalker: [VOIDWALKER_PURPLE, WHITE]
+}
+
 /** Lighten toward white, for the hot side of a gradient. */
 function lift (c, t) {
   return [

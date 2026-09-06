@@ -101,3 +101,60 @@ if (Math.abs(g.photonSphere / g.horizon - 1.5) > 1e-9) errors.push('photon spher
 if (Math.abs(g.horizon - 40) > 0.02) errors.push(`10 M_sun horizon should be 40px, got ${g.horizon}`)
 console.log(errors.length ? 'PHYSICS CHECK FAILED: ' + errors.join('; ') : 'Physics ratios check out (ISCO = 3 r_s, photon sphere = 1.5 r_s).')
 if (errors.length) process.exit(1)
+
+// ── Wreck effect ─────────────────────────────────────────────────────────────
+// The two deaths must not behave alike: an asteroid strike throws debris away
+// from the impact, a horizon crossing pulls it in. Both are asserted here
+// because the animation is short and easy to break without noticing.
+{
+  const { Impact } = await import('../public/src/render/impact.js')
+  const lvl = buildLevel(spec)
+  const hole = lvl.holes[2]
+  let s = 7
+  const rng = () => ((s = (s * 1664525 + 1013904223) >>> 0) / 4294967296)
+
+  const meanDist = (parts, cx, cy) => {
+    const live = parts.filter(p => !p.dead)
+    if (!live.length) return 0
+    return live.reduce((t, p) => t + Math.hypot(p.x - cx, p.y - cy), 0) / live.length
+  }
+
+  // Impact: debris disperses.
+  const burst = new Impact()
+  burst.spawn({ x: 640, y: 360, vx: 200, vy: 0, cause: 'IMPACT', hole: null, craftId: 'superbug', rng })
+  const d0 = meanDist(burst.parts, 640, 360)
+  for (let i = 0; i < 60; i++) burst.update(1 / 120, lvl.holes)
+  const d1 = meanDist(burst.parts, 640, 360)
+  burst.draw(ctx)
+
+  // Consumed: debris converges on the hole and is eaten.
+  const fall = new Impact()
+  fall.spawn({
+    x: hole.x + hole.horizon * 1.5, y: hole.y, vx: 0, vy: 0,
+    cause: 'CONSUMED', hole, craftId: 'voidwalker', rng
+  })
+  const c0 = meanDist(fall.parts, hole.x, hole.y)
+  for (let i = 0; i < 150; i++) fall.update(1 / 120, lvl.holes)
+  const c1 = meanDist(fall.parts, hole.x, hole.y)
+  const eaten = fall.parts.filter(p => p.dead).length
+  fall.draw(ctx)
+
+  const finite = [...burst.parts, ...fall.parts].every(p => Number.isFinite(p.x) && Number.isFinite(p.y))
+
+  console.log('\nWreck effect:')
+  console.log(`  IMPACT   mean radius ${d0.toFixed(1)} -> ${d1.toFixed(1)} px  (debris must disperse)`)
+  // Mean radius of the *survivors* is a bad measure here: the fragments still
+  // alive late are precisely the ones on the widest orbits, so survivor bias
+  // pushes it back up even while the cloud is draining. What matters is that
+  // fragments are actually being eaten.
+  console.log(`  CONSUMED mean radius ${c0.toFixed(1)} -> ${c1.toFixed(1)} px, ${eaten}/${fall.parts.length} crossed the horizon`)
+
+  const problems = []
+  if (d1 <= d0) problems.push('IMPACT debris did not disperse')
+  if (eaten < fall.parts.length * 0.5) problems.push(`only ${eaten}/${fall.parts.length} CONSUMED fragments fell in`)
+  if (c1 > c0 * 3) problems.push('CONSUMED debris is being ejected, not drawn in')
+  if (!finite) problems.push('non-finite particle position')
+  if (burst.active === false && fall.active === false) problems.push('both effects expired too early')
+  console.log(problems.length ? '  FAILED: ' + problems.join('; ') : '  Both deaths behave as intended.')
+  if (problems.length) process.exit(1)
+}

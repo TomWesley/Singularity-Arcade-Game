@@ -7,7 +7,6 @@ import {
 } from './theme.js'
 import { drawCraft } from './craft.js'
 import { CRAFTS, thrustAccel } from '../game/crafts.js'
-import { formatTime } from './hud.js'
 import { DESIGN_WIDTH, DESIGN_HEIGHT } from '../core/viewport.js'
 
 const CX = DESIGN_WIDTH / 2
@@ -36,8 +35,8 @@ export function drawTitle (ctx, time) {
   centred(ctx, 'SINGULARITY', 'display', 88, 292 + bob,
     rgbaToCss(withAlpha(palette.secondary.core, 0.97)), 34)
 
-  centred(ctx, 'Surf the gravity wells. Reach the gate.', 'body', 19, 340,
-    rgbaToCss(withAlpha(palette.primary.core, 0.75)), 8)
+  centred(ctx, 'Surf the gravity wells · Reach the gate', 'data', 15, 344,
+    rgbaToCss(withAlpha(palette.primary.core, 0.72)), 8)
 
   const pulse = 0.55 + Math.sin(time * 2.4) * 0.35
   centred(ctx, 'Click to begin', 'label', 17, 470,
@@ -80,8 +79,8 @@ export function drawCraftSelect (ctx, time, hoverIndex) {
   scrim(ctx, 0.55)
   centred(ctx, 'Select a surfer', 'title', 38, 140,
     rgbaToCss(withAlpha(palette.secondary.core, 0.95)), 18)
-  centred(ctx, 'Gravity pulls every hull the same. Only thrust differs.', 'body', 15, 176,
-    rgbaToCss(withAlpha(palette.primary.core, 0.6)), 6)
+  centred(ctx, 'Gravity pulls every hull the same · Only thrust differs', 'data', 12, 178,
+    rgbaToCss(withAlpha(palette.primary.core, 0.58)), 6)
 
   CRAFTS.forEach((craft, i) => {
     const r = craftCardRect(i)
@@ -109,9 +108,9 @@ export function drawCraftSelect (ctx, time, hoverIndex) {
       hot ? palette.secondary.core : palette.primary.core, 0.95))
     ctx.fillText(typeCase('heading', craft.name), cxx, r.y + 152)
 
-    ctx.font = canvasFont('body', 13)
-    ctx.fillStyle = rgbaToCss(withAlpha(palette.primary.core, 0.55))
-    wrap(ctx, craft.tagline, cxx, r.y + 176, r.width - 34, 16)
+    ctx.font = canvasFont('data', 10.5)
+    ctx.fillStyle = rgbaToCss(withAlpha(palette.primary.core, 0.52))
+    wrap(ctx, typeCase('data', craft.tagline), cxx, r.y + 176, r.width - 30, 15)
 
     // The three numbers that actually decide how it flies.
     const stats = [
@@ -164,12 +163,13 @@ export function drawCraftLost (ctx, game) {
 
 export function drawComplete (ctx, game) {
   scrim(ctx, 0.55)
-  centred(ctx, 'Gate reached', 'title', 46, 300,
+  centred(ctx, 'Gate reached', 'title', 46, 316,
     rgbaToCss(withAlpha(palette.secondary.core, 0.97)), 24)
-  centred(ctx, formatTime(game.runTime), 'data', 54, 380,
-    rgbaToCss(withAlpha(palette.primary.core, 0.95)), 16)
+  const kept = game.lives === 3 ? 'No craft lost' : `${game.lives} of 3 craft brought home`
+  centred(ctx, kept, 'data', 15, 372,
+    rgbaToCss(withAlpha(palette.primary.core, 0.8)), 10)
   const pulse = 0.5 + Math.sin(game.elapsed * 2.4) * 0.35
-  centred(ctx, 'Click to fly again', 'label', 16, 470,
+  centred(ctx, 'Click to fly again', 'label', 16, 462,
     rgbaToCss(withAlpha(palette.primary.core, pulse)), 8)
 }
 

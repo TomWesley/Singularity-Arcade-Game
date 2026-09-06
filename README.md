@@ -68,6 +68,15 @@ that geometry is static for a given mass, so each hole renders once into an
 offscreen canvas and is blitted. Glow is expensive and therefore rationed --
 roughly 27 shadow-blurred draws per frame out of ~900 canvas calls total.
 
+Subtext is set in Share Tech Mono rather than the kit's Rajdhani `body` role: a
+game running real Schwarzschild geometry should speak in a readout voice, and
+sentence-case Rajdhani is the one thing in the type kit that reads as generic UI.
+
+Canvas text does not trigger webfont loading the way DOM text does -- setting
+`ctx.font` to a face the browser has not already fetched falls back silently,
+with nothing to correct it later. Every weight the game draws with is requested
+explicitly and awaited before the first frame.
+
 Colour belongs to the craft. The four hulls keep their 2019 shapes and their
 2019 palette exactly; only the rendering is new.
 
