@@ -15,7 +15,7 @@
 
 import { palette, rgbaToCss, withAlpha } from './theme.js'
 
-const MAX_TAIL = 105     // px; a long slingshot streak is capped here
+const MAX_TAIL = 62      // px; a long slingshot streak is capped here
 const FLUNG = 400        // px/s; past this a rock is a genuine problem
 
 let C = null
@@ -57,41 +57,81 @@ export function drawAsteroid (ctx, a) {
   ctx.rotate(a.spin * 0.35)
 
   const v = a.verts
+  const inner = a.inner
   const n = v.length
-  const fx = a.facetOrigin.x
-  const fy = a.facetOrigin.y
 
-  // Faces, fanned from the interior origin to each hull edge. Each is filled
-  // flat at its own fixed brightness, which is what makes the rock read as a
-  // broken mineral body instead of a filled outline with scratches on it.
+  const ox = new Array(n)
+  const oy = new Array(n)
+  const ix = new Array(n)
+  const iy = new Array(n)
   for (let i = 0; i < n; i++) {
-    const v0 = v[i]
-    const v1 = v[(i + 1) % n]
-    const s = a.faceShade[i]
-    ctx.fillStyle = `rgb(${Math.round(rgb[0] * s)}, ${Math.round(rgb[1] * s)}, ${Math.round(rgb[2] * s)})`
+    ox[i] = Math.cos(v[i].a) * v[i].r
+    oy[i] = Math.sin(v[i].a) * v[i].r
+    ix[i] = Math.cos(inner[i].a) * inner[i].r
+    iy[i] = Math.sin(inner[i].a) * inner[i].r
+  }
+
+  const shade = s => `rgb(${Math.round(rgb[0] * s)}, ${Math.round(rgb[1] * s)}, ${Math.round(rgb[2] * s)})`
+
+  // Rim band: a quad per hull edge, running from the outline in to the shoulder.
+  // These carry the strongest light-to-dark range, so they are what gives the
+  // body its volume.
+  for (let i = 0; i < n; i++) {
+    const j = (i + 1) % n
+    ctx.fillStyle = shade(a.rimShade[i])
     ctx.beginPath()
-    ctx.moveTo(fx, fy)
-    ctx.lineTo(Math.cos(v0.a) * v0.r, Math.sin(v0.a) * v0.r)
-    ctx.lineTo(Math.cos(v1.a) * v1.r, Math.sin(v1.a) * v1.r)
+    ctx.moveTo(ox[i], oy[i])
+    ctx.lineTo(ox[j], oy[j])
+    ctx.lineTo(ix[j], iy[j])
+    ctx.lineTo(ix[i], iy[i])
     ctx.closePath()
     ctx.fill()
-    // Hairline on the shared edge tightens the facet break.
-    ctx.strokeStyle = `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.22)`
-    ctx.lineWidth = 0.6
-    ctx.stroke()
   }
 
-  // Hull outline last, so no facet edge bleeds over it.
-  ctx.strokeStyle = flung ? C.hotEdge : C.coolEdge
-  ctx.lineWidth = 1.1
-  ctx.beginPath()
+  // Cap: a fan across the raised middle, flatter to the light and so brighter
+  // and less varied than the rim.
   for (let i = 0; i < n; i++) {
-    const vx = Math.cos(v[i].a) * v[i].r
-    const vy = Math.sin(v[i].a) * v[i].r
-    if (i === 0) ctx.moveTo(vx, vy); else ctx.lineTo(vx, vy)
+    const j = (i + 1) % n
+    ctx.fillStyle = shade(a.capShade[i])
+    ctx.beginPath()
+    ctx.moveTo(0, 0)
+    ctx.lineTo(ix[i], iy[i])
+    ctx.lineTo(ix[j], iy[j])
+    ctx.closePath()
+    ctx.fill()
   }
+
+  // Shoulder crease: the boundary between cap and rim, drawn faintly so the
+  // two bands separate even where their shading happens to match.
+  ctx.strokeStyle = `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.34)`
+  ctx.lineWidth = 0.7
+  ctx.beginPath()
+  ctx.moveTo(ix[0], iy[0])
+  for (let i = 1; i < n; i++) ctx.lineTo(ix[i], iy[i])
   ctx.closePath()
   ctx.stroke()
+
+  // Hull outline.
+  ctx.strokeStyle = flung ? C.hotEdge : C.coolEdge
+  ctx.lineWidth = 1
+  ctx.beginPath()
+  ctx.moveTo(ox[0], oy[0])
+  for (let i = 1; i < n; i++) ctx.lineTo(ox[i], oy[i])
+  ctx.closePath()
+  ctx.stroke()
+
+  // Specular edge: a short bright arc over the few hull vertices facing into
+  // the light. At these sizes it does more for the sense of a hard mineral
+  // surface than any amount of extra geometry.
+  const li = a.litIndex
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.78)'
+  ctx.lineWidth = 1.2
+  ctx.beginPath()
+  ctx.moveTo(ox[(li - 1 + n) % n], oy[(li - 1 + n) % n])
+  ctx.lineTo(ox[li], oy[li])
+  ctx.lineTo(ox[(li + 1) % n], oy[(li + 1) % n])
+  ctx.stroke()
+
   ctx.restore()
 }
 

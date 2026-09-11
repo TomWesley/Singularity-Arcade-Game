@@ -60,14 +60,16 @@ export class BlackHole {
 // speed -- and because it records where the rock has actually been, the tail
 // bends around a gravity well exactly as the trajectory does.
 export const TRAIL_INTERVAL = 1 / 45
-const TRAIL_POINTS = 23
+const TRAIL_POINTS = 14
 
 export class Asteroid {
   constructor (rng, holes) {
     this.rng = rng
     this.verts = []
-    this.facetOrigin = { x: 0, y: 0 }
-    this.faceShade = []
+    this.inner = []
+    this.rimShade = []
+    this.capShade = []
+    this.litIndex = 0
     this.spin = 0
     this.spinRate = 0
     this.radius = 0
@@ -90,44 +92,70 @@ export class Asteroid {
     this.trail.length = 0
     this.trailClock = 0
 
-    // Silhouette. Three scales of variation, because any one alone fails: a
-    // low-frequency lobe term for broad irregular mass, per-vertex noise for the
-    // chipped edge, and occasional deep notches where a chunk has been knocked
-    // out. Gentle noise on many vertices just yields a pebble; few vertices
-    // yields a trapezoid.
-    const n = 13 + Math.floor(rng() * 4)
+    // Silhouette and surface.
+    //
+    // The body is built as two rings rather than one outline: an outer hull and
+    // an inner ring pulled in toward the middle. Triangulating between them
+    // gives a rim band of faces around a raised cap, which is what produces a
+    // visible shoulder -- the thing that makes a rock look like a solid with
+    // volume instead of a flat plate with a gradient on it.
+    //
+    // The outer ring uses three scales of variation: a low-frequency lobe term
+    // for broad irregular mass, per-vertex noise for the chipped edge, and
+    // occasional notches where a chunk is missing.
+    const n = 14 + Math.floor(rng() * 4)
     const lobes = 2 + Math.floor(rng() * 3)
     const lobePhase = randRange(rng, 0, Math.PI * 2)
     const lobeDepth = randRange(rng, 0.09, 0.19)
+
     this.verts = []
+    this.inner = []
     for (let i = 0; i < n; i++) {
       const a = (i / n) * Math.PI * 2 + randRange(rng, -0.13, 0.13)
       const lobe = 1 + Math.sin(a * lobes + lobePhase) * lobeDepth
       const notch = rng() < 0.12 ? randRange(rng, 0.66, 0.80) : 1
-      this.verts.push({
-        a,
-        r: this.radius * lobe * notch * randRange(rng, 0.84, 1.12)
+      const r = this.radius * lobe * notch * randRange(rng, 0.84, 1.12)
+      this.verts.push({ a, r })
+      // The inner ring gets its own angular jitter so the shoulder is not a
+      // scaled copy of the hull; a concentric copy reads as a target.
+      this.inner.push({
+        a: a + randRange(rng, -0.16, 0.16),
+        r: r * randRange(rng, 0.44, 0.66)
       })
     }
 
-    // Facet centre: an off-axis interior point. Fanning triangles from it to
-    // each hull edge turns the rock into a set of flat faces, which is what
-    // makes it read as a broken mineral body rather than a filled outline.
-    const fa = randRange(rng, 0, Math.PI * 2)
-    const fd = this.radius * randRange(rng, 0.20, 0.42)
-    this.facetOrigin = { x: Math.cos(fa) * fd, y: Math.sin(fa) * fd }
-
-    // Per-face shading, fixed at spawn so a rock's faces stay consistent as it
-    // tumbles. Lit from up-left, with a little per-face grain on top.
-    this.faceShade = []
-    for (let i = 0; i < n; i++) {
-      const v0 = this.verts[i]
-      const v1 = this.verts[(i + 1) % n]
+    // Lighting. Fixed at spawn so a rock's faces stay consistent as it tumbles.
+    // The rim faces take the strongest contrast because they are the ones
+    // turning away from the light; the cap sits flatter and varies less.
+    const LX = -0.55
+    const LY = -0.83
+    const shadeFor = (v0, v1, contrast, base) => {
       const mx = (Math.cos(v0.a) * v0.r + Math.cos(v1.a) * v1.r) / 2
       const my = (Math.sin(v0.a) * v0.r + Math.sin(v1.a) * v1.r) / 2
       const ml = Math.hypot(mx, my) || 1
-      const lit = (mx / ml) * -0.55 + (my / ml) * -0.83   // light from up-left
-      this.faceShade.push(Math.max(0.16, Math.min(1, 0.52 + lit * 0.42 + randRange(rng, -0.09, 0.09))))
+      const lit = (mx / ml) * LX + (my / ml) * LY
+      // Floor the dark side well above black: on a black field a face that
+      // goes to zero stops being a shadowed facet and becomes a hole in the
+      // rock, and the silhouette breaks up.
+      return Math.max(0.26, Math.min(1, base + lit * contrast + randRange(rng, -0.07, 0.07)))
+    }
+
+    this.rimShade = []
+    this.capShade = []
+    for (let i = 0; i < n; i++) {
+      const j = (i + 1) % n
+      this.rimShade.push(shadeFor(this.verts[i], this.verts[j], 0.42, 0.54))
+      this.capShade.push(shadeFor(this.inner[i], this.inner[j], 0.26, 0.78))
+    }
+
+    // Which hull vertex faces most directly into the light, for the specular
+    // edge the renderer draws along the lit shoulder.
+    let bestDot = -2
+    this.litIndex = 0
+    for (let i = 0; i < n; i++) {
+      const v = this.verts[i]
+      const d = Math.cos(v.a) * LX + Math.sin(v.a) * LY
+      if (d > bestDot) { bestDot = d; this.litIndex = i }
     }
 
     for (let attempt = 0; attempt < 12; attempt++) {

@@ -182,40 +182,74 @@ export function drawGameOver (ctx, game) {
     rgbaToCss(withAlpha(palette.primary.core, pulse)), 8)
 }
 
-// The finish gate: a pair of bracketed posts with a shimmering threshold.
+// The finish gate.
+//
+// It sits hard against the right edge with half its width past the boundary, so
+// reaching it reads as sailing off the board rather than arriving at a box
+// drawn on it. When the far post falls outside the board it is not drawn --
+// instead the light ramps up toward the edge, and a bright threshold line marks
+// the boundary itself. The way out is off the screen.
 export function drawGate (ctx, gate, time) {
   const { x, y, width: w, height: h } = gate
   const left = x - w / 2
   const right = x + w / 2
   const top = y - h / 2
   const bottom = y + h / 2
+  const openEnded = right >= DESIGN_WIDTH - 1
+  const visibleRight = Math.min(right, DESIGN_WIDTH)
 
   ctx.save()
-  const shimmer = ctx.createLinearGradient(left, top, right, top)
-  const phase = 0.35 + Math.sin(time * 2.2) * 0.2
-  shimmer.addColorStop(0, rgbaToCss(withAlpha(palette.secondary.core, 0)))
-  shimmer.addColorStop(0.5, rgbaToCss(withAlpha(palette.secondary.core, phase)))
-  shimmer.addColorStop(1, rgbaToCss(withAlpha(palette.secondary.core, 0)))
+
+  // Light spilling from beyond the boundary.
+  const phase = 0.30 + Math.sin(time * 2.2) * 0.16
+  const shimmer = ctx.createLinearGradient(left, top, visibleRight, top)
+  if (openEnded) {
+    shimmer.addColorStop(0, rgbaToCss(withAlpha(palette.secondary.core, 0)))
+    shimmer.addColorStop(1, rgbaToCss(withAlpha(palette.secondary.core, phase)))
+  } else {
+    shimmer.addColorStop(0, rgbaToCss(withAlpha(palette.secondary.core, 0)))
+    shimmer.addColorStop(0.5, rgbaToCss(withAlpha(palette.secondary.core, phase)))
+    shimmer.addColorStop(1, rgbaToCss(withAlpha(palette.secondary.core, 0)))
+  }
   ctx.fillStyle = shimmer
-  ctx.fillRect(left, top, w, h)
+  ctx.fillRect(left, top, visibleRight - left, h)
 
   ctx.strokeStyle = rgbaToCss(withAlpha(palette.secondary.core, 0.9))
   ctx.lineWidth = 2
   ctx.shadowColor = rgbaToCss(palette.secondary.glow)
   ctx.shadowBlur = 14
+
+  // Near post, always drawn.
   const arm = 16
-  for (const px of [left, right]) {
-    const dir = px === left ? 1 : -1
+  ctx.beginPath()
+  ctx.moveTo(left + arm, top); ctx.lineTo(left, top)
+  ctx.lineTo(left, bottom); ctx.lineTo(left + arm, bottom)
+  ctx.stroke()
+
+  if (openEnded) {
+    // The boundary itself: a bright threshold, brightest at the middle of the
+    // opening and fading out at the lintels.
+    const edge = ctx.createLinearGradient(0, top, 0, bottom)
+    edge.addColorStop(0, rgbaToCss(withAlpha(palette.secondary.core, 0.1)))
+    edge.addColorStop(0.5, rgbaToCss(withAlpha(palette.secondary.core, 0.95)))
+    edge.addColorStop(1, rgbaToCss(withAlpha(palette.secondary.core, 0.1)))
+    ctx.strokeStyle = edge
+    ctx.lineWidth = 3
     ctx.beginPath()
-    ctx.moveTo(px + dir * arm, top); ctx.lineTo(px, top)
-    ctx.lineTo(px, bottom); ctx.lineTo(px + dir * arm, bottom)
+    ctx.moveTo(DESIGN_WIDTH - 1.5, top)
+    ctx.lineTo(DESIGN_WIDTH - 1.5, bottom)
+    ctx.stroke()
+  } else {
+    ctx.beginPath()
+    ctx.moveTo(right - arm, top); ctx.lineTo(right, top)
+    ctx.lineTo(right, bottom); ctx.lineTo(right - arm, bottom)
     ctx.stroke()
   }
 
   ctx.font = canvasFont('micro', 10)
-  ctx.textAlign = 'center'
+  ctx.textAlign = openEnded ? 'right' : 'center'
   ctx.fillStyle = rgbaToCss(withAlpha(palette.secondary.core, 0.7))
   ctx.shadowBlur = 6
-  ctx.fillText('GATE', x, top - 12)
+  ctx.fillText('GATE', openEnded ? DESIGN_WIDTH - 10 : x, top - 12)
   ctx.restore()
 }

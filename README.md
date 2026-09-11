@@ -85,6 +85,11 @@ extrapolated along the velocity vector, so a rock whipping past a hole trails a
 curve that matches the path it actually flew. Sampling at a fixed interval also
 makes the tail's length proportional to speed for free.
 
+Each rock is built as two rings -- an outer hull and an inner ring pulled toward
+the middle -- triangulated into a rim band around a raised cap. That shoulder is
+what gives a 15px shape the read of a solid with volume rather than a flat plate
+with a gradient on it.
+
 An earlier pass drew each disk as 9 bands of 46 blurred arc segments, which came
 to 1,656 shadowed strokes a frame and ran at 5 fps. It was also simply worse to
 look at. The reference is the Jupiter sequence in *2001*: a few monumental shapes
