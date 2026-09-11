@@ -20,7 +20,7 @@ export function drawHud (ctx, game) {
   })
 
   drawBarGauge(ctx, theme, {
-    x: 28, y: 52, width: 152, height: 13,
+    x: 28, y: 52, width: 208, height: 13,
     value: Math.min(1, game.speed / craft.maxSpeed),
     label: 'VEL', showValue: false
   })
@@ -28,33 +28,26 @@ export function drawHud (ctx, game) {
   // Gravity load. Turns red as the field starts to win.
   const gLoad = Math.min(1, game.gForce / GRAVITY_FULL_SCALE)
   drawBarGauge(ctx, theme, {
-    x: 28, y: 78, width: 152, height: 13,
+    x: 28, y: 78, width: 208, height: 13,
     value: gLoad,
     label: 'GRAV', showValue: false,
     color: gLoad > 0.66 ? palette.danger.core : palette.primary.core
   })
 
-  ctx.save()
-  ctx.font = canvasFont('data', 11)
-  ctx.textAlign = 'right'
-  ctx.fillStyle = rgbaToCss(withAlpha(palette.primary.core, 0.9))
-  ctx.fillText(`${game.speed.toFixed(0)}`, 236, 63)
-  ctx.fillStyle = rgbaToCss(withAlpha(
-    gLoad > 0.66 ? palette.danger.core : palette.primary.core, 0.9))
-  ctx.fillText(`${game.gForce.toFixed(0)}`, 236, 89)
-  ctx.restore()
-
-  // ── Right: craft remaining ──
+  // ── Right: ships remaining ──
   drawPanel(ctx, theme, {
-    x: DESIGN_WIDTH - 200, y: 14, width: 184, height: 78,
-    title: 'CRAFT', cornerSize: 10, bgOpacity: 0.05
+    x: DESIGN_WIDTH - 246, y: 14, width: 230, height: 78,
+    title: 'SHIPS REMAINING', cornerSize: 10, bgOpacity: 0.05
   })
 
+  // A diamond reads as a token rather than a picture of the thing it counts --
+  // the panel title already says what is being counted, and repeating it in the
+  // icon just competes with the actual ship on the board.
   for (let i = 0; i < 3; i++) {
     const filled = i < game.lives
     drawIcon(
-      ctx, 'craft',
-      DESIGN_WIDTH - 152 + i * 44, 62, 30,
+      ctx, 'diamond',
+      DESIGN_WIDTH - 186 + i * 46, 62, 26,
       withAlpha(filled ? palette.secondary.core : palette.primary.dim, filled ? 0.95 : 0.22)
     )
   }
