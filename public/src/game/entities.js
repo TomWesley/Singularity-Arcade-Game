@@ -1,7 +1,7 @@
 // Simulation entities. Rendering lives in src/render -- these carry state and
 // the rules that move it, nothing about how any of it looks.
 
-import { blackHoleGeometry, gravityAt, integrate } from './physics.js'
+import { blackHoleGeometry, gravityAt, integrate, circularOrbitSpeed, SYSTEM_SPEED_LIMIT } from './physics.js'
 import { makeRng, randRange } from '../core/rng.js'
 import { DESIGN_WIDTH, DESIGN_HEIGHT } from '../core/viewport.js'
 
@@ -62,8 +62,28 @@ export class BlackHole {
 export const TRAIL_INTERVAL = 1 / 45
 const TRAIL_POINTS = 14
 
+// How far past the board a rock may travel before it counts as gone rather than
+// mid-orbit, and how long it may stay out there.
+const ORBIT_MARGIN = 900
+const OFF_BOARD_GRACE = 14
+
 export class Asteroid {
-  constructor (rng, holes) {
+  /**
+   * @param orbiter when true the rock is seeded onto a near-circular orbit
+   *   around a hole that sits well inside the board, instead of drifting in
+   *   from off-screen.
+   *
+   *   This is honest about what it is: the rock is placed on an orbit rather
+   *   than captured into one. Capture is the part that cannot happen -- a
+   *   two-body gravitational encounter conserves specific orbital energy, so
+   *   anything arriving unbound leaves unbound, and nothing in a clean field
+   *   will ever settle by itself. What follows the seeding is entirely real
+   *   though: the orbit is integrated through the same field as everything
+   *   else, perturbed by the other holes, and free to precess, decay or be
+   *   flung out.
+   */
+  constructor (rng, holes, orbiter = false) {
+    this.orbiter = orbiter
     this.rng = rng
     this.verts = []
     this.inner = []
@@ -79,18 +99,30 @@ export class Asteroid {
     this.vy = 0
     this.trail = []        // newest first
     this.trailClock = 0
+    this.age = 0
+    this.offBoardFor = 0
     this.reset(holes, true)
+  }
+
+  // Holes far enough inside the board that an orbit around them is actually
+  // watchable rather than spending half its path off-screen.
+  static visibleHosts (holes) {
+    return holes.filter(h =>
+      h.homeX > h.isco * 1.1 && h.homeX < DESIGN_WIDTH - h.isco * 1.1 &&
+      h.homeY > h.isco * 1.1 && h.homeY < DESIGN_HEIGHT - h.isco * 1.1)
   }
 
   // Spawns off the right edge heading left, avoiding a birth inside a hole.
   reset (holes, initial = false) {
     const rng = this.rng
-    this.radius = randRange(rng, 4.9, 9.8)
+    this.radius = randRange(rng, 3.4, 6.9)
     this.spin = randRange(rng, 0, Math.PI * 2)
     this.spinRate = randRange(rng, -1.4, 1.4)
     // A recycled rock must not drag its old trail across the board.
     this.trail.length = 0
     this.trailClock = 0
+    this.age = 0
+    this.offBoardFor = 0
 
     // Silhouette and surface.
     //
@@ -136,8 +168,9 @@ export class Asteroid {
       const lit = (mx / ml) * LX + (my / ml) * LY
       // Floor the dark side well above black: on a black field a face that
       // goes to zero stops being a shadowed facet and becomes a hole in the
-      // rock, and the silhouette breaks up.
-      return Math.max(0.26, Math.min(1, base + lit * contrast + randRange(rng, -0.07, 0.07)))
+      // rock, and the silhouette breaks up. Red needs a higher floor than the
+      // old blue did -- it has far less luminance to spend before it vanishes.
+      return Math.max(0.42, Math.min(1, base + lit * contrast + randRange(rng, -0.07, 0.07)))
     }
 
     this.rimShade = []
@@ -158,6 +191,24 @@ export class Asteroid {
       if (d > bestDot) { bestDot = d; this.litIndex = i }
     }
 
+    const hosts = this.orbiter ? Asteroid.visibleHosts(holes) : []
+    if (hosts.length) {
+      const host = hosts[Math.floor(rng() * hosts.length)]
+      // Outside the ISCO, because inside it no circular orbit is stable and the
+      // rock would simply spiral in without ever completing a revolution.
+      const r = host.isco * randRange(rng, 1.25, 2.6)
+      const a = randRange(rng, 0, Math.PI * 2)
+      this.x = host.x + Math.cos(a) * r
+      this.y = host.y + Math.sin(a) * r
+      // Slightly off circular so orbits are ellipses of varying eccentricity
+      // rather than a set of identical rings.
+      const v = circularOrbitSpeed(host, r) * randRange(rng, 0.88, 1.08)
+      const dir = rng() > 0.5 ? 1 : -1
+      this.vx = Math.cos(a + dir * Math.PI / 2) * v
+      this.vy = Math.sin(a + dir * Math.PI / 2) * v
+      return
+    }
+
     for (let attempt = 0; attempt < 12; attempt++) {
       this.x = initial && attempt === 0
         ? randRange(rng, DESIGN_WIDTH * 0.35, DESIGN_WIDTH)
@@ -171,11 +222,12 @@ export class Asteroid {
   }
 
   update (dt, holes, accel) {
+    this.age += dt
     // Asteroids obey exactly the same gravity field as the player -- that is
     // what makes them curve into slingshots around the holes rather than
     // travelling in dull straight lines.
     gravityAt(this.x, this.y, holes, accel)
-    integrate(this, accel.x, accel.y, dt, 0)
+    integrate(this, accel.x, accel.y, dt, 0, SYSTEM_SPEED_LIMIT)
     this.spin += this.spinRate * dt
 
     this.trailClock += dt
@@ -186,7 +238,23 @@ export class Asteroid {
     }
 
     const eaten = holes.some(h => Math.hypot(this.x - h.x, this.y - h.y) < h.horizon)
-    if (eaten || this.x < -140 || this.y < -160 || this.y > DESIGN_HEIGHT + 160) {
+
+    // Generous bounds so a bound orbit can swing wide and come back. The old
+    // box (x > -140, y within 160px of the board) destroyed exactly the rocks
+    // that were mid-orbit, which is why none were ever seen completing one.
+    const wayOut =
+      this.x < -ORBIT_MARGIN || this.x > DESIGN_WIDTH + ORBIT_MARGIN ||
+      this.y < -ORBIT_MARGIN || this.y > DESIGN_HEIGHT + ORBIT_MARGIN
+
+    // A rock that has been off the board a long time is not orbiting, it has
+    // left; recycle it so the field does not slowly empty.
+    const onBoard =
+      this.x > -40 && this.x < DESIGN_WIDTH + 40 &&
+      this.y > -40 && this.y < DESIGN_HEIGHT + 40
+    if (onBoard) this.offBoardFor = 0
+    else this.offBoardFor += dt
+
+    if (eaten || wayOut || this.offBoardFor > OFF_BOARD_GRACE) {
       this.reset(holes)
     }
   }

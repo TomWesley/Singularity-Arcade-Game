@@ -51,6 +51,36 @@ Two consequences worth knowing before you fly:
 Every ring drawn around a hole is one of these radii, not decoration. A pilot who
 learns to read them is learning orbital mechanics.
 
+### The board's speed limit
+
+Slingshots off a horizon could reach 18,000 px/s, which crosses the board in
+three frames. Speed is now capped at 1,500, enforced the way relativity does it:
+acceleration along the direction of travel is damped by `(1 - v²/c²)^(3/2)`
+while acceleration across it is untouched, so a body approaches the limit
+asymptotically instead of hitting a clamp. A hole can still whip a rock through
+a hairpin at full speed; it just cannot keep adding speed.
+
+Worth being straight that this is a house rule, not physics. The real speed of
+light carried through this game's length and time scales is **379 px per
+game-second** — and the craft fly at 470–610, so the game is comfortably
+superluminal in its own units and always has been. That falls out of wanting
+black holes big enough to read on a 1280px board *and* accelerations slow enough
+to fly; those two constraints pin the scale, and `c` lands where it lands.
+
+### Orbits
+
+Asteroids can orbit, and some complete several revolutions. What they cannot do
+is *fall into* orbit: a two-body gravitational encounter conserves specific
+orbital energy, so anything arriving unbound leaves unbound. Capture needs a
+third body or dissipation. About 41% of rocks spawn bound, and a level may seed
+a few directly onto near-circular orbits around a hole that sits well inside the
+board — `asteroids.orbiters` in the level JSON. Those are placed on an orbit,
+not captured into one; everything after the placement is the same integration as
+the rest of the field, free to precess, decay or be flung out.
+
+`npm run orbits` audits all of this: how many spawn bound, why rocks get
+recycled, and how far round a hole they get first.
+
 ### Integration
 
 Fixed 120 Hz timestep with an accumulator, integrated by semi-implicit
@@ -84,6 +114,10 @@ Asteroid tails are drawn from a recorded position history rather than
 extrapolated along the velocity vector, so a rock whipping past a hole trails a
 curve that matches the path it actually flew. Sampling at a fixed interval also
 makes the tail's length proportional to speed for free.
+
+Rocks are drawn in red only, ramped by speed from deep crimson at rest to hot
+ember at the board's limit. One hue varying continuously reads as a temperature
+map; two hues would read as categories.
 
 Each rock is built as two rings -- an outer hull and an inner ring pulled toward
 the middle -- triangulated into a rim band around a raised cap. That shoulder is

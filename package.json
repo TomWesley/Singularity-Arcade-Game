@@ -10,6 +10,7 @@
     "physics": "node tools/physics-report.mjs",
     "simulate": "node tools/simulate.mjs",
     "speeds": "node tools/asteroid-speeds.mjs",
+    "orbits": "node tools/orbit-audit.mjs",
     "vendor:engine": "rm -rf public/vendor/arcade-graphics-engine && mkdir -p public/vendor/arcade-graphics-engine && cp -r ../ArcadeGraphicsEngineAndLibrary/dist/. public/vendor/arcade-graphics-engine/ && find public/vendor/arcade-graphics-engine -type f \\( -name '*.cjs' -o -name '*.map' -o -name '*.d.ts' -o -name '*.d.cts' \\) -delete && echo 'Re-vendored arcade-graphics-engine from sibling checkout.'"
   },
   "keywords": [

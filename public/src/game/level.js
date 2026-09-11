@@ -14,8 +14,10 @@ export function buildLevel (spec) {
   const holes = spec.blackHoles.map(h => new BlackHole(h))
   const rng = makeRng(spec.seed ?? 1)
   const asteroids = []
-  for (let i = 0; i < (spec.asteroids?.count ?? 0); i++) {
-    asteroids.push(new Asteroid(rng, holes))
+  const total = spec.asteroids?.count ?? 0
+  const orbiters = Math.min(total, spec.asteroids?.orbiters ?? 0)
+  for (let i = 0; i < total; i++) {
+    asteroids.push(new Asteroid(rng, holes, i < orbiters))
   }
 
   return {

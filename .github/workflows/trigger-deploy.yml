@@ -3,7 +3,13 @@
 # poke that repo to rebuild and redeploy the arcade.
 #
 # Requires two repo secrets, APP_ID and APP_PRIVATE_KEY, for the same GitHub App
-# used by ReflectionsPhaser, with the app installed on WesleyArcadeSite.
+# ReflectionsPhaser uses, with the app installed on WesleyArcadeSite. Until those
+# exist the job skips with a notice rather than failing -- a red run on every
+# push emails the owner about a condition they already know about, and trains
+# them to ignore the one failure that eventually matters.
+#
+# Without the secrets, deploy by hand:
+#   gh workflow run "Deploy to Firebase Hosting" --repo TomWesley/WesleyArcadeSite
 name: Trigger Wesley Arcade Deploy
 
 on:
@@ -16,8 +22,23 @@ jobs:
   trigger-deploy:
     runs-on: ubuntu-latest
     steps:
+      # The secrets context is not available in a job-level `if`, so the check
+      # has to happen in a step and gate the rest.
+      - name: Check for deploy credentials
+        id: creds
+        env:
+          APP_ID: ${{ secrets.APP_ID }}
+        run: |
+          if [ -z "$APP_ID" ]; then
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "::notice title=Deploy trigger skipped::APP_ID and APP_PRIVATE_KEY are not set on this repo, so the arcade was not notified. Deploy manually with: gh workflow run \"Deploy to Firebase Hosting\" --repo TomWesley/WesleyArcadeSite"
+          else
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Generate GitHub App token
         id: app-token
+        if: steps.creds.outputs.configured == 'true'
         uses: actions/create-github-app-token@v3
         with:
           app-id: ${{ secrets.APP_ID }}
@@ -26,6 +47,7 @@ jobs:
           repositories: WesleyArcadeSite
 
       - name: Trigger WesleyArcadeSite deployment
+        if: steps.creds.outputs.configured == 'true'
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
         run: |

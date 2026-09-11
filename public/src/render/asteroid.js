@@ -13,32 +13,42 @@
 // speed for free -- distance covered per sample is speed -- so it stays a
 // truthful read-out of how fast a rock is closing.
 
-import { palette, rgbaToCss, withAlpha } from './theme.js'
+import { SYSTEM_SPEED_LIMIT } from '../game/physics.js'
 
 const MAX_TAIL = 62      // px; a long slingshot streak is capped here
-const FLUNG = 400        // px/s; past this a rock is a genuine problem
 
-let C = null
-function ensureColors () {
-  if (C) return
-  const cool = palette.tertiary.core
-  const hot = palette.danger.core
-  C = {
-    cool,
-    hot,
-    coolBody: rgbaToCss(withAlpha(cool, 0.92)),
-    hotBody: rgbaToCss(withAlpha(hot, 0.92)),
-    coolEdge: 'rgba(226, 244, 255, 0.95)',
-    hotEdge: 'rgba(255, 226, 232, 0.95)'
-  }
+// Red only. A field of embers rather than sci-fi debris: the colour says how
+// fast a rock is moving and nothing else, so the eye reads the board as one
+// continuous temperature map instead of a set of categories.
+//
+// Deep crimson at rest, brightening to hot ember at the speed limit. Ramping a
+// single hue by speed is what makes it hypnotic; two colours would make it
+// informational.
+const EMBER_COLD = [178, 36, 34]
+const EMBER_WARM = [236, 78, 48]
+const EMBER_HOT = [255, 150, 92]
+const SPECULAR = 'rgba(255, 226, 198, 0.72)'
+
+function ramp (a, b, k) {
+  return [
+    Math.round(a[0] + (b[0] - a[0]) * k),
+    Math.round(a[1] + (b[1] - a[1]) * k),
+    Math.round(a[2] + (b[2] - a[2]) * k)
+  ]
+}
+
+/** Ember colour for a given speed, 0 at rest through 1 at the board's limit. */
+function emberAt (k) {
+  return k < 0.5 ? ramp(EMBER_COLD, EMBER_WARM, k / 0.5)
+    : ramp(EMBER_WARM, EMBER_HOT, (k - 0.5) / 0.5)
 }
 
 export function drawAsteroid (ctx, a) {
-  ensureColors()
-
   const speed = Math.hypot(a.vx, a.vy)
-  const flung = speed > FLUNG
-  const rgb = flung ? C.hot : C.cool
+  // Normalised against the board's speed limit so the whole range of the ramp
+  // is actually reachable.
+  const heat = Math.min(1, Math.pow(speed / SYSTEM_SPEED_LIMIT, 0.42))
+  const rgb = emberAt(heat)
   const moving = speed > 1e-3
   const ux = moving ? a.vx / speed : Math.cos(a.spin)
   const uy = moving ? a.vy / speed : Math.sin(a.spin)
@@ -112,7 +122,7 @@ export function drawAsteroid (ctx, a) {
   ctx.stroke()
 
   // Hull outline.
-  ctx.strokeStyle = flung ? C.hotEdge : C.coolEdge
+  ctx.strokeStyle = `rgba(${Math.min(255, rgb[0] + 46)}, ${Math.min(255, rgb[1] + 38)}, ${Math.min(255, rgb[2] + 34)}, 0.95)`
   ctx.lineWidth = 1
   ctx.beginPath()
   ctx.moveTo(ox[0], oy[0])
@@ -124,7 +134,7 @@ export function drawAsteroid (ctx, a) {
   // the light. At these sizes it does more for the sense of a hard mineral
   // surface than any amount of extra geometry.
   const li = a.litIndex
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.78)'
+  ctx.strokeStyle = SPECULAR
   ctx.lineWidth = 1.2
   ctx.beginPath()
   ctx.moveTo(ox[(li - 1 + n) % n], oy[(li - 1 + n) % n])
@@ -200,7 +210,7 @@ function drawTail (ctx, a, rgb) {
 
   // Hot core along the first stretch of the path.
   const cg = ctx.createLinearGradient(a.x, a.y, tip.x, tip.y)
-  cg.addColorStop(0, `rgba(255, 255, 255, ${head * 0.85})`)
+  cg.addColorStop(0, `rgba(255, 214, 178, ${head * 0.8})`)
   cg.addColorStop(0.45, `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${head * 0.30})`)
   cg.addColorStop(1, `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0)`)
   ctx.strokeStyle = cg

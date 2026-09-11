@@ -155,15 +155,67 @@ export function steer (craft, x, y, vx, vy, targetX, targetY, out = { x: 0, y: 0
 }
 
 /**
+ * The board's own speed limit.
+ *
+ * Worth being straight about what this is and is not. The real speed of light,
+ * carried through this game's length and time scales, works out at 379 px per
+ * game-second -- and the craft already fly at 470 to 610, so the game is
+ * comfortably superluminal in its own units and has been all along. That falls
+ * out of wanting black holes big enough to read on a 1280px board *and*
+ * accelerations slow enough to fly; the two constraints pin the scale, and c
+ * lands where it lands.
+ *
+ * So this is a house rule, not physics: a ceiling that keeps a slingshot
+ * spectacular without letting a rock cross the board in three frames. It is
+ * enforced the way relativity would, though -- see below.
+ */
+export const SYSTEM_SPEED_LIMIT = 1500
+
+/**
  * Advance one body by dt using semi-implicit (symplectic) Euler: velocity is
  * updated first, then position uses the *new* velocity. Explicit Euler pumps
  * energy into an orbit and makes it spiral outward artificially; the
  * semi-implicit form conserves it well enough to hold a clean arc around a
  * hole, which is the entire feel the game is built on.
+ *
+ * With a speedLimit set, acceleration along the direction of travel is damped
+ * by (1 - v^2/c^2)^(3/2) while acceleration across it is left alone. That
+ * asymmetry is how relativity actually does it -- longitudinal inertia grows as
+ * gamma^3, transverse only as gamma -- and it means a body approaches the limit
+ * asymptotically instead of slamming into a clamp. A hole can still whip a rock
+ * through a hairpin at full speed; it just cannot keep adding speed.
  */
-export function integrate (body, ax, ay, dt, drag) {
+export function integrate (body, ax, ay, dt, drag, speedLimit = 0) {
+  if (speedLimit > 0) {
+    const v = Math.hypot(body.vx, body.vy)
+    if (v > 1e-6) {
+      const ux = body.vx / v
+      const uy = body.vy / v
+      let par = ax * ux + ay * uy
+      if (par > 0) {
+        const beta = Math.min(0.999999, v / speedLimit)
+        const damp = Math.pow(1 - beta * beta, 1.5)
+        const perpX = ax - par * ux
+        const perpY = ay - par * uy
+        par *= damp
+        ax = perpX + par * ux
+        ay = perpY + par * uy
+      }
+    }
+  }
+
   body.vx += ax * dt
   body.vy += ay * dt
+
+  // Numerical backstop: one very large step near a horizon can still overshoot
+  // what the damping would have allowed.
+  if (speedLimit > 0) {
+    const v = Math.hypot(body.vx, body.vy)
+    if (v > speedLimit) {
+      body.vx = (body.vx / v) * speedLimit
+      body.vy = (body.vy / v) * speedLimit
+    }
+  }
 
   if (drag) {
     const k = Math.exp(-drag * dt)   // frame-rate-independent decay
