@@ -29,7 +29,7 @@ export const CRAFTS = [
     responsiveness: 6.0,
     arrivalRadius: 90,
     hull: 12,
-    artScale: 1.15
+    artScale: 0.69
   },
   {
     id: 'psych-bike',
@@ -42,7 +42,7 @@ export const CRAFTS = [
     responsiveness: 7.5,
     arrivalRadius: 70,
     hull: 10,
-    artScale: 0.95
+    artScale: 0.57
   },
   {
     id: 'compiler',
@@ -55,7 +55,7 @@ export const CRAFTS = [
     responsiveness: 4.6,
     arrivalRadius: 120,
     hull: 14,
-    artScale: 0.6
+    artScale: 0.36
   },
   {
     id: 'voidwalker',
@@ -68,7 +68,7 @@ export const CRAFTS = [
     responsiveness: 6.4,
     arrivalRadius: 85,
     hull: 13,
-    artScale: 0.8
+    artScale: 0.48
   }
 ]
 

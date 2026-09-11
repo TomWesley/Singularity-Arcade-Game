@@ -94,10 +94,13 @@ export function drawCraftSelect (ctx, time, hoverIndex) {
     })
 
     // Live craft art, gently drifting so each card reads as a real ship.
+    // Card scale is deliberately decoupled from the in-flight size: artScale
+    // shrank so the craft sit right on the board, but a selection card exists
+    // to show the hull off.
     const cy = r.y + 82
     drawCraft(ctx, craft.id, r.x + r.width / 2, cy,
       -Math.PI / 2 + Math.sin(time * 1.1 + i) * 0.16,
-      hot ? 0.5 : 0, time, (hot ? 2.7 : 2.5) * craft.artScale)
+      hot ? 0.5 : 0, time, (hot ? 4.4 : 4.1) * craft.artScale)
 
     ctx.save()
     ctx.textAlign = 'center'
