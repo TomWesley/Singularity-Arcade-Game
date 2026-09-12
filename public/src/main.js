@@ -13,7 +13,7 @@ import { initTheme, ensureFonts } from './render/theme.js'
 import { Starfield } from './render/starfield.js'
 import { drawBlackHole } from './render/blackhole.js'
 import { drawAsteroid } from './render/asteroid.js'
-import { drawCraft } from './render/craft.js'
+import { drawCraft, drawCraftWake } from './render/craft.js'
 import { Impact } from './render/impact.js'
 import { drawHud } from './render/hud.js'
 import {
@@ -116,6 +116,9 @@ function render (alpha) {
       const heading = Math.atan2(game.body.vy, game.body.vx)
       const thrustMag = Math.min(1,
         Math.hypot(game.thrust.x, game.thrust.y) / (game.craft.thrust / game.craft.mass))
+      // Wake first, so the hull sits on top of its own exhaust.
+      drawCraftWake(ctx, game.wake, x, y, game.craft.id,
+        game.speed, game.craft.maxSpeed, game.craft.artScale)
       drawCraft(ctx, game.craft.id, x, y, heading, thrustMag, time, game.craft.artScale)
     }
 

@@ -14,6 +14,14 @@ export const STATE = {
 }
 
 const START_LIVES = 3
+
+// The craft's wake is drawn from recorded positions, the same way the asteroid
+// tails are. Sampling on a fixed interval means the wake's length is
+// proportional to speed for free -- distance covered per sample is speed -- and
+// it follows the flight path, so a slingshot leaves a curved wake rather than a
+// straight one bolted to the tail.
+export const WAKE_INTERVAL = 1 / 60
+const WAKE_POINTS = 16
 const RESPAWN_SECONDS = 1.6
 const COMPLETE_SECONDS = 2.2
 
@@ -32,6 +40,8 @@ export class Game {
     // fixed steps instead of snapping.
     this.body = { x: 0, y: 0, vx: 0, vy: 0 }
     this.prev = { x: 0, y: 0 }
+    this.wake = []          // newest first
+    this.wakeClock = 0
 
     // Diagnostics the HUD reads.
     this.gravity = { x: 0, y: 0 }
@@ -67,6 +77,9 @@ export class Game {
     this.target.x = this.level.spawn.x + 60
     this.target.y = this.level.spawn.y
     this.phaseTime = 0
+    // A fresh craft must not inherit the last one's wake.
+    this.wake.length = 0
+    this.wakeClock = 0
   }
 
   restart () {
@@ -143,6 +156,13 @@ export class Game {
     if (this.body.x > DESIGN_WIDTH - r) { this.body.x = DESIGN_WIDTH - r; this.body.vx = -Math.abs(this.body.vx) * 0.25 }
     if (this.body.y < r) { this.body.y = r; this.body.vy = Math.abs(this.body.vy) * 0.25 }
     if (this.body.y > DESIGN_HEIGHT - r) { this.body.y = DESIGN_HEIGHT - r; this.body.vy = -Math.abs(this.body.vy) * 0.25 }
+
+    this.wakeClock += dt
+    if (this.wakeClock >= WAKE_INTERVAL) {
+      this.wakeClock -= WAKE_INTERVAL
+      this.wake.unshift({ x: this.body.x, y: this.body.y })
+      if (this.wake.length > WAKE_POINTS) this.wake.pop()
+    }
 
     this.speed = Math.hypot(this.body.vx, this.body.vy)
     this.gForce = Math.hypot(this.gravity.x, this.gravity.y)

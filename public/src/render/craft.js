@@ -22,11 +22,22 @@
 const LEN = 4
 const WID = LEN * 6
 
-const SUPERBUG_ORANGE = [255, 120, 0]
+// Every hull is two-tone: one colour carries the mass, the other picks out the
+// structure. That contrast is most of what made the originals readable at 24px.
+//
+// Superbug and Voidwalker were already two-tone in 2019. The Psych Bike was
+// pink alone and the Compiler declared a second colour it never drew
+// (`colorOne = color(0, 255)`), so those two get a partner here. The Psych
+// Bike's blue is not invented -- it is (135, 175, 255), the colour the 2019
+// build used for its asteroids, so it comes from the game's own palette.
 const SUPERBUG_YELLOW = [255, 240, 0]
+const SUPERBUG_ORANGE = [255, 120, 0]
 const PSYCH_PINK = [255, 174, 204]
+const PSYCH_BLUE = [135, 175, 255]
 const COMPILER_GREEN = [80, 230, 130]
+const COMPILER_SLATE = [34, 78, 68]
 const VOIDWALKER_PURPLE = [100, 14, 237]
+const VOIDWALKER_SILVER = [226, 232, 255]
 const WHITE = [255, 255, 255]
 
 const rgba = (c, a = 1) => `rgba(${c[0]}, ${c[1]}, ${c[2]}, ${a})`
@@ -39,11 +50,12 @@ function lift (c, t) {
   ]
 }
 
+/** [mass tone, accent tone] per hull -- drives the wreck debris and the wake. */
 export const CRAFT_COLORS = {
   superbug: [SUPERBUG_YELLOW, SUPERBUG_ORANGE],
-  'psych-bike': [PSYCH_PINK, [255, 255, 255]],
-  compiler: [COMPILER_GREEN, [200, 255, 220]],
-  voidwalker: [VOIDWALKER_PURPLE, WHITE]
+  'psych-bike': [PSYCH_PINK, PSYCH_BLUE],
+  compiler: [COMPILER_GREEN, [170, 255, 205]],
+  voidwalker: [VOIDWALKER_PURPLE, VOIDWALKER_SILVER]
 }
 
 /**
@@ -169,7 +181,7 @@ function drawPsychBike (ctx, thrustMag, time) {
   ctx.lineTo(15.4, 1.0)
   ctx.bezierCurveTo(6, 3.2, -6, 3.2, -15.4, 1.0)
   ctx.closePath()
-  shell(ctx, PSYCH_PINK, -3.2, 3.2, { blur: 6, width: 0.8, deep: 0.5 })
+  shell(ctx, PSYCH_BLUE, -3.2, 3.2, { blur: 7, width: 0.8, deep: 0.5 })
 
   // Frames: endpoints at x = +-24, bowing in to +-12 at the waist, exactly the
   // original spline; the outer edge swells away from centre to give it body.
@@ -183,13 +195,13 @@ function drawPsychBike (ctx, thrustMag, time) {
   ctx.arc(0, 0, 6.4, 0, Math.PI * 2)
   const core = ctx.createRadialGradient(-1.6, -1.6, 0.5, 0, 0, 6.4)
   core.addColorStop(0, rgba([255, 255, 255], 0.98))
-  core.addColorStop(0.55, rgba(lift(PSYCH_PINK, 0.25), 0.95))
-  core.addColorStop(1, rgba(PSYCH_PINK, 0.62))
+  core.addColorStop(0.5, rgba(lift(PSYCH_BLUE, 0.3), 0.96))
+  core.addColorStop(1, rgba(PSYCH_BLUE, 0.72))
   ctx.fillStyle = core
   ctx.fill()
-  ctx.strokeStyle = rgba(lift(PSYCH_PINK, 0.5), 0.95)
+  ctx.strokeStyle = rgba(lift(PSYCH_BLUE, 0.45), 0.98)
   ctx.lineWidth = 1
-  ctx.shadowColor = rgba(PSYCH_PINK, 0.95)
+  ctx.shadowColor = rgba(PSYCH_BLUE, 0.95)
   ctx.shadowBlur = 13
   ctx.stroke()
   ctx.shadowBlur = 0
@@ -230,7 +242,20 @@ function drawCompiler (ctx, thrustMag, time) {
   ctx.bezierCurveTo(-3.8, 11.8, -5.5, 5.4, -5.4, -2.0)
   ctx.bezierCurveTo(-5.2, -9.6, -3.6, -14.8, 0, -16.4)
   ctx.closePath()
-  shell(ctx, COMPILER_GREEN, -16.4, 16.6, { blur: 9, width: 1 })
+  // The dark half of the pair -- filled slate, rimmed in the bright green so
+  // the silhouette still reads against a black field.
+  const hull = ctx.createLinearGradient(0, -16.4, 0, 16.6)
+  hull.addColorStop(0, rgba([70, 128, 110], 0.98))
+  hull.addColorStop(0.55, rgba(COMPILER_SLATE, 0.98))
+  hull.addColorStop(1, rgba([18, 44, 38], 0.98))
+  ctx.fillStyle = hull
+  ctx.fill()
+  ctx.strokeStyle = rgba(lift(COMPILER_GREEN, 0.35), 0.95)
+  ctx.lineWidth = 1.1
+  ctx.shadowColor = rgba(COMPILER_GREEN, 0.8)
+  ctx.shadowBlur = 9
+  ctx.stroke()
+  ctx.shadowBlur = 0
 
   // Dome.
   ctx.beginPath()
@@ -307,7 +332,7 @@ function drawVoidwalker (ctx, thrustMag, time) {
   ctx.lineTo(-2.6, -12)
   ctx.bezierCurveTo(-2.6, -16, -2, -18.2, 0, -19)
   ctx.closePath()
-  shell(ctx, VOIDWALKER_PURPLE, -19, 18, { blur: 5, width: 0.7, deep: 0.62 })
+  shell(ctx, VOIDWALKER_SILVER, -19, 18, { blur: 7, width: 0.7, deep: 0.55 })
 
   // The two white sensor blocks.
   ctx.fillStyle = rgba(WHITE, 0.97)
@@ -315,5 +340,98 @@ function drawVoidwalker (ctx, thrustMag, time) {
   ctx.shadowBlur = 9
   ctx.fillRect(-1.9, -7.4, 3.8, 3.8)
   ctx.fillRect(-1.9, 8.6, 3.8, 3.8)
+  ctx.shadowBlur = 0
+}
+
+// ── Engine wake ─────────────────────────────────────────────────────────────
+//
+// A tapered ribbon along the craft's recorded path, in its two tones: the mass
+// colour on the outside, the accent burning through the middle. Because the
+// positions are sampled on a fixed interval, the ribbon is automatically longer
+// the faster the craft is travelling, and it curves through a slingshot exactly
+// as the flight path does.
+//
+// Deliberately not huge. The wake is there to make speed legible and to leave a
+// trace of the line you flew; the moment it is wide enough to obscure a black
+// hole it has stopped helping.
+
+const WAKE_MAX = 118         // px, the longest the ribbon is allowed to run
+// Half-width at the nozzle, in design pixels rather than craft units. Scaling
+// this by artScale (0.36-0.69) made every wake a hairline -- the ribbon wants a
+// size of its own, only loosely tied to how big the hull is.
+const WAKE_FLARE = 5.4
+
+export function drawCraftWake (ctx, wake, headX, headY, craftId, speed, maxSpeed, scale = 1) {
+  if (!wake || wake.length < 2) return
+
+  const [mass, accent] = CRAFT_COLORS[craftId] ?? CRAFT_COLORS.superbug
+  const heat = Math.min(1, speed / Math.max(1, maxSpeed))
+
+  const left = []
+  const right = []
+  let travelled = 0
+  let prevX = headX
+  let prevY = headY
+  let count = 0
+
+  for (let i = 0; i < wake.length; i++) {
+    const p = wake[i]
+    const seg = Math.hypot(p.x - prevX, p.y - prevY)
+    if (seg > 220) break                    // respawn teleport; never span it
+    travelled += seg
+    if (travelled > WAKE_MAX) break
+
+    const nx = i + 1 < wake.length ? wake[i + 1].x : p.x
+    const ny = i + 1 < wake.length ? wake[i + 1].y : p.y
+    let tx = nx - prevX
+    let ty = ny - prevY
+    const tl = Math.hypot(tx, ty)
+    if (tl < 1e-5) { prevX = p.x; prevY = p.y; continue }
+    tx /= tl; ty /= tl
+
+    // Quadratic taper: broad at the nozzle, needle-thin at the tip.
+    const k = 1 - travelled / WAKE_MAX
+    const w = WAKE_FLARE * (0.62 + 0.38 * scale) * k * k * (0.45 + heat * 0.85)
+    left.push([p.x - ty * w, p.y + tx * w])
+    right.push([p.x + ty * w, p.y - tx * w])
+
+    prevX = p.x
+    prevY = p.y
+    count++
+  }
+  if (count < 2) return
+
+  const tip = wake[Math.min(count, wake.length - 1)]
+  const alpha = 0.26 + heat * 0.54
+
+  // Outer ribbon in the hull's mass colour.
+  const g = ctx.createLinearGradient(headX, headY, tip.x, tip.y)
+  g.addColorStop(0, rgba(lift(mass, 0.25), alpha))
+  g.addColorStop(0.3, rgba(mass, alpha * 0.62))
+  g.addColorStop(0.7, rgba(mass, alpha * 0.22))
+  g.addColorStop(1, rgba(mass, 0))
+  ctx.beginPath()
+  ctx.moveTo(headX, headY)
+  for (const [x, y] of left) ctx.lineTo(x, y)
+  for (let i = right.length - 1; i >= 0; i--) ctx.lineTo(right[i][0], right[i][1])
+  ctx.closePath()
+  ctx.fillStyle = g
+  ctx.fill()
+
+  // Accent core burning down the middle of it.
+  const cg = ctx.createLinearGradient(headX, headY, tip.x, tip.y)
+  cg.addColorStop(0, rgba(lift(accent, 0.6), 0.5 + heat * 0.48))
+  cg.addColorStop(0.35, rgba(accent, 0.3 + heat * 0.45))
+  cg.addColorStop(1, rgba(accent, 0))
+  ctx.strokeStyle = cg
+  ctx.lineWidth = Math.max(1.2, WAKE_FLARE * 0.5 * (0.6 + heat * 0.7))
+  ctx.lineCap = 'round'
+  ctx.lineJoin = 'round'
+  ctx.shadowColor = rgba(accent, 0.5 + heat * 0.4)
+  ctx.shadowBlur = 9 + heat * 14
+  ctx.beginPath()
+  ctx.moveTo(headX, headY)
+  for (let i = 0; i < count; i++) ctx.lineTo(wake[i].x, wake[i].y)
+  ctx.stroke()
   ctx.shadowBlur = 0
 }
