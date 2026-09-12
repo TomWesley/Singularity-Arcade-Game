@@ -1,7 +1,7 @@
 // Simulation entities. Rendering lives in src/render -- these carry state and
 // the rules that move it, nothing about how any of it looks.
 
-import { blackHoleGeometry, gravityAt, integrate, circularOrbitSpeed, SYSTEM_SPEED_LIMIT } from './physics.js'
+import { blackHoleGeometry, gravityAt, integrate, apoapsisSpeed, SYSTEM_SPEED_LIMIT } from './physics.js'
 import { makeRng, randRange } from '../core/rng.js'
 import { DESIGN_WIDTH, DESIGN_HEIGHT } from '../core/viewport.js'
 
@@ -65,7 +65,7 @@ const TRAIL_POINTS = 14
 // How far past the board a rock may travel before it counts as gone rather than
 // mid-orbit, and how long it may stay out there.
 const ORBIT_MARGIN = 900
-const OFF_BOARD_GRACE = 14
+const OFF_BOARD_GRACE = 22
 
 export class Asteroid {
   /**
@@ -104,26 +104,88 @@ export class Asteroid {
     this.reset(holes, true)
   }
 
-  // Holes far enough inside the board that an orbit around them is actually
-  // watchable rather than spending half its path off-screen.
-  static visibleHosts (holes) {
-    return holes.filter(h =>
-      h.homeX > h.isco * 1.1 && h.homeX < DESIGN_WIDTH - h.isco * 1.1 &&
-      h.homeY > h.isco * 1.1 && h.homeY < DESIGN_HEIGHT - h.isco * 1.1)
-  }
-
-  // Spawns off the right edge heading left, avoiding a birth inside a hole.
+  // Spawns from above the top edge or below the bottom edge, always off-screen.
+  //
+  // Two rules drive this. Nothing may appear inside the board -- debris blinking
+  // into existence in front of the player is not a hazard, it is a cheat. And
+  // nothing arrives from the right, because the gate sits on the right edge and
+  // a rock entering there closes on a player who is looking the other way at the
+  // exact moment they have committed to the run. Coming down from above or up
+  // from below, everything is visible for the length of its approach.
   reset (holes, initial = false) {
     const rng = this.rng
     this.radius = randRange(rng, 3.4, 6.9)
     this.spin = randRange(rng, 0, Math.PI * 2)
     this.spinRate = randRange(rng, -1.4, 1.4)
-    // A recycled rock must not drag its old trail across the board.
     this.trail.length = 0
     this.trailClock = 0
     this.age = 0
     this.offBoardFor = 0
 
+    this.buildBody(rng)
+
+    // Entry point: off the top or the bottom, anywhere across a span a little
+    // wider than the board so rocks also drift in from the upper corners.
+    const fromTop = rng() > 0.5
+    this.x = randRange(rng, -DESIGN_WIDTH * 0.08, DESIGN_WIDTH * 1.08)
+    this.y = fromTop
+      ? -randRange(rng, 60, 240)
+      : DESIGN_HEIGHT + randRange(rng, 60, 240)
+
+    if (this.orbiter && this.seedBoundEntry(rng, holes, fromTop)) return
+
+    // Ordinary debris: crosses the board, with enough lateral drift that the
+    // field does not read as rain.
+    const inward = fromTop ? 1 : -1
+    this.vy = inward * randRange(rng, 55, 150)
+    this.vx = randRange(rng, -120, 60)
+  }
+
+  /**
+   * Gives this rock an entry velocity that puts it on a bound ellipse around one
+   * of the holes, with periapsis inside the board.
+   *
+   * A hole cannot capture anything on its own -- specific orbital energy is
+   * conserved, so a rock arriving unbound leaves unbound, which is why none of
+   * them ever settled no matter how many entry angles were tried. Arriving
+   * already bound is a different matter, and costs nothing in realism: the rock
+   * still enters from off-screen under its own momentum and every step after
+   * that is the same integration as the rest of the field.
+   *
+   * @returns true if a bound entry was found
+   */
+  seedBoundEntry (rng, holes, fromTop) {
+    // Prefer a hole on the half of the board the rock is entering from, so the
+    // ellipse actually reaches the well rather than skimming past it.
+    const candidates = holes.filter(h =>
+      fromTop ? h.homeY < DESIGN_HEIGHT * 0.62 : h.homeY > DESIGN_HEIGHT * 0.38)
+    const pool = candidates.length ? candidates : holes
+    const host = pool[Math.floor(rng() * pool.length)]
+
+    const dx = host.x - this.x
+    const dy = host.y - this.y
+    const rApo = Math.hypot(dx, dy)
+    if (rApo < host.isco * 1.6) return false
+
+    // Periapsis outside the ISCO, so the rock swings through rather than
+    // spiralling straight in on its first pass.
+    const rPeri = Math.min(rApo * 0.42, Math.max(host.isco * 1.2, host.isco * randRange(rng, 1.2, 2.4)))
+    if (rPeri >= rApo * 0.92) return false
+
+    const v = apoapsisSpeed(host, rApo, rPeri)
+    if (!Number.isFinite(v) || v <= 0) return false
+
+    // Purely tangential at apoapsis, direction chosen at random.
+    const ux = dx / rApo
+    const uy = dy / rApo
+    const dir = rng() > 0.5 ? 1 : -1
+    this.vx = -uy * v * dir
+    this.vy = ux * v * dir
+    return true
+  }
+
+  /** Generates this rock's silhouette, inner ring and per-face shading. */
+  buildBody (rng) {
     // Silhouette and surface.
     //
     // The body is built as two rings rather than one outline: an outer hull and
@@ -190,35 +252,6 @@ export class Asteroid {
       const d = Math.cos(v.a) * LX + Math.sin(v.a) * LY
       if (d > bestDot) { bestDot = d; this.litIndex = i }
     }
-
-    const hosts = this.orbiter ? Asteroid.visibleHosts(holes) : []
-    if (hosts.length) {
-      const host = hosts[Math.floor(rng() * hosts.length)]
-      // Outside the ISCO, because inside it no circular orbit is stable and the
-      // rock would simply spiral in without ever completing a revolution.
-      const r = host.isco * randRange(rng, 1.25, 2.6)
-      const a = randRange(rng, 0, Math.PI * 2)
-      this.x = host.x + Math.cos(a) * r
-      this.y = host.y + Math.sin(a) * r
-      // Slightly off circular so orbits are ellipses of varying eccentricity
-      // rather than a set of identical rings.
-      const v = circularOrbitSpeed(host, r) * randRange(rng, 0.88, 1.08)
-      const dir = rng() > 0.5 ? 1 : -1
-      this.vx = Math.cos(a + dir * Math.PI / 2) * v
-      this.vy = Math.sin(a + dir * Math.PI / 2) * v
-      return
-    }
-
-    for (let attempt = 0; attempt < 12; attempt++) {
-      this.x = initial && attempt === 0
-        ? randRange(rng, DESIGN_WIDTH * 0.35, DESIGN_WIDTH)
-        : DESIGN_WIDTH + randRange(rng, 20, 220)
-      this.y = randRange(rng, -40, DESIGN_HEIGHT + 40)
-      if (!holes.some(h => Math.hypot(this.x - h.x, this.y - h.y) < h.isco)) break
-    }
-
-    this.vx = randRange(rng, -190, -70)
-    this.vy = randRange(rng, -45, 45)
   }
 
   update (dt, holes, accel) {

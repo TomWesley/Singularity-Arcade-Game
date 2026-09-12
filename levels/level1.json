@@ -35,8 +35,8 @@
     }
   ],
   "asteroids": {
-    "count": 15,
-    "orbiters": 5
+    "count": 34,
+    "orbiters": 6
   },
   "gate": {
     "x": 1.0,

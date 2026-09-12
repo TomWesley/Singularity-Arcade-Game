@@ -242,6 +242,29 @@ export function escapeLimit (hole, craft) {
   return hole.horizon + Math.sqrt(hole.mu / (craft.thrust / craft.mass))
 }
 
+/**
+ * Speed at apoapsis for an ellipse with the given apoapsis and periapsis, under
+ * the Paczynski-Wiita potential.
+ *
+ * Derived from the two conserved quantities rather than assumed: specific energy
+ * E = v^2/2 - mu/(r - r_s) and angular momentum L = r*v, both evaluated at the
+ * two apsides where velocity is purely tangential, then solved for v_a.
+ *
+ * This is what lets a rock enter the board already on a bound orbit. Nothing can
+ * be *captured* into orbit by a single hole -- energy is conserved, so arriving
+ * unbound means leaving unbound -- but arriving already bound is perfectly
+ * legitimate, and it is how a rock can come in from off-screen and then stay.
+ */
+export function apoapsisSpeed (hole, rApo, rPeri) {
+  const ga = rApo - hole.horizon
+  const gp = rPeri - hole.horizon
+  if (gp <= 0 || rPeri >= rApo) return NaN
+  const num = 2 * hole.mu * (1 / ga - 1 / gp)
+  const den = 1 - (rApo * rApo) / (rPeri * rPeri)
+  const v2 = num / den
+  return v2 > 0 ? Math.sqrt(v2) : NaN
+}
+
 /** Orbital speed for a circular orbit of radius r under Paczynski-Wiita. */
 export function circularOrbitSpeed (hole, r) {
   const gap = r - hole.horizon

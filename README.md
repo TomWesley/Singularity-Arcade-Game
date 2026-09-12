@@ -78,6 +78,12 @@ board — `asteroids.orbiters` in the level JSON. Those are placed on an orbit,
 not captured into one; everything after the placement is the same integration as
 the rest of the field, free to precess, decay or be flung out.
 
+Asteroids enter only from above the top edge or below the bottom edge, always
+off-screen. Nothing appears inside the board, and nothing arrives from the right,
+where the gate is -- a rock entering there closes on a player who is looking the
+other way at the moment they have committed to the run. `npm run spawns` enforces
+both rules.
+
 `npm run orbits` audits all of this: how many spawn bound, why rocks get
 recycled, and how far round a hole they get first.
 
