@@ -78,6 +78,13 @@ board — `asteroids.orbiters` in the level JSON. Those are placed on an orbit,
 not captured into one; everything after the placement is the same integration as
 the rest of the field, free to precess, decay or be flung out.
 
+A life opens on a clear board. Every rock is re-entered from off-screen at the
+moment play begins, so the first wave arrives together rather than the player
+inheriting whatever the last life left mid-flight. Because nothing spawns
+on-screen, the wave takes about a second to fly in — that pause is the point,
+not a side effect: it is the beat where a pilot picks a line before anything is
+in the way. The field is also emptied while a wreck is playing out.
+
 Asteroids enter only from above the top edge or below the bottom edge, always
 off-screen. Nothing appears inside the board, and nothing arrives from the right,
 where the gate is -- a rock entering there closes on a player who is looking the

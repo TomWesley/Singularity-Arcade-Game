@@ -63,7 +63,36 @@ export class Game {
     this.lives = START_LIVES
     this.runTime = 0
     this.respawn()
+    this.beginRound()
+  }
+
+  /**
+   * Starts a life on a clear board.
+   *
+   * Every rock is re-entered from off-screen at the same moment, so the run
+   * opens on an empty field and the first wave arrives together rather than the
+   * player inheriting whatever the last life left mid-flight. Because nothing
+   * spawns on-screen, the wave takes a second or so to fly in -- that pause is
+   * the point, not a side effect: it is the beat where a pilot picks a line
+   * before anything is shooting at them.
+   */
+  beginRound () {
+    if (this.level) {
+      for (const a of this.level.asteroids) {
+        a.reset(this.level.holes)
+        a.active = true
+      }
+    }
     this.state = STATE.PLAYING
+  }
+
+  /** Empties the field. The board should be bare while a wreck is on screen. */
+  clearField () {
+    if (!this.level) return
+    for (const a of this.level.asteroids) {
+      a.active = false
+      a.trail.length = 0
+    }
   }
 
   respawn () {
@@ -96,7 +125,9 @@ export class Game {
     // Holes and asteroids keep moving on every screen -- the menus are played
     // over a live simulation, which is most of why the title screen feels alive.
     for (const h of this.level.holes) h.update(dt, this.elapsed)
-    for (const a of this.level.asteroids) a.update(dt, this.level.holes, this._accel)
+    for (const a of this.level.asteroids) {
+      if (a.active) a.update(dt, this.level.holes, this._accel)
+    }
 
     switch (this.state) {
       case STATE.PLAYING:
@@ -107,7 +138,7 @@ export class Game {
         if (this.phaseTime >= RESPAWN_SECONDS) {
           if (this.lives > 0) {
             this.respawn()
-            this.state = STATE.PLAYING
+            this.beginRound()
           } else {
             this.state = STATE.GAME_OVER
           }
@@ -195,6 +226,7 @@ export class Game {
       }
     }
     for (const a of this.level.asteroids) {
+      if (!a.active) continue
       if (Math.hypot(this.body.x - a.x, this.body.y - a.y) < a.radius + this.craft.hull * 0.5) {
         this.loseCraft('IMPACT', null)
         return true
@@ -207,6 +239,8 @@ export class Game {
   // can be thrown from where the craft actually was, along the line it was
   // actually travelling.
   loseCraft (cause, hole) {
+    // The field goes with the craft: the wreck should play out against nothing.
+    this.clearField()
     this.lives -= 1
     this.lossCause = cause
     this.lossHole = hole

@@ -158,3 +158,44 @@ if (errors.length) process.exit(1)
   console.log(problems.length ? '  FAILED: ' + problems.join('; ') : '  Both deaths behave as intended.')
   if (problems.length) process.exit(1)
 }
+
+// ── Round start ─────────────────────────────────────────────────────────────
+// A life must open on a clear board: no rock visible at the instant play
+// resumes, the first wave arriving together a moment later. Easy to regress by
+// forgetting to clear the field on one of the two paths into PLAYING.
+{
+  const lvl = buildLevel(spec)
+  const game = new Game()
+  game.setLevel(lvl)
+  game.selectCraft(CRAFTS[0])
+
+  const visible = () => game.level.asteroids.filter(a =>
+    a.active && a.x > 0 && a.x < 1280 && a.y > 0 && a.y < 720).length
+
+  const atStart = visible()
+  const counts = []
+  for (let i = 0; i <= 240; i++) {
+    if (i % 60 === 0) counts.push(`${(i / 120).toFixed(1)}s:${visible()}`)
+    game.update(1 / 120, { x: 640, y: 360 })
+    if (game.state !== STATE.PLAYING) break
+  }
+
+  // And again after losing a craft.
+  const g2 = new Game()
+  g2.setLevel(buildLevel(spec))
+  g2.selectCraft(CRAFTS[0])
+  for (let i = 0; i < 400; i++) g2.update(1 / 120, { x: 640, y: 360 })
+  g2.loseCraft('IMPACT', null)
+  const duringWreck = g2.level.asteroids.filter(a => a.active).length
+
+  console.log('\nRound start:')
+  console.log(`  visible rocks at the instant play begins: ${atStart}`)
+  console.log(`  wave filling in: ${counts.join('  ')}`)
+  console.log(`  active rocks while a wreck is on screen: ${duringWreck}`)
+
+  const problems = []
+  if (atStart !== 0) problems.push(`${atStart} rocks already on screen at round start`)
+  if (duringWreck !== 0) problems.push(`${duringWreck} rocks still active during the wreck`)
+  console.log(problems.length ? '  FAILED: ' + problems.join('; ') : '  Board opens clear and fills.')
+  if (problems.length) process.exit(1)
+}

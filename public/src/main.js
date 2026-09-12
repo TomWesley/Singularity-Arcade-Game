@@ -101,7 +101,7 @@ function render (alpha) {
   if (game.level) {
     drawGate(ctx, game.level.gate, time)
 
-    for (const a of game.level.asteroids) drawAsteroid(ctx, a)
+    for (const a of game.level.asteroids) if (a.active) drawAsteroid(ctx, a)
 
     const flying = game.state === STATE.PLAYING || game.state === STATE.LOST
     const activeCraft = flying ? game.craft : null

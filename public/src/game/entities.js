@@ -101,6 +101,9 @@ export class Asteroid {
     this.trailClock = 0
     this.age = 0
     this.offBoardFor = 0
+    // Inactive rocks are neither simulated nor drawn. The field is emptied
+    // between lives so a run always opens on a clear board.
+    this.active = true
     this.reset(holes, true)
   }
 
