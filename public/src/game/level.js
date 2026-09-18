@@ -1,4 +1,4 @@
-import { BlackHole, Asteroid, Gate } from './entities.js'
+import { BlackHole, Star, Asteroid, Gate } from './entities.js'
 import { makeRng } from '../core/rng.js'
 import { DESIGN_WIDTH, DESIGN_HEIGHT } from '../core/viewport.js'
 
@@ -11,7 +11,14 @@ export async function loadLevel (name) {
 // Split from loadLevel so the balance simulator can build a level from parsed
 // JSON without a network stack.
 export function buildLevel (spec) {
-  const holes = spec.blackHoles.map(h => new BlackHole(h))
+  // Stars and black holes share one list: every consumer of it -- the gravity
+  // sum, collision, the asteroid recycler, the orbit seeder -- cares only that a
+  // thing has mu, a horizon and a lethal radius, and both satisfy that. Keeping
+  // them separate would mean four places remembering to check two lists.
+  const holes = [
+    ...(spec.blackHoles ?? []).map(h => new BlackHole(h)),
+    ...(spec.stars ?? []).map(s => new Star(s))
+  ]
   const rng = makeRng(spec.seed ?? 1)
   const asteroids = []
   const total = spec.asteroids?.count ?? 0
@@ -26,6 +33,8 @@ export function buildLevel (spec) {
     name: spec.name,
     subtitle: spec.subtitle ?? '',
     holes,
+    stars: holes.filter(h => h instanceof Star),
+    blackHoles: holes.filter(h => h instanceof BlackHole),
     asteroids,
     gate: new Gate(spec.gate),
     spawn: {

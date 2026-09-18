@@ -39,6 +39,51 @@ export function schwarzschildRadiusMeters (massKg) {
 }
 
 /**
+ * Standard gravitational parameter mu = GM, pre-scaled so that
+ *
+ *     a_pixels_per_gamesecond^2 = mu / gap^2
+ *
+ * which folds the metres-per-pixel and seconds-per-game-second conversions into
+ * one multiply on the hot path. Shared by every attractor -- a star and a black
+ * hole of equal mass pull identically at equal distance, which is exactly right.
+ */
+function gravitationalParameter (solarMasses) {
+  const gm = G * solarMasses * SOLAR_MASS
+  return (gm * SECONDS_PER_GAME_SECOND * SECONDS_PER_GAME_SECOND) /
+         (METERS_PER_PIXEL * METERS_PER_PIXEL * METERS_PER_PIXEL)
+}
+
+/**
+ * A star: mass you cannot get close to.
+ *
+ * Same Newtonian law and the same mu as a black hole of equal mass -- gravity
+ * does not care what the mass is made of. What differs is that a star has a
+ * surface. Its pull is gentler *in play* purely because you can never get within
+ * its radius, and 1/r^2 has not had room to climb by the time you are stopped.
+ * A 20-solar-mass hole lets you to within 80px of its centre; a 20-solar-mass
+ * star stops you at its photosphere, where the field is a fraction of that.
+ *
+ * There is no horizon term. Paczynski-Wiita corrects Newton near an event
+ * horizon; a star has none, so the plain inverse square is the right law and the
+ * correction would be wrong.
+ *
+ * One honest compromise: stellar radii are not to scale, and cannot be. The
+ * length scale here is pinned by black hole horizons at 4px per solar mass,
+ * which puts the Sun's photosphere about 940,000px across. A board cannot show a
+ * 30km horizon and a 700,000km surface at once, so a star's radius is authored.
+ * Its mass, and therefore its pull, stays real.
+ */
+export function starGeometry (solarMasses, radiusPx) {
+  return {
+    solarMasses,
+    mu: gravitationalParameter(solarMasses),
+    radius: radiusPx,
+    horizon: 0,                    // no event horizon; pure inverse square
+    soften: radiusPx * 0.4         // only ever reached inside the surface
+  }
+}
+
+/**
  * Everything a black hole's geometry needs, derived from one number: its mass.
  * Radii come back in design pixels; `mu` is pre-scaled so that
  *
@@ -55,14 +100,13 @@ export function blackHoleGeometry (solarMasses) {
   // GM in SI, then converted: metres/s^2 -> pixels/gamesecond^2 is
   // (1/METERS_PER_PIXEL) * SECONDS_PER_GAME_SECOND^2, and the r^2 in the
   // denominator contributes another METERS_PER_PIXEL^2.
-  const gm = G * massKg
-  const mu = (gm * SECONDS_PER_GAME_SECOND * SECONDS_PER_GAME_SECOND) /
-             (METERS_PER_PIXEL * METERS_PER_PIXEL * METERS_PER_PIXEL)
+  const mu = gravitationalParameter(solarMasses)
 
   return {
     solarMasses,
     massKg,
     mu,
+    soften: rs * 0.02,
     /** Event horizon. Cross it and you are gone. */
     horizon: rs,
     /** Photon sphere, 1.5 r_s -- where light itself orbits. */
@@ -94,11 +138,11 @@ export function gravityAt (x, y, holes, out = { x: 0, y: 0 }) {
     const dy = h.y - y
     const r = Math.hypot(dx, dy)
 
-    // Paczynski-Wiita denominator. Inside the horizon the potential is
-    // undefined; the craft is already lost there, so we pin the gap to a small
-    // positive value purely so the number stays finite for the frame in which
-    // the collision is detected.
-    const gap = Math.max(r - h.horizon, h.horizon * 0.02)
+    // Paczynski-Wiita denominator for a black hole; for a star horizon is zero
+    // and this reduces to the plain Newtonian r. Either way the gap is floored
+    // at the body's own softening length so the number stays finite in the frame
+    // where a collision is detected.
+    const gap = Math.max(r - h.horizon, h.soften)
     const pull = h.mu / (gap * gap)
 
     // Unit vector toward the hole. Guard r = 0 exactly.

@@ -34,6 +34,22 @@
       }
     }
   ],
+  "stars": [
+    {
+      "x": 0.5,
+      "y": 0.13,
+      "solarMasses": 14,
+      "radius": 0.085,
+      "kind": "red-giant"
+    },
+    {
+      "x": 0.845,
+      "y": 0.8,
+      "solarMasses": 2.4,
+      "radius": 0.022,
+      "kind": "white-dwarf"
+    }
+  ],
   "asteroids": {
     "count": 34,
     "orbiters": 6

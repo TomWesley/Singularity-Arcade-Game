@@ -97,10 +97,6 @@ export const CRAFTS = [
   }
 ]
 
-export function craftById (id) {
-  return CRAFTS.find(c => c.id === id) ?? CRAFTS[0]
-}
-
 // thrust/mass -- the number that actually decides how a craft handles.
 export function thrustAccel (craft) {
   return craft.thrust / craft.mass

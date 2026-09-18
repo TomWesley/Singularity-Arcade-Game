@@ -19,15 +19,9 @@ import {
   setupHiDPICanvas
 } from '../../vendor/arcade-graphics-engine/index.js'
 
-export const provider = ThemeProvider.custom('SINGULARITY', 48, 36, 205, 352)
+const provider = ThemeProvider.custom('SINGULARITY', 48, 36, 205, 352)
 export const palette = provider.palette
 export const theme = provider.theme
-
-// Shorthands for the two colours used on nearly every draw call.
-export const pc = (a = 1) => rgbaToCss(withAlpha(palette.primary.core, a))
-export const sc = (a = 1) => rgbaToCss(withAlpha(palette.secondary.core, a))
-export const tc = (a = 1) => rgbaToCss(withAlpha(palette.tertiary.core, a))
-export const dc = (a = 1) => rgbaToCss(withAlpha(palette.danger.core, a))
 
 let injected = false
 export function initTheme () {
@@ -56,18 +50,6 @@ export async function ensureFonts () {
   if (typeof document === 'undefined' || !document.fonts) return
   await Promise.all(REQUIRED_FACES.map(f => document.fonts.load(f).catch(() => {})))
   try { await document.fonts.ready } catch { /* not fatal */ }
-}
-
-/** Stroke with a glow, the house look for every line in the game. */
-export function glowStroke (ctx, color, blur, width, drawPath) {
-  ctx.save()
-  ctx.strokeStyle = color
-  ctx.lineWidth = width
-  ctx.shadowColor = color
-  ctx.shadowBlur = blur
-  drawPath()
-  ctx.stroke()
-  ctx.restore()
 }
 
 export {

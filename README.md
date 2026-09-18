@@ -80,6 +80,29 @@ It has been raised by `√6` from the original scale, so the field is six times
 what it started at — a 22 M☉ hole's escape limit went from 137px to **209px**
 with its horizon unchanged at 88px.
 
+### Stars
+
+A third obstacle: same gravity law and the same `mu` as a black hole of equal
+mass, because gravity does not care what the mass is made of. What differs is
+that a star has a *surface*, so the field never gets the room to climb — you are
+stopped at the photosphere, where `1/r²` is still mild. A 22 M☉ black hole lets
+you to within 88px of its centre; a 14 M☉ red giant stops you at 61px, where the
+pull is about two thousand times gentler.
+
+There is no horizon term in a star's gravity. Paczyński–Wiita corrects Newton
+near an event horizon and a star has none, so the plain inverse square is the
+right law there.
+
+Stellar density falls out for free: a 2.4 M☉ white dwarf at 16px is **fiercer at
+its surface than a 14 M☉ red giant at 61px**, despite carrying a sixth of the
+mass. Small and dense beats large and diffuse, exactly as it does in the sky.
+
+One honest compromise: stellar radii are not to scale and cannot be. The length
+scale is pinned by black hole horizons at 4px per solar mass, which puts the
+Sun's photosphere around 940,000px across. A board cannot show a 30km horizon and
+a 700,000km surface at once, so a star's radius is authored. Its mass — and
+therefore its pull — stays real.
+
 ### Orbits
 
 Asteroids can orbit, and some complete several revolutions. What they cannot do

@@ -1,7 +1,7 @@
 // Simulation entities. Rendering lives in src/render -- these carry state and
 // the rules that move it, nothing about how any of it looks.
 
-import { blackHoleGeometry, gravityAt, integrate, apoapsisSpeed, SYSTEM_SPEED_LIMIT } from './physics.js'
+import { blackHoleGeometry, starGeometry, gravityAt, integrate, apoapsisSpeed, SYSTEM_SPEED_LIMIT } from './physics.js'
 import { makeRng, randRange } from '../core/rng.js'
 import { DESIGN_WIDTH, DESIGN_HEIGHT } from '../core/viewport.js'
 
@@ -20,6 +20,7 @@ export class BlackHole {
     const geo = blackHoleGeometry(spec.solarMasses)
     this.mu = geo.mu
     this.horizon = geo.horizon
+    this.soften = geo.soften
     this.photonSphere = geo.photonSphere
     this.isco = geo.isco
     this.marginallyBound = geo.marginallyBound
@@ -59,13 +60,65 @@ export class BlackHole {
 // time step means the trail's length in pixels is automatically proportional to
 // speed -- and because it records where the rock has actually been, the tail
 // bends around a gravity well exactly as the trajectory does.
-export const TRAIL_INTERVAL = 1 / 45
+const TRAIL_INTERVAL = 1 / 45
 const TRAIL_POINTS = 14
 
 // How far past the board a rock may travel before it counts as gone rather than
 // mid-orbit, and how long it may stay out there.
 const ORBIT_MARGIN = 900
 const OFF_BOARD_GRACE = 22
+
+/**
+ * A star. Same gravity law and the same mu as a black hole of equal mass -- what
+ * changes is that it has a surface, so the field never gets the room to climb.
+ *
+ * `kind` only selects the look: 'main-sequence', 'red-giant' or 'white-dwarf'.
+ * A white dwarf packs a lot of mass into a small radius and is genuinely nasty
+ * for it; a red giant is enormous and surprisingly gentle at its surface. That
+ * contrast is the real astrophysics of stellar density, and it is free here.
+ */
+export class Star {
+  constructor (spec) {
+    this.homeX = spec.x * DESIGN_WIDTH
+    this.homeY = spec.y * DESIGN_HEIGHT
+    this.kind = spec.kind ?? 'main-sequence'
+    this.solarMasses = spec.solarMasses
+
+    const geo = starGeometry(spec.solarMasses, spec.radius * DESIGN_HEIGHT)
+    this.mu = geo.mu
+    this.radius = geo.radius
+    this.horizon = geo.horizon     // zero; a star has no event horizon
+    this.soften = geo.soften
+    // Collision and layout code treats every attractor alike, and for a star the
+    // lethal boundary is its surface.
+    this.isco = this.radius * 2.2
+
+    this.orbit = spec.orbit
+      ? {
+          radius: spec.orbit.radius * DESIGN_HEIGHT,
+          period: spec.orbit.period,
+          phase: spec.orbit.phase ?? 0
+        }
+      : null
+
+    this.x = this.homeX
+    this.y = this.homeY
+    this.churn = 0
+  }
+
+  update (dt, elapsed) {
+    if (this.orbit) {
+      const a = this.orbit.phase + (elapsed / this.orbit.period) * Math.PI * 2
+      this.x = this.homeX + Math.cos(a) * this.orbit.radius
+      this.y = this.homeY + Math.sin(a) * this.orbit.radius
+    }
+    this.churn += dt
+  }
+
+  contains (x, y) {
+    return Math.hypot(x - this.x, y - this.y) < this.radius
+  }
+}
 
 export class Asteroid {
   /**

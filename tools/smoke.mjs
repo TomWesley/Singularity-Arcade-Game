@@ -47,13 +47,17 @@ const spec = JSON.parse(fs.readFileSync(new URL('../levels/level1.json', import.
 const level = buildLevel(spec)
 
 console.log('Level built:')
-for (const h of level.holes) {
+for (const h of level.blackHoles) {
   console.log(`  ${String(h.solarMasses).padStart(4)} M_sun  horizon ${h.horizon.toFixed(1)}px  ISCO ${h.isco.toFixed(1)}px`)
+}
+for (const s of level.stars) {
+  console.log(`  ${String(s.solarMasses).padStart(4)} M_sun  ${s.kind.padEnd(14)} radius ${s.radius.toFixed(1)}px`)
 }
 console.log(`  ${level.asteroids.length} asteroids, gate at (${level.gate.x.toFixed(0)}, ${level.gate.y.toFixed(0)})`)
 
 // Renderers, against the stub.
 const { drawBlackHole } = await import('../public/src/render/blackhole.js')
+const { drawStar } = await import('../public/src/render/star.js')
 const { drawAsteroid } = await import('../public/src/render/asteroid.js')
 const { drawCraft } = await import('../public/src/render/craft.js')
 
@@ -79,7 +83,9 @@ for (const craft of CRAFTS) {
   }
 
   // Draw one frame of everything with this craft active.
-  for (const h of game.level.holes) drawBlackHole(ctx, h)
+  // level.holes carries stars as well now; each renderer gets only its own kind.
+  for (const h of game.level.blackHoles) drawBlackHole(ctx, h)
+  for (const s of game.level.stars) drawStar(ctx, s, 1.0)
   for (const a of game.level.asteroids) drawAsteroid(ctx, a)
   drawCraft(ctx, craft.id, 400, 300, 0.4, 0.7, 1.0)
 }

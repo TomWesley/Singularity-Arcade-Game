@@ -83,10 +83,3 @@ function drawCaptureWarning (ctx, game) {
   ctx.fillRect(0, 0, DESIGN_WIDTH, 720)
   ctx.restore()
 }
-
-/** Retained for tooling and the balance simulator; the HUD shows no clock. */
-export function formatTime (seconds) {
-  const s = Math.floor(seconds)
-  const cs = Math.floor((seconds - s) * 100)
-  return `${String(s).padStart(2, '0')}.${String(cs).padStart(2, '0')}`
-}

@@ -6,8 +6,9 @@ import {
   canvasFont, typeCase, rgbaToCss, withAlpha
 } from './theme.js'
 import { drawCraft, CRAFT_COLORS } from './craft.js'
-import { CRAFTS } from '../game/crafts.js'
+import { CRAFTS, thrustAccel } from '../game/crafts.js'
 import { DESIGN_WIDTH, DESIGN_HEIGHT } from '../core/viewport.js'
+import { PAUSE } from '../core/pause.js'
 
 const CX = DESIGN_WIDTH / 2
 
@@ -61,7 +62,7 @@ const CARD_H = 290
 const CARD_GAP = 24
 const CARD_Y = 226
 
-export function craftCardRect (i) {
+function craftCardRect (i) {
   const total = CRAFTS.length * CARD_W + (CRAFTS.length - 1) * CARD_GAP
   const x0 = CX - total / 2
   return { x: x0 + i * (CARD_W + CARD_GAP), y: CARD_Y, width: CARD_W, height: CARD_H }
@@ -119,9 +120,9 @@ export function drawCraftSelect (ctx, time, hoverIndex) {
 
 // Four segmented cells, in the craft's own colours.
 //
-// EVADE, ACCEL and TOP read the usual way round: fuller is better. MASS does
-// not, and is drawn in the danger tone to say so -- it is the one reading that
-// is a cost rather than a virtue.
+// Every cell is in the hull's own colours. MASS is the one reading where fuller
+// is worse, and the label says so rather than the colour: a red column in a bank
+// of four reads as a fault light, which is not what a heavy craft is.
 //
 // Why mass earns a cell of its own rather than being implied by ACCEL: gravity
 // accelerates every hull identically, so a heavy craft does not fall faster.
@@ -140,7 +141,7 @@ const STAT_CELLS = [
 function statValues (craft) {
   return {
     evasion: 1 / craft.hull,
-    accel: craft.thrust / craft.mass,
+    accel: thrustAccel(craft),
     top: craft.maxSpeed,
     mass: craft.mass
   }
@@ -217,7 +218,6 @@ function drawCell (ctx, x, top, value, base, lit, hot) {
 
 function drawStatGauges (ctx, craft, cx, top, hot) {
   const [mass, accent] = CRAFT_COLORS[craft.id] ?? CRAFT_COLORS.superbug
-  const danger = [255, 92, 96]
   const norm = normalisedStats(craft)
   const total = STAT_CELLS.length * CELL_W + (STAT_CELLS.length - 1) * CELL_GAP
   const x0 = cx - total / 2
@@ -225,12 +225,25 @@ function drawStatGauges (ctx, craft, cx, top, hot) {
   ctx.save()
   STAT_CELLS.forEach(({ key, label, cost }, i) => {
     const x = x0 + i * (CELL_W + CELL_GAP)
-    drawCell(ctx, x, top, norm[key], cost ? danger : mass, cost ? danger : accent, hot)
+    drawCell(ctx, x, top, norm[key], mass, accent, hot)
     ctx.font = canvasFont('micro', 7.5)
     ctx.textAlign = 'center'
-    const lc = cost ? danger : mass
-    ctx.fillStyle = `rgba(${lc[0]}, ${lc[1]}, ${lc[2]}, ${hot ? 0.95 : 0.66})`
+    // The cost reading is called out in the label's weight, not its hue.
+    ctx.fillStyle = `rgba(${mass[0]}, ${mass[1]}, ${mass[2]}, ${hot ? 0.95 : 0.66})`
     ctx.fillText(label, x + CELL_W / 2, top + CELL_H + 17)
+    if (cost) {
+      // Drawn rather than typed: the down-arrow glyph is near-illegible at 7.5px
+      // in a mono face and reads as a comma.
+      const w = ctx.measureText(label).width
+      const ax = x + CELL_W / 2 + w / 2 + 4
+      const ay = top + CELL_H + 13.5
+      ctx.beginPath()
+      ctx.moveTo(ax - 2.6, ay)
+      ctx.lineTo(ax + 2.6, ay)
+      ctx.lineTo(ax, ay + 4.2)
+      ctx.closePath()
+      ctx.fill()
+    }
   })
   ctx.restore()
 }
@@ -287,73 +300,77 @@ export function drawGameOver (ctx, game) {
 
 // The finish gate.
 //
-// It sits hard against the right edge with half its width past the boundary, so
-// reaching it reads as sailing off the board rather than arriving at a box
-// drawn on it. When the far post falls outside the board it is not drawn --
-// instead the light ramps up toward the edge, and a bright threshold line marks
-// the boundary itself. The way out is off the screen.
+// It was a bracketed rectangle, which is the problem: a box drawn on the board
+// looks like a box drawn on the board. What the gate actually is, is an opening
+// -- the edge of the field, with something on the other side. So it is drawn as
+// light rather than as an object: a column spilling in from beyond the boundary,
+// feathered to nothing top and bottom so it has no hard edges of its own, marked
+// only by two hairlines saying where the opening starts and stops.
+//
+// The collision area is unchanged. This is purely how it looks.
+// The light spills further inboard than the trigger box. The collision area is
+// only ~35px of visible board at this edge -- the right size to fly through and
+// far too small to look like anything -- so the glow is drawn wide and soft
+// while the gate itself stays exactly where it was.
+const GATE_GLOW_REACH = 1.05      // multiple of the opening height
+
 export function drawGate (ctx, gate, time) {
   const { x, y, width: w, height: h } = gate
-  const left = x - w / 2
-  const right = x + w / 2
   const top = y - h / 2
-  const bottom = y + h / 2
-  const openEnded = right >= DESIGN_WIDTH - 1
-  const visibleRight = Math.min(right, DESIGN_WIDTH)
+  const right = Math.min(x + w / 2, DESIGN_WIDTH)
 
   ctx.save()
 
-  // Light spilling from beyond the boundary.
-  const phase = 0.30 + Math.sin(time * 2.2) * 0.16
-  const shimmer = ctx.createLinearGradient(left, top, visibleRight, top)
-  if (openEnded) {
-    shimmer.addColorStop(0, rgbaToCss(withAlpha(palette.secondary.core, 0)))
-    shimmer.addColorStop(1, rgbaToCss(withAlpha(palette.secondary.core, phase)))
-  } else {
-    shimmer.addColorStop(0, rgbaToCss(withAlpha(palette.secondary.core, 0)))
-    shimmer.addColorStop(0.5, rgbaToCss(withAlpha(palette.secondary.core, phase)))
-    shimmer.addColorStop(1, rgbaToCss(withAlpha(palette.secondary.core, 0)))
-  }
-  ctx.fillStyle = shimmer
-  ctx.fillRect(left, top, visibleRight - left, h)
+  // One radial falloff centred on the threshold rather than a stack of
+  // horizontal bands. The banded version stepped visibly -- thirty strips of
+  // uniform alpha over 216px is a 7px staircase -- and a single gradient is both
+  // smooth and cheaper.
+  const breathe = 1 + Math.sin(time * 0.9) * 0.05
+  const reach = h * GATE_GLOW_REACH * breathe
+  const glow = ctx.createRadialGradient(right, y, 0, right, y, reach)
+  glow.addColorStop(0, rgbaToCss(withAlpha(palette.secondary.core, 0.5)))
+  glow.addColorStop(0.18, rgbaToCss(withAlpha(palette.secondary.core, 0.22)))
+  glow.addColorStop(0.5, rgbaToCss(withAlpha(palette.secondary.core, 0.06)))
+  glow.addColorStop(1, rgbaToCss(withAlpha(palette.secondary.core, 0)))
+  ctx.fillStyle = glow
+  ctx.fillRect(right - reach, y - reach, reach, reach * 2)
 
-  ctx.strokeStyle = rgbaToCss(withAlpha(palette.secondary.core, 0.9))
-  ctx.lineWidth = 2
+  // The threshold: a bright line on the boundary, feathered to nothing at the
+  // lintels. This is the part the eye actually lands on.
+  const edge = ctx.createLinearGradient(0, top, 0, top + h)
+  edge.addColorStop(0, rgbaToCss(withAlpha(palette.secondary.core, 0)))
+  edge.addColorStop(0.5, rgbaToCss(withAlpha(palette.secondary.core, 0.98)))
+  edge.addColorStop(1, rgbaToCss(withAlpha(palette.secondary.core, 0)))
+  ctx.strokeStyle = edge
+  ctx.lineWidth = 2.6
   ctx.shadowColor = rgbaToCss(palette.secondary.glow)
-  ctx.shadowBlur = 14
-
-  // Near post, always drawn.
-  const arm = 16
+  ctx.shadowBlur = 16
   ctx.beginPath()
-  ctx.moveTo(left + arm, top); ctx.lineTo(left, top)
-  ctx.lineTo(left, bottom); ctx.lineTo(left + arm, bottom)
+  ctx.moveTo(right - 1.3, top)
+  ctx.lineTo(right - 1.3, top + h)
   ctx.stroke()
 
-  if (openEnded) {
-    // The boundary itself: a bright threshold, brightest at the middle of the
-    // opening and fading out at the lintels.
-    const edge = ctx.createLinearGradient(0, top, 0, bottom)
-    edge.addColorStop(0, rgbaToCss(withAlpha(palette.secondary.core, 0.1)))
-    edge.addColorStop(0.5, rgbaToCss(withAlpha(palette.secondary.core, 0.95)))
-    edge.addColorStop(1, rgbaToCss(withAlpha(palette.secondary.core, 0.1)))
-    ctx.strokeStyle = edge
-    ctx.lineWidth = 3
+  // Two hairlines saying where the opening starts and stops, fading as they run
+  // inboard so they mark the threshold without framing it.
+  const runIn = h * 0.42
+  for (const ly of [top, top + h]) {
+    const rule = ctx.createLinearGradient(right - runIn, ly, right, ly)
+    rule.addColorStop(0, rgbaToCss(withAlpha(palette.secondary.core, 0)))
+    rule.addColorStop(1, rgbaToCss(withAlpha(palette.secondary.core, 0.92)))
+    ctx.strokeStyle = rule
+    ctx.lineWidth = 1.3
+    ctx.shadowBlur = 8
     ctx.beginPath()
-    ctx.moveTo(DESIGN_WIDTH - 1.5, top)
-    ctx.lineTo(DESIGN_WIDTH - 1.5, bottom)
-    ctx.stroke()
-  } else {
-    ctx.beginPath()
-    ctx.moveTo(right - arm, top); ctx.lineTo(right, top)
-    ctx.lineTo(right, bottom); ctx.lineTo(right - arm, bottom)
+    ctx.moveTo(right - runIn, ly)
+    ctx.lineTo(right, ly)
     ctx.stroke()
   }
+  ctx.shadowBlur = 0
 
-  ctx.font = canvasFont('micro', 10)
-  ctx.textAlign = openEnded ? 'right' : 'center'
+  ctx.font = canvasFont('micro', 9)
+  ctx.textAlign = 'right'
   ctx.fillStyle = rgbaToCss(withAlpha(palette.secondary.core, 0.7))
-  ctx.shadowBlur = 6
-  ctx.fillText('GATE', openEnded ? DESIGN_WIDTH - 10 : x, top - 12)
+  ctx.fillText('GATE', right - 6, top - 10)
   ctx.restore()
 }
 
@@ -387,7 +404,7 @@ export function drawPauseOverlay (ctx, reason, cssWidth, cssHeight, dpr, time) {
   ctx.shadowColor = gold
   ctx.shadowBlur = 18
 
-  if (reason === 'rotate') {
+  if (reason === PAUSE.ROTATE) {
     drawPhoneGlyph(ctx, cx, cy - unit * 3.4, unit * 2.2, time)
     ctx.font = canvasFont('title', unit * 1.5)
     ctx.fillStyle = gold
@@ -396,7 +413,7 @@ export function drawPauseOverlay (ctx, reason, cssWidth, cssHeight, dpr, time) {
     ctx.font = canvasFont('data', unit * 0.72)
     ctx.fillStyle = dim
     ctx.fillText(typeCase('data', 'Singularity needs a landscape screen'), cx, cy + unit * 3.2)
-  } else if (reason === 'ready') {
+  } else if (reason === PAUSE.READY) {
     ctx.font = canvasFont('title', unit * 1.5)
     ctx.fillStyle = gold
     ctx.fillText(typeCase('title', 'Ready'), cx, cy - unit * 0.4)

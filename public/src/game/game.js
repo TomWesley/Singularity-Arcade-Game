@@ -20,7 +20,7 @@ const START_LIVES = 3
 // proportional to speed for free -- distance covered per sample is speed -- and
 // it follows the flight path, so a slingshot leaves a curved wake rather than a
 // straight one bolted to the tail.
-export const WAKE_INTERVAL = 1 / 60
+const WAKE_INTERVAL = 1 / 60
 const WAKE_POINTS = 16
 const RESPAWN_SECONDS = 1.6
 const COMPLETE_SECONDS = 2.2

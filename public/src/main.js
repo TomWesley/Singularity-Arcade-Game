@@ -13,6 +13,7 @@ import { CRAFTS } from './game/crafts.js'
 import { initTheme, ensureFonts } from './render/theme.js'
 import { Starfield } from './render/starfield.js'
 import { drawBlackHole } from './render/blackhole.js'
+import { drawStar } from './render/star.js'
 import { drawAsteroid } from './render/asteroid.js'
 import { drawCraft, drawCraftWake } from './render/craft.js'
 import { Impact } from './render/impact.js'
@@ -122,7 +123,10 @@ function render (alpha) {
 
     for (const a of game.level.asteroids) if (a.active) drawAsteroid(ctx, a)
 
-    for (const h of game.level.holes) drawBlackHole(ctx, h)
+    // Stars first: they are light sources and should sit behind the holes, which
+    // are the only things on the board allowed to occlude anything.
+    for (const s of game.level.stars) drawStar(ctx, s, time)
+    for (const h of game.level.blackHoles) drawBlackHole(ctx, h)
 
     if (game.state === STATE.PLAYING) {
       // Interpolate between fixed steps so motion is smooth regardless of the
