@@ -5,6 +5,7 @@
 import { Viewport, DESIGN_WIDTH, DESIGN_HEIGHT } from './core/viewport.js'
 import { startLoop } from './core/loop.js'
 import { Input } from './core/input.js'
+import { PauseController } from './core/pause.js'
 import { Game, STATE } from './game/game.js'
 import { loadLevel } from './game/level.js'
 import { CRAFTS } from './game/crafts.js'
@@ -18,7 +19,7 @@ import { Impact } from './render/impact.js'
 import { drawHud } from './render/hud.js'
 import {
   drawTitle, drawCraftSelect, drawCraftLost, drawComplete, drawGameOver,
-  drawGate, craftAtPoint
+  drawGate, craftAtPoint, drawPauseOverlay
 } from './render/screens.js'
 
 const canvas = document.getElementById('stage')
@@ -34,11 +35,18 @@ const input = new Input(canvas, viewport)
 const game = new Game()
 const starfield = new Starfield()
 const impact = new Impact()
+const pause = new PauseController()
 let lastState = game.state
+// Advances even while paused, so the overlay can animate against a frozen board.
+let uiTime = 0
 
 let hoverCraft = -1
 
 input.onClick((x, y) => {
+  // A tap that lifts a pause must not also count as a game click, or the player
+  // resumes and selects a craft with the same touch.
+  if (pause.press()) return
+
   switch (game.state) {
     case STATE.TITLE:
       game.state = STATE.SELECT
@@ -57,7 +65,18 @@ input.onClick((x, y) => {
   }
 })
 
+window.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    e.preventDefault()
+    pause.toggleManual()
+  }
+})
+
 function update (dt) {
+  uiTime += dt
+  pause.sync()
+  if (pause.paused) return
+
   starfield.update(dt)
   const target = game.state === STATE.PLAYING && input.hasPointer
     ? { x: input.x, y: input.y }
@@ -132,6 +151,11 @@ function render (alpha) {
     case STATE.LOST: drawHud(ctx, game); drawCraftLost(ctx, game); break
     case STATE.COMPLETE: drawHud(ctx, game); drawComplete(ctx, game); break
     case STATE.GAME_OVER: drawGameOver(ctx, game); break
+  }
+
+  if (pause.paused) {
+    drawPauseOverlay(ctx, pause.reason, viewport.cssWidth, viewport.cssHeight,
+      viewport.dpr, uiTime)
   }
 }
 

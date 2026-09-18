@@ -256,3 +256,101 @@ export function drawGate (ctx, gate, time) {
   ctx.fillText('GATE', openEnded ? DESIGN_WIDTH - 10 : x, top - 12)
   ctx.restore()
 }
+
+// ── Pause and the portrait gate ─────────────────────────────────────────────
+
+/**
+ * Drawn in screen space rather than board space: in portrait the letterboxed
+ * board is a thin strip, and a message laid out inside it would be unreadable
+ * at exactly the moment it most needs reading.
+ */
+export function drawPauseOverlay (ctx, reason, cssWidth, cssHeight, dpr, time) {
+  const cx = cssWidth / 2
+  const cy = cssHeight / 2
+
+  ctx.save()
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+
+  // Heavy scrim: the overlay lands over whatever screen was showing, and on the
+  // title screen a lighter one leaves the game's own headline colliding with it.
+  ctx.fillStyle = 'rgba(2, 2, 6, 0.9)'
+  ctx.fillRect(0, 0, cssWidth, cssHeight)
+
+  const gold = rgbaToCss(withAlpha(palette.secondary.core, 0.97))
+  const dim = rgbaToCss(withAlpha(palette.primary.core, 0.72))
+  const pulse = 0.5 + Math.sin(time * 2.4) * 0.35
+
+  // Scale with the narrow dimension so the type stays proportionate on a phone.
+  const unit = Math.max(11, Math.min(cssWidth, cssHeight) / 26)
+
+  ctx.textAlign = 'center'
+  ctx.shadowColor = gold
+  ctx.shadowBlur = 18
+
+  if (reason === 'rotate') {
+    drawPhoneGlyph(ctx, cx, cy - unit * 3.4, unit * 2.2, time)
+    ctx.font = canvasFont('title', unit * 1.5)
+    ctx.fillStyle = gold
+    ctx.fillText(typeCase('title', 'Rotate your device'), cx, cy + unit * 1.6)
+    ctx.shadowBlur = 6
+    ctx.font = canvasFont('data', unit * 0.72)
+    ctx.fillStyle = dim
+    ctx.fillText(typeCase('data', 'Singularity needs a landscape screen'), cx, cy + unit * 3.2)
+  } else if (reason === 'ready') {
+    ctx.font = canvasFont('title', unit * 1.5)
+    ctx.fillStyle = gold
+    ctx.fillText(typeCase('title', 'Ready'), cx, cy - unit * 0.4)
+    ctx.shadowBlur = 8
+    ctx.font = canvasFont('label', unit * 0.85)
+    ctx.fillStyle = rgbaToCss(withAlpha(palette.primary.core, pulse))
+    ctx.fillText(typeCase('label', 'Tap to begin'), cx, cy + unit * 1.9)
+  } else {
+    ctx.font = canvasFont('title', unit * 1.5)
+    ctx.fillStyle = gold
+    ctx.fillText(typeCase('title', 'Paused'), cx, cy - unit * 0.4)
+    ctx.shadowBlur = 8
+    ctx.font = canvasFont('label', unit * 0.85)
+    ctx.fillStyle = rgbaToCss(withAlpha(palette.primary.core, pulse))
+    ctx.fillText(typeCase('label', 'Press enter or tap to resume'), cx, cy + unit * 1.9)
+  }
+
+  ctx.restore()
+}
+
+// A phone turning from upright to landscape, so the instruction reads without
+// depending on the text being legible.
+function drawPhoneGlyph (ctx, cx, cy, size, time) {
+  const turn = (Math.sin(time * 1.5) * 0.5 + 0.5) * (Math.PI / 2)
+  const w = size * 0.58
+  const h = size
+  const r = size * 0.12
+
+  ctx.save()
+  ctx.translate(cx, cy)
+  ctx.rotate(turn)
+  ctx.strokeStyle = rgbaToCss(withAlpha(palette.secondary.core, 0.95))
+  ctx.lineWidth = Math.max(1.5, size * 0.055)
+  ctx.shadowColor = rgbaToCss(palette.secondary.glow)
+  ctx.shadowBlur = 14
+  ctx.beginPath()
+  ctx.moveTo(-w / 2 + r, -h / 2)
+  ctx.lineTo(w / 2 - r, -h / 2)
+  ctx.quadraticCurveTo(w / 2, -h / 2, w / 2, -h / 2 + r)
+  ctx.lineTo(w / 2, h / 2 - r)
+  ctx.quadraticCurveTo(w / 2, h / 2, w / 2 - r, h / 2)
+  ctx.lineTo(-w / 2 + r, h / 2)
+  ctx.quadraticCurveTo(-w / 2, h / 2, -w / 2, h / 2 - r)
+  ctx.lineTo(-w / 2, -h / 2 + r)
+  ctx.quadraticCurveTo(-w / 2, -h / 2, -w / 2 + r, -h / 2)
+  ctx.closePath()
+  ctx.stroke()
+
+  ctx.strokeStyle = rgbaToCss(withAlpha(palette.primary.core, 0.55))
+  ctx.lineWidth = Math.max(1, size * 0.04)
+  ctx.shadowBlur = 5
+  ctx.beginPath()
+  ctx.moveTo(-w * 0.16, -h * 0.4)
+  ctx.lineTo(w * 0.16, -h * 0.4)
+  ctx.stroke()
+  ctx.restore()
+}

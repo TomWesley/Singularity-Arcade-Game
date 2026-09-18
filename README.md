@@ -64,16 +64,17 @@ That limit is the real `c`, converted — not a number picked to feel right. It
 used to be a house rule: at the original time scale `c` worked out at 379 px per
 game-second while the craft flew at 470–610, so the game was superluminal in its
 own units. Lengthening the game-second to strengthen the field moved `c` with it
-(gravity scales as `T²`, `c` as `T`), and it now lands at **656 px/s** — above
-every craft's top speed. Nothing on the board outruns light.
+(gravity scales as `T²`, `c` as `T`), and it now lands at **928 px/s** — well above
+every craft's top speed (0.51c–0.66c). Nothing on the board outruns light.
 
 ### Tuning the field without resizing the holes
 
 Horizon radius is `r_s / METERS_PER_PIXEL` and has no time term; gravitational
 acceleration carries a `T²`. So `SECONDS_PER_GAME_SECOND` is the one dial that
 changes how hard the wells pull while every hole stays exactly the size it was.
-It was raised by `√3` to triple the field — a 22 M☉ hole's escape limit went
-from 137px to 173px with its horizon unchanged at 88px.
+It has been raised by `√6` from the original scale, so the field is six times
+what it started at — a 22 M☉ hole's escape limit went from 137px to **209px**
+with its horizon unchanged at 88px.
 
 ### Orbits
 
@@ -161,6 +162,17 @@ Gravity treats all four identically. What differs is thrust authority
 | Psych Bike | 3065 | 610 | 0.62 | Light and twitchy, quickest to turn |
 | The Compiler | 2471 | 560 | 1.05 | Heavy frame, huge engine, commits to a line |
 | Voidwalker | 2320 | 470 | 1.55 | Heavily damped, goes exactly where aimed |
+
+## Portrait and pause
+
+The board is authored at 1280x720 and letterboxed, so in portrait it collapses to
+an unplayable strip. Rather than pretend, the game stops and asks for a rotation.
+Coming back to landscape does not resume on its own — a device that has just been
+turned is usually still moving, and dropping a player into a live board
+mid-rotation costs them a craft they never saw coming. They tap when ready.
+
+Enter pauses and resumes on desktop. A portrait pause overrides a manual one, so
+the rotate prompt is always what the player sees.
 
 ## Running it
 

@@ -29,7 +29,7 @@ export const METERS_PER_PIXEL = 738.3125
  * This is not a fudge factor, it is a consequence. Once the length scale is
  * fixed, the accelerations near a stellar-mass black hole are on the order of
  * 10^11 m/s^2, so real time has to be slowed by roughly a thousand to be
- * flyable. One second at the controls is about 1.6 milliseconds of the
+ * flyable. One second at the controls is about 2.3 milliseconds of the
  * universe's time -- which is genuinely how fast things happen down there.
  *
  * This is also the one dial that changes how hard the holes pull without
@@ -40,7 +40,7 @@ export const METERS_PER_PIXEL = 738.3125
  * threefold, which as a side effect finally puts the game below light speed:
  * see SYSTEM_SPEED_LIMIT.
  */
-export const SECONDS_PER_GAME_SECOND = 1.61600e-03
+export const SECONDS_PER_GAME_SECOND = 2.28537e-03
 
 /** Design-space board size, in pixels. */
 export const DESIGN_WIDTH = 1280
