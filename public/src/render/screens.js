@@ -112,123 +112,104 @@ export function drawCraftSelect (ctx, time, hoverIndex) {
     ctx.fillStyle = rgbaToCss(withAlpha(palette.primary.core, 0.5))
     wrap(ctx, typeCase('data', craft.tagline), cxx, r.y + 154, r.width - 26, 12)
 
-    drawStatTriad(ctx, craft, cxx, r.y + 232, 38, hot)
+    drawStatDials(ctx, craft, cxx, r.y + 226, hot)
     ctx.restore()
   })
 }
 
-// Three stats, three axes, one shape.
+// Three instrument dials, in the craft's own colours.
 //
-// A bar chart would rank the hulls; this compares them. Each axis is normalised
-// across the whole roster, so a balanced roster draws four triangles of roughly
-// equal area in four different shapes -- the trade each craft makes is the
-// silhouette, and you can see at a glance that no hull is simply better.
+// TOP and ACCEL are genuinely different traits and the roster is built on the
+// difference: the Psych Bike has the highest top speed and the weakest engine,
+// so it takes 0.32s to reach it; the Compiler gets to its lower ceiling in
+// 0.12s. One wins an open sprint, the other wins anywhere that demands changing
+// direction in a hurry. A single "speed" number would have hidden that
+// entirely.
 //
-// EVASION is the hitbox inverted, so that outward is good on every axis. Without
-// that one spoke would mean the opposite of the other two and the shape would
-// stop being readable.
-const STAT_AXES = [
-  { key: 'evasion', label: 'EVASION' },
-  { key: 'thrust', label: 'THRUST' },
-  { key: 'speed', label: 'SPEED' }
+// EVASION is the hitbox inverted, so a fuller dial is always better and the
+// three read the same way round.
+const STAT_DIALS = [
+  { key: 'evasion', label: 'EVADE' },
+  { key: 'accel', label: 'ACCEL' },
+  { key: 'top', label: 'TOP' }
 ]
 
 function statValues (craft) {
   return {
     evasion: 1 / craft.hull,
-    thrust: craft.thrust / craft.mass,
-    speed: craft.maxSpeed
+    accel: craft.thrust / craft.mass,
+    top: craft.maxSpeed
   }
 }
 
-// Normalised against the roster, with a floor so the weakest axis still reads as
-// a spoke rather than collapsing into the centre.
+// Normalised across the roster, with a floor so the weakest dial still shows a
+// reading rather than sitting empty.
 function normalisedStats (craft) {
   const all = CRAFTS.map(statValues)
   const mine = statValues(craft)
   const out = {}
-  for (const { key } of STAT_AXES) {
+  for (const { key } of STAT_DIALS) {
     const lo = Math.min(...all.map(v => v[key]))
     const hi = Math.max(...all.map(v => v[key]))
-    out[key] = hi - lo < 1e-9 ? 0.7 : 0.34 + 0.66 * ((mine[key] - lo) / (hi - lo))
+    out[key] = hi - lo < 1e-9 ? 0.6 : 0.2 + 0.8 * ((mine[key] - lo) / (hi - lo))
   }
   return out
 }
 
-function drawStatTriad (ctx, craft, cx, cy, radius, hot) {
-  const [mass, accent] = CRAFT_COLORS[craft.id] ?? CRAFT_COLORS.superbug
+const DIAL_START = -0.17 * Math.PI     // sweeps clockwise through the bottom
+const DIAL_SWEEP = 1.34 * Math.PI
+const DIAL_SEGMENTS = 18
+
+function drawDial (ctx, cx, cy, radius, value, mass, accent, hot) {
   const rgba = (c, a) => `rgba(${c[0]}, ${c[1]}, ${c[2]}, ${a})`
-  const norm = normalisedStats(craft)
-  // Apex up, then lower-right, lower-left.
-  const angles = [-Math.PI / 2, Math.PI / 6, (5 * Math.PI) / 6]
+  const lit = Math.round(DIAL_SEGMENTS * value)
 
-  ctx.save()
-
-  // Range rings, so the fill has something to be read against.
-  ctx.strokeStyle = rgba(mass, 0.16)
-  ctx.lineWidth = 0.7
-  for (const k of [0.4, 0.7, 1]) {
+  ctx.lineCap = 'butt'
+  for (let i = 0; i < DIAL_SEGMENTS; i++) {
+    const a0 = DIAL_START + (i / DIAL_SEGMENTS) * DIAL_SWEEP
+    const a1 = DIAL_START + ((i + 0.72) / DIAL_SEGMENTS) * DIAL_SWEEP
+    const on = i < lit
+    ctx.strokeStyle = on ? rgba(accent, hot ? 0.98 : 0.85) : rgba(mass, 0.15)
+    ctx.lineWidth = on ? 4.2 : 3
+    ctx.shadowColor = on ? rgba(mass, 0.9) : 'transparent'
+    ctx.shadowBlur = on ? (hot ? 9 : 5) : 0
     ctx.beginPath()
-    angles.forEach((a, i) => {
-      const x = cx + Math.cos(a) * radius * k
-      const y = cy + Math.sin(a) * radius * k
-      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y)
-    })
-    ctx.closePath()
+    ctx.arc(cx, cy, radius, a0, a1)
     ctx.stroke()
   }
-
-  // Spokes.
-  ctx.strokeStyle = rgba(mass, 0.22)
-  ctx.beginPath()
-  for (const a of angles) {
-    ctx.moveTo(cx, cy)
-    ctx.lineTo(cx + Math.cos(a) * radius, cy + Math.sin(a) * radius)
-  }
-  ctx.stroke()
-
-  // The craft's shape.
-  const pts = STAT_AXES.map(({ key }, i) => {
-    const k = norm[key]
-    return [cx + Math.cos(angles[i]) * radius * k, cy + Math.sin(angles[i]) * radius * k]
-  })
-
-  ctx.beginPath()
-  pts.forEach(([x, y], i) => { if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y) })
-  ctx.closePath()
-
-  const g = ctx.createLinearGradient(cx, cy - radius, cx, cy + radius)
-  g.addColorStop(0, rgba(accent, hot ? 0.46 : 0.3))
-  g.addColorStop(1, rgba(mass, hot ? 0.34 : 0.2))
-  ctx.fillStyle = g
-  ctx.fill()
-
-  ctx.strokeStyle = rgba(accent, hot ? 0.98 : 0.8)
-  ctx.lineWidth = 1.3
-  ctx.shadowColor = rgba(mass, 0.85)
-  ctx.shadowBlur = hot ? 11 : 6
-  ctx.stroke()
   ctx.shadowBlur = 0
 
-  // Node at each vertex.
-  ctx.fillStyle = rgba(accent, 0.98)
-  for (const [x, y] of pts) {
-    ctx.beginPath()
-    ctx.arc(x, y, 1.9, 0, Math.PI * 2)
-    ctx.fill()
-  }
+  // Needle at the reading, so the eye lands on the value rather than counting.
+  const na = DIAL_START + value * DIAL_SWEEP
+  ctx.strokeStyle = rgba([255, 255, 255], hot ? 0.95 : 0.75)
+  ctx.lineWidth = 1.4
+  ctx.beginPath()
+  ctx.moveTo(cx + Math.cos(na) * (radius - 6.5), cy + Math.sin(na) * (radius - 6.5))
+  ctx.lineTo(cx + Math.cos(na) * (radius + 5), cy + Math.sin(na) * (radius + 5))
+  ctx.stroke()
 
-  // Axis labels, just outside the frame.
-  ctx.font = canvasFont('micro', 8.5)
-  ctx.fillStyle = rgba(mass, hot ? 0.9 : 0.65)
-  const pad = radius + 10
-  ctx.textAlign = 'center'
-  ctx.fillText(STAT_AXES[0].label, cx, cy - pad + 1)
-  ctx.textAlign = 'left'
-  ctx.fillText(STAT_AXES[1].label, cx + Math.cos(angles[1]) * pad - 4, cy + Math.sin(angles[1]) * pad + 7)
-  ctx.textAlign = 'right'
-  ctx.fillText(STAT_AXES[2].label, cx + Math.cos(angles[2]) * pad + 4, cy + Math.sin(angles[2]) * pad + 7)
+  // Hub.
+  ctx.fillStyle = rgba(mass, hot ? 0.5 : 0.32)
+  ctx.beginPath()
+  ctx.arc(cx, cy, 2.4, 0, Math.PI * 2)
+  ctx.fill()
+}
 
+function drawStatDials (ctx, craft, cx, cy, hot) {
+  const [mass, accent] = CRAFT_COLORS[craft.id] ?? CRAFT_COLORS.superbug
+  const norm = normalisedStats(craft)
+  const spacing = 52
+  const radius = 20
+
+  ctx.save()
+  STAT_DIALS.forEach(({ key, label }, i) => {
+    const dx = cx + (i - 1) * spacing
+    drawDial(ctx, dx, cy, radius, norm[key], mass, accent, hot)
+    ctx.font = canvasFont('micro', 8)
+    ctx.textAlign = 'center'
+    ctx.fillStyle = `rgba(${mass[0]}, ${mass[1]}, ${mass[2]}, ${hot ? 0.92 : 0.66})`
+    ctx.fillText(label, dx, cy + radius + 15)
+  })
   ctx.restore()
 }
 
