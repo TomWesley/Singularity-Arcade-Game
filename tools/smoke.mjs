@@ -79,7 +79,7 @@ for (const craft of CRAFTS) {
   }
 
   // Draw one frame of everything with this craft active.
-  for (const h of game.level.holes) drawBlackHole(ctx, h, craft, game.body, 1.0)
+  for (const h of game.level.holes) drawBlackHole(ctx, h)
   for (const a of game.level.asteroids) drawAsteroid(ctx, a)
   drawCraft(ctx, craft.id, 400, 300, 0.4, 0.7, 1.0)
 }

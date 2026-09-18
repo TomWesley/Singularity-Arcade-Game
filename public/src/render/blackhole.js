@@ -13,11 +13,15 @@
 // field a large hairline circle reads as a grey rim around the object rather
 // than as information, and the aura alone says where the edge is.
 //
+// Nothing marks where the pull becomes unwinnable. There was a ring at the
+// craft-specific escape radius, drawn in red as you neared it, and it was the
+// wrong kind of help: it turned a thing you are supposed to develop a feel for
+// into a boundary you could read off the screen. The aura falls off with the
+// field, the GRAV gauge climbs, and the craft starts refusing the cursor --
+// between them that is enough to learn from, and learning it is the game.
+//
 // Performance: all of that is static for a given mass, so it renders once into
 // an offscreen canvas and is blitted each frame.
-
-import { palette, rgbaToCss, withAlpha } from './theme.js'
-import { escapeLimit } from '../game/physics.js'
 
 const TAU = Math.PI * 2
 
@@ -74,7 +78,7 @@ function staticSprite (hole) {
   return sprite
 }
 
-export function drawBlackHole (ctx, hole, craft, craftPos, time) {
+export function drawBlackHole (ctx, hole) {
   const sprite = staticSprite(hole)
 
   // The horizon has to be genuinely black, not the aura's black over whatever
@@ -89,21 +93,4 @@ export function drawBlackHole (ctx, hole, craft, craftPos, time) {
     hole.x - sprite.reach, hole.y - sprite.reach,
     sprite.reach * 2, sprite.reach * 2
   )
-
-  // The one live piece of instrumentation: where this hull's thrust stops being
-  // able to answer the pull. It appears only once you are near it.
-  if (craft && craftPos) {
-    const r = escapeLimit(hole, craft)
-    const d = Math.hypot(craftPos.x - hole.x, craftPos.y - hole.y)
-    if (Number.isFinite(d) && d < r * 1.35) {
-      ctx.save()
-      ctx.strokeStyle = rgbaToCss(withAlpha(palette.danger.core,
-        0.30 + Math.sin(time * 4) * 0.14))
-      ctx.lineWidth = 1
-      ctx.beginPath()
-      ctx.arc(hole.x, hole.y, r, 0, TAU)
-      ctx.stroke()
-      ctx.restore()
-    }
-  }
 }

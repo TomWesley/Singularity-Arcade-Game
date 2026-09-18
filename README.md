@@ -48,8 +48,12 @@ Two consequences worth knowing before you fly:
   goes as `1/r_s`, so a 3 M☉ hole 12 px across has a fiercer well than a 22 M☉
   one at 88 px. The big ones are terrain; the small ones are ambushes.
 
-Every ring drawn around a hole is one of these radii, not decoration. A pilot who
-learns to read them is learning orbital mechanics.
+Nothing marks where the pull becomes unwinnable. There used to be a ring at the
+craft-specific escape radius, drawn in red as you neared it, and it was the wrong
+kind of help — it turned a thing the player is meant to develop a feel for into a
+boundary they could read off the screen. The aura falls off with the field, the
+GRAV gauge climbs, and the craft starts refusing the cursor. Learning where that
+adds up to "too close" is the game.
 
 ### The board's speed limit
 
