@@ -79,7 +79,7 @@ export function drawCraftSelect (ctx, time, hoverIndex) {
   scrim(ctx, 0.55)
   centred(ctx, 'Select a surfer', 'title', 38, 140,
     rgbaToCss(withAlpha(palette.secondary.core, 0.95)), 18)
-  centred(ctx, 'Gravity pulls every hull the same · Only thrust differs', 'data', 12, 178,
+  centred(ctx, 'Gravity pulls every hull the same · Everything else is a trade', 'data', 12, 178,
     rgbaToCss(withAlpha(palette.primary.core, 0.58)), 6)
 
   CRAFTS.forEach((craft, i) => {
@@ -94,7 +94,7 @@ export function drawCraftSelect (ctx, time, hoverIndex) {
     })
 
     // Live craft art, gently drifting so each card reads as a real ship.
-    const cy = r.y + 68
+    const cy = r.y + 58
     drawCraft(ctx, craft.id, r.x + r.width / 2, cy,
       -Math.PI / 2 + Math.sin(time * 1.1 + i) * 0.16,
       hot ? 0.5 : 0, time, craft.cardScale * (hot ? 1.06 : 1))
@@ -106,109 +106,131 @@ export function drawCraftSelect (ctx, time, hoverIndex) {
     ctx.font = canvasFont('heading', 16)
     ctx.fillStyle = rgbaToCss(withAlpha(
       hot ? palette.secondary.core : palette.primary.core, 0.95))
-    ctx.fillText(typeCase('heading', craft.name), cxx, r.y + 136)
+    ctx.fillText(typeCase('heading', craft.name), cxx, r.y + 118)
 
     ctx.font = canvasFont('data', 9.5)
     ctx.fillStyle = rgbaToCss(withAlpha(palette.primary.core, 0.5))
-    wrap(ctx, typeCase('data', craft.tagline), cxx, r.y + 154, r.width - 26, 12)
+    wrap(ctx, typeCase('data', craft.tagline), cxx, r.y + 136, r.width - 26, 12)
 
-    drawStatDials(ctx, craft, cxx, r.y + 226, hot)
+    drawStatGauges(ctx, craft, cxx, r.y + 172, hot)
     ctx.restore()
   })
 }
 
-// Three instrument dials, in the craft's own colours.
+// Four segmented cells, in the craft's own colours.
 //
-// TOP and ACCEL are genuinely different traits and the roster is built on the
-// difference: the Psych Bike has the highest top speed and the weakest engine,
-// so it takes 0.32s to reach it; the Compiler gets to its lower ceiling in
-// 0.12s. One wins an open sprint, the other wins anywhere that demands changing
-// direction in a hurry. A single "speed" number would have hidden that
-// entirely.
+// EVADE, ACCEL and TOP read the usual way round: fuller is better. MASS does
+// not, and is drawn in the danger tone to say so -- it is the one reading that
+// is a cost rather than a virtue.
 //
-// EVASION is the hitbox inverted, so a fuller dial is always better and the
-// three read the same way round.
-const STAT_DIALS = [
-  { key: 'evasion', label: 'EVADE' },
-  { key: 'accel', label: 'ACCEL' },
-  { key: 'top', label: 'TOP' }
+// Why mass earns a cell of its own rather than being implied by ACCEL: gravity
+// accelerates every hull identically, so a heavy craft does not fall faster.
+// What it does is shed velocity more slowly once the well has given it some,
+// because drag is a force and a force moves a heavy body less. The pull sticks
+// to it. That is a genuinely separate trait from engine authority -- the
+// Compiler is heavy AND powerful, the Psych Bike light AND weak -- so knowing
+// one tells you nothing about the other.
+const STAT_CELLS = [
+  { key: 'evasion', label: 'EVADE', cost: false },
+  { key: 'accel', label: 'ACCEL', cost: false },
+  { key: 'top', label: 'TOP', cost: false },
+  { key: 'mass', label: 'MASS', cost: true }
 ]
 
 function statValues (craft) {
   return {
     evasion: 1 / craft.hull,
     accel: craft.thrust / craft.mass,
-    top: craft.maxSpeed
+    top: craft.maxSpeed,
+    mass: craft.mass
   }
 }
 
-// Normalised across the roster, with a floor so the weakest dial still shows a
-// reading rather than sitting empty.
+// Normalised across the roster, with a floor so the lowest reading still shows
+// a couple of lit cells rather than reading as broken.
 function normalisedStats (craft) {
   const all = CRAFTS.map(statValues)
   const mine = statValues(craft)
   const out = {}
-  for (const { key } of STAT_DIALS) {
+  for (const { key } of STAT_CELLS) {
     const lo = Math.min(...all.map(v => v[key]))
     const hi = Math.max(...all.map(v => v[key]))
-    out[key] = hi - lo < 1e-9 ? 0.6 : 0.2 + 0.8 * ((mine[key] - lo) / (hi - lo))
+    out[key] = hi - lo < 1e-9 ? 0.6 : 0.18 + 0.82 * ((mine[key] - lo) / (hi - lo))
   }
   return out
 }
 
-const DIAL_START = -0.17 * Math.PI     // sweeps clockwise through the bottom
-const DIAL_SWEEP = 1.34 * Math.PI
-const DIAL_SEGMENTS = 18
+const CELL_W = 17
+const CELL_GAP = 13
+const CELL_H = 84
+const CELL_ROWS = 14
 
-function drawDial (ctx, cx, cy, radius, value, mass, accent, hot) {
+function drawCell (ctx, x, top, value, base, lit, hot) {
   const rgba = (c, a) => `rgba(${c[0]}, ${c[1]}, ${c[2]}, ${a})`
-  const lit = Math.round(DIAL_SEGMENTS * value)
+  const rowH = CELL_H / CELL_ROWS
+  const seg = rowH - 1.7
+  const on = Math.round(CELL_ROWS * value)
 
-  ctx.lineCap = 'butt'
-  for (let i = 0; i < DIAL_SEGMENTS; i++) {
-    const a0 = DIAL_START + (i / DIAL_SEGMENTS) * DIAL_SWEEP
-    const a1 = DIAL_START + ((i + 0.72) / DIAL_SEGMENTS) * DIAL_SWEEP
-    const on = i < lit
-    ctx.strokeStyle = on ? rgba(accent, hot ? 0.98 : 0.85) : rgba(mass, 0.15)
-    ctx.lineWidth = on ? 4.2 : 3
-    ctx.shadowColor = on ? rgba(mass, 0.9) : 'transparent'
-    ctx.shadowBlur = on ? (hot ? 9 : 5) : 0
-    ctx.beginPath()
-    ctx.arc(cx, cy, radius, a0, a1)
-    ctx.stroke()
+  // Housing, clipped at the top corners.
+  const c = 3.5
+  ctx.beginPath()
+  ctx.moveTo(x + c, top - 4)
+  ctx.lineTo(x + CELL_W - c, top - 4)
+  ctx.lineTo(x + CELL_W, top - 4 + c)
+  ctx.lineTo(x + CELL_W, top + CELL_H + 4)
+  ctx.lineTo(x, top + CELL_H + 4)
+  ctx.lineTo(x, top - 4 + c)
+  ctx.closePath()
+  ctx.fillStyle = rgba(base, 0.05)
+  ctx.fill()
+  ctx.strokeStyle = rgba(base, hot ? 0.4 : 0.26)
+  ctx.lineWidth = 0.8
+  ctx.stroke()
+
+  // Cells fill from the bottom.
+  for (let i = 0; i < CELL_ROWS; i++) {
+    const y = top + CELL_H - (i + 1) * rowH
+    if (i < on) {
+      // Brighter toward the top of the lit stack, so the column has a gradient
+      // rather than reading as a flat block.
+      const k = 0.62 + 0.38 * (i / Math.max(1, on - 1))
+      ctx.fillStyle = rgba(lit, (hot ? 0.95 : 0.8) * k)
+      ctx.shadowColor = rgba(lit, 0.9)
+      ctx.shadowBlur = hot ? 7 : 4
+    } else {
+      ctx.fillStyle = rgba(base, 0.12)
+      ctx.shadowBlur = 0
+    }
+    ctx.fillRect(x + 2, y + 0.85, CELL_W - 4, seg)
   }
   ctx.shadowBlur = 0
 
-  // Needle at the reading, so the eye lands on the value rather than counting.
-  const na = DIAL_START + value * DIAL_SWEEP
-  ctx.strokeStyle = rgba([255, 255, 255], hot ? 0.95 : 0.75)
-  ctx.lineWidth = 1.4
+  // Cap across the reading.
+  const capY = top + CELL_H - on * rowH
+  ctx.strokeStyle = rgba([255, 255, 255], hot ? 0.9 : 0.66)
+  ctx.lineWidth = 1.5
   ctx.beginPath()
-  ctx.moveTo(cx + Math.cos(na) * (radius - 6.5), cy + Math.sin(na) * (radius - 6.5))
-  ctx.lineTo(cx + Math.cos(na) * (radius + 5), cy + Math.sin(na) * (radius + 5))
+  ctx.moveTo(x - 1.5, capY)
+  ctx.lineTo(x + CELL_W + 1.5, capY)
   ctx.stroke()
-
-  // Hub.
-  ctx.fillStyle = rgba(mass, hot ? 0.5 : 0.32)
-  ctx.beginPath()
-  ctx.arc(cx, cy, 2.4, 0, Math.PI * 2)
-  ctx.fill()
 }
 
-function drawStatDials (ctx, craft, cx, cy, hot) {
+function drawStatGauges (ctx, craft, cx, top, hot) {
   const [mass, accent] = CRAFT_COLORS[craft.id] ?? CRAFT_COLORS.superbug
+  const danger = [255, 92, 96]
   const norm = normalisedStats(craft)
-  const spacing = 52
-  const radius = 20
+  const total = STAT_CELLS.length * CELL_W + (STAT_CELLS.length - 1) * CELL_GAP
+  const x0 = cx - total / 2
 
   ctx.save()
-  STAT_DIALS.forEach(({ key, label }, i) => {
-    const dx = cx + (i - 1) * spacing
-    drawDial(ctx, dx, cy, radius, norm[key], mass, accent, hot)
-    ctx.font = canvasFont('micro', 8)
+  STAT_CELLS.forEach(({ key, label, cost }, i) => {
+    const x = x0 + i * (CELL_W + CELL_GAP)
+    drawCell(ctx, x, top, norm[key], cost ? danger : mass, cost ? danger : accent, hot)
+    ctx.font = canvasFont('micro', 7.5)
     ctx.textAlign = 'center'
-    ctx.fillStyle = `rgba(${mass[0]}, ${mass[1]}, ${mass[2]}, ${hot ? 0.92 : 0.66})`
-    ctx.fillText(label, dx, cy + radius + 15)
+    const lc = cost ? danger : mass
+    ctx.fillStyle = `rgba(${lc[0]}, ${lc[1]}, ${lc[2]}, ${hot ? 0.95 : 0.66})`
+    ctx.fillText(label, x + CELL_W / 2, top + CELL_H + 17)
   })
   ctx.restore()
 }

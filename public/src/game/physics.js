@@ -216,6 +216,14 @@ export function integrate (body, ax, ay, dt, drag, speedLimit = 0) {
   }
 
   if (drag) {
+    // `drag` arrives as a deceleration rate, not a force. The caller divides the
+    // craft's drag coefficient by its mass before passing it in, because drag is
+    // a force and a force applied to a heavier body slows it less. That is the
+    // one channel through which mass changes how a craft moves in the field:
+    // gravitational acceleration is famously independent of the mass being
+    // accelerated, so a heavy hull does not fall faster -- but once the well has
+    // given it velocity, it sheds that velocity more slowly than a light one.
+    // The pull sticks to it.
     const k = Math.exp(-drag * dt)   // frame-rate-independent decay
     body.vx *= k
     body.vy *= k

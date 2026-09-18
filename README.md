@@ -161,12 +161,12 @@ Gravity treats all four identically — acceleration does not depend on the mass
 being accelerated. What differs is three axes, and each hull is strong on some
 and pays for it on the others:
 
-| Craft | hull | acceleration | top speed | 0→top | Trades |
+| Craft | hull | acceleration | top speed | mass | 0→top |
 |---|---|---|---|---|---|
-| Superbug | 12.6 | 2900 | 570 | 0.20s | Even on all three |
-| Psych Bike | 11.4 | 1903 | 605 | 0.32s | Highest top end, slowest to reach it, smallest target |
-| The Compiler | 15.8 | 4743 | 560 | 0.12s | Instant thrust, widest target |
-| Voidwalker | 13.4 | 3923 | 535 | 0.14s | Hits its ceiling fast, and the ceiling is low |
+| Superbug | 12.6 | 2900 | 570 | 1.00 | 0.20s |
+| Psych Bike | 11.4 | 1903 | 605 | 0.62 | 0.32s |
+| The Compiler | 15.8 | 4743 | 560 | 1.75 | 0.12s |
+| Voidwalker | 13.4 | 3923 | 535 | 1.30 | 0.14s |
 
 **Top speed and acceleration are separate traits**, and the roster is built on
 the difference. The Psych Bike has the highest ceiling and the weakest engine, so
@@ -174,12 +174,20 @@ it takes 0.32s to get there; the Compiler reaches its lower ceiling in 0.12s. On
 wins an open sprint, the other wins anywhere that demands changing direction in a
 hurry. Collapsing both into a single "speed" number would hide the whole trade.
 
-Note the ranges are deliberately asymmetric: top speed spans 13% across the
-roster while acceleration spans 149%. In a reach-the-gate game top speed is the
-stronger lever — less time on the board is less exposure — so a wide spread there
-overwhelms everything else. The measured proof is in the matrix: at a 470–700
-speed spread the averages diverged by 11.3 points and two hulls never won
-anything.
+**Mass is a fourth axis, and not a restatement of acceleration.** Gravitational
+acceleration does not depend on the mass being accelerated, so a heavy hull does
+not fall faster — the equivalence principle is load-bearing here. What mass does
+is govern how well velocity *sticks*: drag is a force, and a force slows a heavy
+body less, so once a well has given a heavy craft speed it sheds that speed
+slowly. The pull follows it out. That is independent of engine authority — the
+Compiler is heavy *and* powerful, the Psych Bike light *and* weak — so knowing
+one tells you nothing about the other.
+
+Ranges are deliberately asymmetric: top speed spans 13% across the roster while
+acceleration spans 149%. In a reach-the-gate game top speed is the stronger lever
+— less time on the board is less exposure — so a wide spread there overwhelms
+everything else. The measured proof is in the matrix: at a 470–700 speed spread
+the averages diverged by 11.3 points and two hulls never won anything.
 
 `hull` is the craft's extent in design pixels, measured from the art with
 `npm run bounds` rather than picked. It sets wall clearance, and asteroids strike

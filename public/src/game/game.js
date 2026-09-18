@@ -179,7 +179,7 @@ export class Game {
       this.gravity.x + this.thrust.x,
       this.gravity.y + this.thrust.y,
       dt,
-      this.craft.drag,
+      this.craft.drag / this.craft.mass,   // drag is a force; heavier coasts further
       SYSTEM_SPEED_LIMIT
     )
 
