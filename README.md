@@ -157,15 +157,41 @@ on near-total black, hard edges, no texture standing in for composition.
 
 ## The craft
 
-Gravity treats all four identically. What differs is thrust authority
-(`thrust/mass`), top speed, and damping.
+Gravity treats all four identically — acceleration does not depend on the mass
+being accelerated. What differs is three axes, and each hull is strong on some
+and pays for it on the others:
 
-| Craft | thrust/mass | max vel | damping | Feel |
+| Craft | hull | thrust/mass | max vel | Trades |
 |---|---|---|---|---|
-| Superbug | 2600 | 520 | 0.90 | Balanced, forgiving |
-| Psych Bike | 3065 | 610 | 0.62 | Light and twitchy, quickest to turn |
-| The Compiler | 2471 | 560 | 1.05 | Heavy frame, huge engine, commits to a line |
-| Voidwalker | 2320 | 470 | 1.55 | Heavily damped, goes exactly where aimed |
+| Superbug | 12.8 | 2950 | 578 | Even on all three |
+| Psych Bike | 11.4 | 1935 | 585 | Smallest target, weakest engine |
+| The Compiler | 15.4 | 4057 | 578 | Climbs out of anything, wide target |
+| Voidwalker | 14.0 | 3769 | 550 | Heavy and precise, slowest |
+
+`hull` is the craft's extent in design pixels, measured from the art with
+`npm run bounds` rather than picked. It sets wall clearance, and asteroids strike
+within half of it — these silhouettes are open frames rather than solid discs, so
+a full-extent hitbox would punish near-misses through gaps you can see straight
+through.
+
+### Balancing against levels that do not exist yet
+
+Tuning the roster against level 1 overfits it: there, holes outkill debris about
+three to one, so hitbox barely registers and whichever hull dodges best simply
+wins. `npm run balance` runs the roster across five archetypes instead — a
+channel gauntlet, a sixty-rock debris storm, a three-body system, an open sprint,
+and a warren of small fierce wells.
+
+The target is not equal survival. It is that **no hull leads the average and
+every hull leads somewhere**: currently 1.5 points of spread across the four
+averages, with all four topping at least one archetype. A roster where the right
+answer depends on the level is a roster worth choosing from.
+
+One thing that harness needs to be honest: its autopilot has to *attempt*
+escapes. A pilot that only flies waypoints never converts thrust into survival,
+so the matrix just ranks hitboxes and no high-thrust hull can ever win. When the
+field starts beating the engine it now turns radially outward — which is what a
+human does, and without it the measurement is not of the game people play.
 
 ## Portrait and pause
 

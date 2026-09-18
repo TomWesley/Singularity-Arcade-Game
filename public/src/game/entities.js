@@ -82,8 +82,9 @@ export class Asteroid {
    *   else, perturbed by the other holes, and free to precess, decay or be
    *   flung out.
    */
-  constructor (rng, holes, orbiter = false) {
+  constructor (rng, holes, orbiter = false, speedScale = 1) {
     this.orbiter = orbiter
+    this.speedScale = speedScale
     this.rng = rng
     this.verts = []
     this.inner = []
@@ -140,8 +141,9 @@ export class Asteroid {
     // Ordinary debris: crosses the board, with enough lateral drift that the
     // field does not read as rain.
     const inward = fromTop ? 1 : -1
-    this.vy = inward * randRange(rng, 55, 150)
-    this.vx = randRange(rng, -120, 60)
+    const s = this.speedScale
+    this.vy = inward * randRange(rng, 55, 150) * s
+    this.vx = randRange(rng, -120, 60) * s
   }
 
   /**

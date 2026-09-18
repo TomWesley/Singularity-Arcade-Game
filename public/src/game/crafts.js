@@ -13,62 +13,87 @@
 //   drag           velocity decay per second; low drag = long, loose drifts
 //   responsiveness how hard it corrects toward the requested velocity
 //   arrivalRadius  distance at which it starts easing onto the cursor
-//   artScale       display-only multiplier; the 2019 silhouettes have very
-//                  different natural widths and this evens them out without
-//                  altering a single coordinate of the artwork
+//   hull           the craft's extent in design px. Walls clear by this, and
+//                  asteroids strike within half of it -- these silhouettes are
+//                  open frames, not solid discs, so a full-extent hitbox would
+//                  punish near-misses through gaps you can see straight through.
+//                  Measured from the art with tools/craft-bounds.mjs, not picked.
+//
+// Three axes, and each hull is strong on some and pays for it on the others:
+//
+//   hull      how big a target the debris field sees
+//   thrust/mass   authority against a gravity well
+//   maxSpeed  how fast it crosses open board
+//
+// The ladder runs against itself on purpose. The smallest target has the
+// weakest engine and drifts; the strongest engine sits in the biggest target and
+// turns slowly; the most precise hull is the slowest. Craft mass is not a
+// penalty in gravity -- acceleration does not depend on the mass being
+// accelerated -- but it divides thrust, so a light hull converts its engine more
+// efficiently while a heavy one needs a bigger engine to match.
+//   artScale       in-flight display scale. The hulls are deliberately
+//                  different sizes on the board -- that size is a balance axis,
+//                  see hull -- so this is not evened out.
+//   cardScale      selection-card scale, independent of artScale: a card wants
+//                  all four filling the same box so the silhouettes can be
+//                  compared, while the board wants their true relative sizes.
 
 export const CRAFTS = [
   {
     id: 'superbug',
     name: 'Superbug',
-    tagline: 'Balanced hull. Forgiving.',
+    tagline: 'Even on all three. Nothing to learn around.',
     mass: 1.0,
-    thrust: 2600,
-    maxSpeed: 520,
-    drag: 0.9,
-    responsiveness: 6.0,
+    thrust: 2950,
+    maxSpeed: 578,
+    drag: 0.95,
+    responsiveness: 7.0,
     arrivalRadius: 90,
-    hull: 12,
-    artScale: 1.0
+    hull: 12.8,
+    artScale: 1.34,
+    cardScale: 1.96
   },
   {
     id: 'psych-bike',
     name: 'Psych Bike',
-    tagline: 'Feather-light. Twitchy, quick to turn.',
+    tagline: 'Smallest target on the board. Weakest engine on it too.',
     mass: 0.62,
-    thrust: 1900,
-    maxSpeed: 610,
-    drag: 0.62,
-    responsiveness: 7.5,
+    thrust: 1200,
+    maxSpeed: 585,
+    drag: 0.55,
+    responsiveness: 7.2,
     arrivalRadius: 70,
-    hull: 10,
-    artScale: 0.82
+    hull: 11.4,
+    artScale: 0.92,
+    cardScale: 1.62
   },
   {
     id: 'compiler',
     name: 'The Compiler',
-    tagline: 'Heavy frame, huge engine. Commits to a line.',
-    mass: 1.7,
-    thrust: 4200,
-    maxSpeed: 560,
-    drag: 1.05,
-    responsiveness: 4.6,
+    tagline: 'Climbs out of anything. Gives the debris a wide target.',
+    mass: 1.75,
+    thrust: 7100,
+    maxSpeed: 578,
+    drag: 1.0,
+    responsiveness: 7.0,
     arrivalRadius: 120,
-    hull: 14,
-    artScale: 0.52
+    hull: 15.4,
+    artScale: 0.65,
+    cardScale: 0.7
   },
   {
     id: 'voidwalker',
     name: 'Voidwalker',
-    tagline: 'Heavily damped. Goes exactly where aimed.',
-    mass: 1.25,
-    thrust: 2900,
-    maxSpeed: 470,
-    drag: 1.55,
-    responsiveness: 6.4,
+    tagline: 'Heavy and precise. Goes exactly where aimed.',
+    mass: 1.3,
+    thrust: 4900,
+    maxSpeed: 550,
+    drag: 1.3,
+    responsiveness: 7.1,
     arrivalRadius: 85,
-    hull: 13,
-    artScale: 0.7
+    hull: 14.0,
+    artScale: 0.8,
+    cardScale: 1.0
   }
 ]
 

@@ -16,8 +16,9 @@ export function buildLevel (spec) {
   const asteroids = []
   const total = spec.asteroids?.count ?? 0
   const orbiters = Math.min(total, spec.asteroids?.orbiters ?? 0)
+  const speedScale = spec.asteroids?.speed ?? 1
   for (let i = 0; i < total; i++) {
-    asteroids.push(new Asteroid(rng, holes, i < orbiters))
+    asteroids.push(new Asteroid(rng, holes, i < orbiters, speedScale))
   }
 
   return {

@@ -5,8 +5,8 @@ import {
   theme, palette, drawPanel, drawCornerFlourish,
   canvasFont, typeCase, rgbaToCss, withAlpha
 } from './theme.js'
-import { drawCraft } from './craft.js'
-import { CRAFTS, thrustAccel } from '../game/crafts.js'
+import { drawCraft, CRAFT_COLORS } from './craft.js'
+import { CRAFTS } from '../game/crafts.js'
 import { DESIGN_WIDTH, DESIGN_HEIGHT } from '../core/viewport.js'
 
 const CX = DESIGN_WIDTH / 2
@@ -94,45 +94,142 @@ export function drawCraftSelect (ctx, time, hoverIndex) {
     })
 
     // Live craft art, gently drifting so each card reads as a real ship.
-    // Card scale is deliberately decoupled from the in-flight size: artScale
-    // shrank so the craft sit right on the board, but a selection card exists
-    // to show the hull off.
-    const cy = r.y + 82
+    const cy = r.y + 68
     drawCraft(ctx, craft.id, r.x + r.width / 2, cy,
       -Math.PI / 2 + Math.sin(time * 1.1 + i) * 0.16,
-      hot ? 0.5 : 0, time, (hot ? 4.4 : 4.1) * craft.artScale)
+      hot ? 0.5 : 0, time, craft.cardScale * (hot ? 1.06 : 1))
 
     ctx.save()
     ctx.textAlign = 'center'
     const cxx = r.x + r.width / 2
 
-    ctx.font = canvasFont('heading', 17)
+    ctx.font = canvasFont('heading', 16)
     ctx.fillStyle = rgbaToCss(withAlpha(
       hot ? palette.secondary.core : palette.primary.core, 0.95))
-    ctx.fillText(typeCase('heading', craft.name), cxx, r.y + 152)
+    ctx.fillText(typeCase('heading', craft.name), cxx, r.y + 136)
 
-    ctx.font = canvasFont('data', 10.5)
-    ctx.fillStyle = rgbaToCss(withAlpha(palette.primary.core, 0.52))
-    wrap(ctx, typeCase('data', craft.tagline), cxx, r.y + 176, r.width - 30, 15)
+    ctx.font = canvasFont('data', 9.5)
+    ctx.fillStyle = rgbaToCss(withAlpha(palette.primary.core, 0.5))
+    wrap(ctx, typeCase('data', craft.tagline), cxx, r.y + 154, r.width - 26, 12)
 
-    // The three numbers that actually decide how it flies.
-    const stats = [
-      ['THRUST/MASS', `${thrustAccel(craft).toFixed(0)}`],
-      ['MAX VEL', `${craft.maxSpeed}`],
-      ['DAMPING', craft.drag.toFixed(2)]
-    ]
-    ctx.font = canvasFont('data', 11)
-    stats.forEach(([label, value], si) => {
-      const sy = r.y + 224 + si * 19
-      ctx.textAlign = 'left'
-      ctx.fillStyle = rgbaToCss(withAlpha(palette.primary.core, 0.45))
-      ctx.fillText(label, r.x + 20, sy)
-      ctx.textAlign = 'right'
-      ctx.fillStyle = rgbaToCss(withAlpha(palette.secondary.core, 0.85))
-      ctx.fillText(value, r.x + r.width - 20, sy)
-    })
+    drawStatTriad(ctx, craft, cxx, r.y + 232, 38, hot)
     ctx.restore()
   })
+}
+
+// Three stats, three axes, one shape.
+//
+// A bar chart would rank the hulls; this compares them. Each axis is normalised
+// across the whole roster, so a balanced roster draws four triangles of roughly
+// equal area in four different shapes -- the trade each craft makes is the
+// silhouette, and you can see at a glance that no hull is simply better.
+//
+// EVASION is the hitbox inverted, so that outward is good on every axis. Without
+// that one spoke would mean the opposite of the other two and the shape would
+// stop being readable.
+const STAT_AXES = [
+  { key: 'evasion', label: 'EVASION' },
+  { key: 'thrust', label: 'THRUST' },
+  { key: 'speed', label: 'SPEED' }
+]
+
+function statValues (craft) {
+  return {
+    evasion: 1 / craft.hull,
+    thrust: craft.thrust / craft.mass,
+    speed: craft.maxSpeed
+  }
+}
+
+// Normalised against the roster, with a floor so the weakest axis still reads as
+// a spoke rather than collapsing into the centre.
+function normalisedStats (craft) {
+  const all = CRAFTS.map(statValues)
+  const mine = statValues(craft)
+  const out = {}
+  for (const { key } of STAT_AXES) {
+    const lo = Math.min(...all.map(v => v[key]))
+    const hi = Math.max(...all.map(v => v[key]))
+    out[key] = hi - lo < 1e-9 ? 0.7 : 0.34 + 0.66 * ((mine[key] - lo) / (hi - lo))
+  }
+  return out
+}
+
+function drawStatTriad (ctx, craft, cx, cy, radius, hot) {
+  const [mass, accent] = CRAFT_COLORS[craft.id] ?? CRAFT_COLORS.superbug
+  const rgba = (c, a) => `rgba(${c[0]}, ${c[1]}, ${c[2]}, ${a})`
+  const norm = normalisedStats(craft)
+  // Apex up, then lower-right, lower-left.
+  const angles = [-Math.PI / 2, Math.PI / 6, (5 * Math.PI) / 6]
+
+  ctx.save()
+
+  // Range rings, so the fill has something to be read against.
+  ctx.strokeStyle = rgba(mass, 0.16)
+  ctx.lineWidth = 0.7
+  for (const k of [0.4, 0.7, 1]) {
+    ctx.beginPath()
+    angles.forEach((a, i) => {
+      const x = cx + Math.cos(a) * radius * k
+      const y = cy + Math.sin(a) * radius * k
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y)
+    })
+    ctx.closePath()
+    ctx.stroke()
+  }
+
+  // Spokes.
+  ctx.strokeStyle = rgba(mass, 0.22)
+  ctx.beginPath()
+  for (const a of angles) {
+    ctx.moveTo(cx, cy)
+    ctx.lineTo(cx + Math.cos(a) * radius, cy + Math.sin(a) * radius)
+  }
+  ctx.stroke()
+
+  // The craft's shape.
+  const pts = STAT_AXES.map(({ key }, i) => {
+    const k = norm[key]
+    return [cx + Math.cos(angles[i]) * radius * k, cy + Math.sin(angles[i]) * radius * k]
+  })
+
+  ctx.beginPath()
+  pts.forEach(([x, y], i) => { if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y) })
+  ctx.closePath()
+
+  const g = ctx.createLinearGradient(cx, cy - radius, cx, cy + radius)
+  g.addColorStop(0, rgba(accent, hot ? 0.46 : 0.3))
+  g.addColorStop(1, rgba(mass, hot ? 0.34 : 0.2))
+  ctx.fillStyle = g
+  ctx.fill()
+
+  ctx.strokeStyle = rgba(accent, hot ? 0.98 : 0.8)
+  ctx.lineWidth = 1.3
+  ctx.shadowColor = rgba(mass, 0.85)
+  ctx.shadowBlur = hot ? 11 : 6
+  ctx.stroke()
+  ctx.shadowBlur = 0
+
+  // Node at each vertex.
+  ctx.fillStyle = rgba(accent, 0.98)
+  for (const [x, y] of pts) {
+    ctx.beginPath()
+    ctx.arc(x, y, 1.9, 0, Math.PI * 2)
+    ctx.fill()
+  }
+
+  // Axis labels, just outside the frame.
+  ctx.font = canvasFont('micro', 8.5)
+  ctx.fillStyle = rgba(mass, hot ? 0.9 : 0.65)
+  const pad = radius + 10
+  ctx.textAlign = 'center'
+  ctx.fillText(STAT_AXES[0].label, cx, cy - pad + 1)
+  ctx.textAlign = 'left'
+  ctx.fillText(STAT_AXES[1].label, cx + Math.cos(angles[1]) * pad - 4, cy + Math.sin(angles[1]) * pad + 7)
+  ctx.textAlign = 'right'
+  ctx.fillText(STAT_AXES[2].label, cx + Math.cos(angles[2]) * pad + 4, cy + Math.sin(angles[2]) * pad + 7)
+
+  ctx.restore()
 }
 
 function wrap (ctx, text, cx, y, maxWidth, lineHeight) {
