@@ -129,41 +129,76 @@ function exhaust (ctx, color, mag, time, fromY, halfWidth) {
 }
 
 // ── Superbug ────────────────────────────────────────────────────────────────
-// Two stacked yellow lobes under an orange fuselage, finished with a tail fin.
-// Drawn as one teardrop hull so the lobes read as swellings of the body rather
-// than circles sitting on it: round head, widest at the lower lobe, tapering to
-// the fin. The orange fuselage is an inset panel, exactly as the original's
-// orange ellipse covered the middle of the yellow ones.
+//
+// Rebuilt from the pre-refactor sprite in sketch.js, which is a good deal richer
+// than the 2025 version I had been working from: two yellow lobes and an orange
+// fuselage, but also a pair of orange quads swept up and outward with yellow
+// struts running over them. Those struts are the antennae -- they reach from the
+// shoulder at (+-9.6, -9.6) out to (+-19.2, -19.2), and they are most of why the
+// craft reads as an insect rather than a pod.
+//
+// All original coordinates, at wid = 24.
 function drawSuperbug (ctx, thrustMag, time) {
   exhaust(ctx, SUPERBUG_YELLOW, thrustMag, time, WID * 0.98, WID * 0.16)
 
-  ctx.beginPath()
-  ctx.moveTo(0, -15.6)
-  ctx.bezierCurveTo(5.3, -15.6, 9.6, -11.3, 9.6, -6.0)     // head, r 9.6
-  ctx.bezierCurveTo(10.4, -1.0, 10.9, 3.4, 10.8, 8.4)      // swell to the thorax
-  ctx.bezierCurveTo(10.6, 13.2, 8.6, 15.9, 6.0, 17.6)      // lower lobe, r 10.8
-  ctx.lineTo(0, 24)                                         // tail fin
-  ctx.lineTo(-6.0, 17.6)
-  ctx.bezierCurveTo(-8.6, 15.9, -10.6, 13.2, -10.8, 8.4)
-  ctx.bezierCurveTo(-10.9, 3.4, -10.4, -1.0, -9.6, -6.0)
-  ctx.bezierCurveTo(-9.6, -11.3, -5.3, -15.6, 0, -15.6)
-  ctx.closePath()
-  shell(ctx, SUPERBUG_YELLOW, -15.6, 24, { blur: 11 })
+  // Yellow lobes, drawn first so the orange fuselage sits over their middles
+  // exactly as the original layered them.
+  for (const [cy, r] of [[-WID * 0.25, WID * 0.4], [WID * 0.35, WID * 0.45]]) {
+    ctx.beginPath()
+    ctx.ellipse(0, cy, r, r, 0, 0, Math.PI * 2)
+    shell(ctx, SUPERBUG_YELLOW, cy - r, cy + r, { blur: 9, width: 1 })
+  }
 
-  // Orange fuselage panel.
-  ctx.beginPath()
-  ctx.ellipse(0, 0.6, 6.7, 10.6, 0, 0, Math.PI * 2)
-  ctx.closePath()
-  shell(ctx, SUPERBUG_ORANGE, -10, 11.2, { blur: 8, width: 0.9, deep: 0.42 })
+  // The swept quads. Original corners, mirrored.
+  for (const dir of [-1, 1]) {
+    ctx.beginPath()
+    ctx.moveTo(dir * WID * 0.7, -WID * 0.1)
+    ctx.lineTo(dir * WID * 0.4, WID * 0.2)
+    ctx.lineTo(dir * WID * 0.4, -WID * 0.4)
+    ctx.lineTo(dir * WID * 0.8, -WID * 0.8)
+    ctx.closePath()
+    shell(ctx, SUPERBUG_ORANGE, -WID * 0.8, WID * 0.2, { blur: 8, width: 0.9, deep: 0.45 })
+  }
 
-  // Canopy: the upper lobe, now a highlight on the hull.
+  // Orange fuselage.
   ctx.beginPath()
-  ctx.ellipse(0, -7.4, 3.8, 4.4, 0, 0, Math.PI * 2)
-  ctx.fillStyle = rgba(lift(SUPERBUG_YELLOW, 0.55), 0.92)
+  ctx.ellipse(0, 0, WID * 0.4, WID * 0.5, 0, 0, Math.PI * 2)
+  shell(ctx, SUPERBUG_ORANGE, -WID * 0.5, WID * 0.5, { blur: 11, width: 1.1 })
+
+  // Yellow struts. The two long diagonals out to (+-0.8, -0.8) are the antennae.
+  ctx.strokeStyle = rgba(lift(SUPERBUG_YELLOW, 0.3), 0.95)
+  ctx.lineWidth = 1.5
+  ctx.lineCap = 'round'
   ctx.shadowColor = rgba(SUPERBUG_YELLOW, 0.9)
-  ctx.shadowBlur = 7
-  ctx.fill()
+  ctx.shadowBlur = 8
+  ctx.beginPath()
+  for (const dir of [-1, 1]) {
+    ctx.moveTo(dir * WID * 0.4, WID * 0.3); ctx.lineTo(dir * WID * 0.4, -WID * 0.4)
+    ctx.moveTo(dir * WID * 0.4, -WID * 0.4); ctx.lineTo(dir * WID * 0.8, -WID * 0.8)
+    ctx.moveTo(dir * WID * 0.4, -WID * 0.1); ctx.lineTo(dir * WID * 0.75, -WID * 0.45)
+    ctx.moveTo(dir * WID * 0.4, WID * 0.2); ctx.lineTo(dir * WID * 0.7, -WID * 0.1)
+  }
+  ctx.stroke()
   ctx.shadowBlur = 0
+
+  // Antenna tips, so the diagonals end in something rather than stopping.
+  ctx.fillStyle = rgba(lift(SUPERBUG_YELLOW, 0.5), 0.98)
+  ctx.shadowColor = rgba(SUPERBUG_YELLOW, 0.95)
+  ctx.shadowBlur = 9
+  for (const dir of [-1, 1]) {
+    ctx.beginPath()
+    ctx.arc(dir * WID * 0.8, -WID * 0.8, 1.7, 0, Math.PI * 2)
+    ctx.fill()
+  }
+  ctx.shadowBlur = 0
+
+  // Tail fin.
+  ctx.beginPath()
+  ctx.moveTo(WID * 0.225, WID * 0.7)
+  ctx.lineTo(-WID * 0.225, WID * 0.7)
+  ctx.lineTo(0, WID)
+  ctx.closePath()
+  shell(ctx, SUPERBUG_YELLOW, WID * 0.7, WID, { blur: 8, width: 0.9 })
 }
 
 // ── Psych Bike ──────────────────────────────────────────────────────────────
@@ -208,138 +243,196 @@ function drawPsychBike (ctx, thrustMag, time) {
 }
 
 // ── The Compiler ────────────────────────────────────────────────────────────
-// Swept parenthesis wings under a green dome. In the original the wings were
-// unattached -- their roots sit at x = +-36 while the dome is only 8.4 across --
-// so the gap is bridged here with a fuselage and two pylons. Without them this
-// craft is a dome with two arcs floating beside it, which is exactly what it
-// looked like.
+//
+// Imperial wedge. The pre-refactor sprite already had the bones of one -- a wide
+// horizontal fuselage bar spanning +-1.16 wid with green rails above and below
+// it, bracket wings whose roots sit at +-0.5 wid and bow out to +-1.4, and a
+// pair of swept nose fins -- but its nose was a dome. Given a Star Destroyer to
+// aim at, the dome becomes a long triangular prow and the rest of the original
+// structure carries straight over.
+//
+// Dark hull, bright green edges: the two-tone the original declared in
+// `colorOne = color(0, 255)` and then never drew.
 function drawCompiler (ctx, thrustMag, time) {
-  exhaust(ctx, COMPILER_GREEN, thrustMag, time, 14.5, WID * 0.15)
+  exhaust(ctx, COMPILER_GREEN, thrustMag, time, WID * 0.74, WID * 0.2)
 
-  // Pylons out to each wing root.
-  for (const dir of [-1, 1]) {
-    ctx.beginPath()
-    ctx.moveTo(dir * 4.5, -6.5)
-    ctx.bezierCurveTo(dir * 18, -6.2, dir * 28, -4.6, dir * 37, -3.0)
-    ctx.lineTo(dir * 37, 3.0)
-    ctx.bezierCurveTo(dir * 28, 4.6, dir * 18, 6.2, dir * 4.5, 6.5)
-    ctx.closePath()
-    shell(ctx, COMPILER_GREEN, -6.5, 6.5, { blur: 6, width: 0.8, deep: 0.42 })
+  const hullGradient = (y0, y1) => {
+    const g = ctx.createLinearGradient(0, y0, 0, y1)
+    g.addColorStop(0, rgba([74, 132, 114], 0.99))
+    g.addColorStop(0.5, rgba(COMPILER_SLATE, 0.99))
+    g.addColorStop(1, rgba([16, 40, 34], 0.99))
+    return g
+  }
+  const edge = (w = 1.05, blur = 9) => {
+    ctx.strokeStyle = rgba(lift(COMPILER_GREEN, 0.35), 0.95)
+    ctx.lineWidth = w
+    ctx.shadowColor = rgba(COMPILER_GREEN, 0.8)
+    ctx.shadowBlur = blur
+    ctx.stroke()
+    ctx.shadowBlur = 0
   }
 
-  // Wings: the original spline, endpoints at x = +-36 bowing out to +-58.
+  // Bracket wings, from the original: roots at +-0.5 wid, bowing out to +-1.4.
   for (const dir of [-1, 1]) {
-    crescent(ctx, dir * 36, -19.2, 19.2, dir * 54, 16, dir * 9)
-    shell(ctx, COMPILER_GREEN, -19.2, 19.2, { blur: 10, width: 1 })
+    crescent(ctx, dir * WID * 0.5, -WID * 0.8, WID * 0.8, dir * WID * 1.4, WID * 0.67, dir * WID * 0.16)
+    shell(ctx, COMPILER_GREEN, -WID * 0.8, WID * 0.8, { blur: 10, width: 1 })
   }
 
-  // Fuselage, running the length of the craft so the dome has something to sit
-  // on and the pylons have something to leave from.
+  // The wide fuselage bar that ties the wings to the hull.
   ctx.beginPath()
-  ctx.moveTo(0, -16.4)
-  ctx.bezierCurveTo(3.6, -14.8, 5.2, -9.6, 5.4, -2.0)
-  ctx.bezierCurveTo(5.5, 5.4, 3.8, 11.8, 0, 16.6)
-  ctx.bezierCurveTo(-3.8, 11.8, -5.5, 5.4, -5.4, -2.0)
-  ctx.bezierCurveTo(-5.2, -9.6, -3.6, -14.8, 0, -16.4)
+  ctx.moveTo(-WID * 1.16, -WID * 0.19)
+  ctx.lineTo(WID * 1.16, -WID * 0.19)
+  ctx.lineTo(WID * 1.16, WID * 0.19)
+  ctx.lineTo(-WID * 1.16, WID * 0.19)
   ctx.closePath()
-  // The dark half of the pair -- filled slate, rimmed in the bright green so
-  // the silhouette still reads against a black field.
-  const hull = ctx.createLinearGradient(0, -16.4, 0, 16.6)
-  hull.addColorStop(0, rgba([70, 128, 110], 0.98))
-  hull.addColorStop(0.55, rgba(COMPILER_SLATE, 0.98))
-  hull.addColorStop(1, rgba([18, 44, 38], 0.98))
-  ctx.fillStyle = hull
+  ctx.fillStyle = hullGradient(-WID * 0.19, WID * 0.19)
   ctx.fill()
-  ctx.strokeStyle = rgba(lift(COMPILER_GREEN, 0.35), 0.95)
-  ctx.lineWidth = 1.1
-  ctx.shadowColor = rgba(COMPILER_GREEN, 0.8)
-  ctx.shadowBlur = 9
+  edge(0.9, 7)
+
+  // Green rails along the bar, as in the original.
+  ctx.strokeStyle = rgba(lift(COMPILER_GREEN, 0.25), 0.9)
+  ctx.lineWidth = 1
+  ctx.shadowColor = rgba(COMPILER_GREEN, 0.75)
+  ctx.shadowBlur = 6
+  ctx.beginPath()
+  for (const sy of [-0.17, 0.17]) {
+    ctx.moveTo(-WID * 1.13, WID * sy)
+    ctx.lineTo(WID * 1.13, WID * sy)
+  }
   ctx.stroke()
   ctx.shadowBlur = 0
 
-  // Dome.
+  // The prow: a long wedge, widest at the stern, coming to a point at the bow.
   ctx.beginPath()
-  ctx.arc(0, -4.8, 5.2, 0, Math.PI * 2)
-  const dome = ctx.createRadialGradient(-1.4, -6.4, 0.4, 0, -4.8, 5.2)
-  dome.addColorStop(0, rgba([230, 255, 240], 0.99))
-  dome.addColorStop(0.6, rgba(lift(COMPILER_GREEN, 0.2), 0.95))
-  dome.addColorStop(1, rgba(COMPILER_GREEN, 0.6))
-  ctx.fillStyle = dome
+  ctx.moveTo(0, -WID * 1.5)
+  ctx.lineTo(WID * 0.42, WID * 0.5)
+  ctx.lineTo(WID * 0.3, WID * 0.74)
+  ctx.lineTo(-WID * 0.3, WID * 0.74)
+  ctx.lineTo(-WID * 0.42, WID * 0.5)
+  ctx.closePath()
+  ctx.fillStyle = hullGradient(-WID * 1.5, WID * 0.74)
   ctx.fill()
-  ctx.strokeStyle = rgba(lift(COMPILER_GREEN, 0.45), 0.95)
-  ctx.lineWidth = 1
-  ctx.shadowColor = rgba(COMPILER_GREEN, 0.95)
-  ctx.shadowBlur = 12
+  edge(1.15, 11)
+
+  // Panel lines running the length of the wedge -- the surface detail that
+  // makes an Imperial hull read as plated rather than as a triangle.
+  ctx.strokeStyle = rgba(COMPILER_GREEN, 0.3)
+  ctx.lineWidth = 0.7
+  ctx.beginPath()
+  for (const k of [0.45, 0.72]) {
+    ctx.moveTo(0, -WID * 1.5)
+    ctx.lineTo(WID * 0.42 * k, WID * 0.5)
+    ctx.moveTo(0, -WID * 1.5)
+    ctx.lineTo(-WID * 0.42 * k, WID * 0.5)
+  }
+  ctx.moveTo(-WID * 0.26, -WID * 0.28); ctx.lineTo(WID * 0.26, -WID * 0.28)
   ctx.stroke()
+
+  // Swept nose fins, from the original.
+  for (const dir of [-1, 1]) {
+    ctx.beginPath()
+    ctx.moveTo(dir * WID * 0.05, -WID * 0.62)
+    ctx.lineTo(dir * WID * 0.05, -WID * 0.86)
+    ctx.lineTo(dir * WID * 0.5, -WID * 1.02)
+    ctx.closePath()
+    ctx.fillStyle = rgba([16, 40, 34], 0.98)
+    ctx.fill()
+    edge(0.8, 6)
+  }
+
+  // Bridge tower at the stern, the one silhouette cue that says Star Destroyer
+  // more than the wedge does.
+  ctx.beginPath()
+  ctx.moveTo(-WID * 0.17, WID * 0.5)
+  ctx.lineTo(WID * 0.17, WID * 0.5)
+  ctx.lineTo(WID * 0.13, WID * 0.26)
+  ctx.lineTo(-WID * 0.13, WID * 0.26)
+  ctx.closePath()
+  ctx.fillStyle = hullGradient(WID * 0.26, WID * 0.5)
+  ctx.fill()
+  edge(0.9, 8)
+
+  ctx.fillStyle = rgba(lift(COMPILER_GREEN, 0.55), 0.98)
+  ctx.shadowColor = rgba(COMPILER_GREEN, 0.95)
+  ctx.shadowBlur = 9
+  ctx.fillRect(-WID * 0.08, WID * 0.33, WID * 0.16, WID * 0.09)
   ctx.shadowBlur = 0
 }
 
 // ── Voidwalker ──────────────────────────────────────────────────────────────
-// A 12-wide hull 48 tall, with two long outboard bars. The originals floated
-// 20px clear of the hull; here they are carried on spars. Everything is
-// rectilinear on purpose -- it is the most damped craft and should look like a
-// structure rather than a shape.
+//
+// The pre-refactor sprite is a 15x12 pixel grid, not the three plain columns the
+// 2025 rewrite reduced it to -- a central spine with stepped wings sweeping back
+// and outboard slabs, picked out with white accent cells running diagonally
+// through it. That structure is the craft, so it is reproduced cell for cell.
+//
+// The sleekness comes from treatment rather than from redrawing it: each cell is
+// a chamfered plate rather than a hard square, they overlap slightly so clusters
+// read as continuous hull, and the whole thing is lit top-down with a glowing
+// rim. Blocky in layout, smooth in surface.
+const VW_CELL = 3.1        // design px per grid cell
+const VW_CHAMFER = 0.8
+
+const VOIDWALKER_HULL = [
+  [-7,-4], [-7,-3], [-7,-2], [-7,-1], [-7,0], [-7,1], [-7,2], [-6,-3], [-6,-2],
+  [-6,-1], [-6,0], [-6,1], [-5,-2], [-4,-1], [-3,-1], [-1,-4], [-1,-3], [-1,0],
+  [-1,1], [-1,4], [-1,5], [0,-5], [0,-4], [0,-3], [0,-2], [0,-1], [0,0],
+  [0,1], [0,2], [0,3], [0,4], [0,5], [0,6], [1,-4], [1,-3], [1,0],
+  [1,1], [1,4], [1,5], [3,-1], [4,-1], [5,-2], [6,-3], [6,-2], [6,-1],
+  [6,0], [6,1], [7,-4], [7,-3], [7,-2], [7,-1], [7,0], [7,1], [7,2]
+]
+
+const VOIDWALKER_ACCENT = [
+  [-3,-3], [-3,-2], [-3,1], [-3,2], [-3,5], [-3,6], [-2,-4], [-2,0], [-2,4],
+  [-1,-5], [-1,-1], [-1,3], [1,-5], [1,-1], [1,3], [2,-4], [2,0], [2,4],
+  [3,-3], [3,-2], [3,1], [3,2], [3,5], [3,6]
+]
+
+function voidwalkerPlates (ctx, cells) {
+  const s = VW_CELL
+  const r = VW_CHAMFER
+  // Overlap by a shade so neighbouring cells fuse instead of showing seams.
+  const o = 0.35
+  ctx.beginPath()
+  for (const [gx, gy] of cells) {
+    const x = gx * s - s / 2 - o
+    const y = gy * s - s / 2 - o
+    const w = s + o * 2
+    ctx.moveTo(x + r, y)
+    ctx.lineTo(x + w - r, y)
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r)
+    ctx.lineTo(x + w, y + w - r)
+    ctx.quadraticCurveTo(x + w, y + w, x + w - r, y + w)
+    ctx.lineTo(x + r, y + w)
+    ctx.quadraticCurveTo(x, y + w, x, y + w - r)
+    ctx.lineTo(x, y + r)
+    ctx.quadraticCurveTo(x, y, x + r, y)
+    ctx.closePath()
+  }
+}
+
 function drawVoidwalker (ctx, thrustMag, time) {
-  exhaust(ctx, VOIDWALKER_PURPLE, thrustMag, time, 26, LEN * 1.6)
+  exhaust(ctx, VOIDWALKER_PURPLE, thrustMag, time, VW_CELL * 7, VW_CELL * 1.5)
 
-  // Spars out to the outboard bars.
-  for (const dir of [-1, 1]) {
-    ctx.beginPath()
-    ctx.moveTo(dir * 6, -2.6)
-    ctx.lineTo(dir * 27, -1.7)
-    ctx.lineTo(dir * 27, 1.7)
-    ctx.lineTo(dir * 6, 2.6)
-    ctx.closePath()
-    shell(ctx, VOIDWALKER_PURPLE, -2.6, 2.6, { blur: 5, width: 0.7, deep: 0.5 })
-  }
+  voidwalkerPlates(ctx, VOIDWALKER_HULL)
+  shell(ctx, VOIDWALKER_PURPLE, -VW_CELL * 6, VW_CELL * 7, { blur: 10, width: 0.9, deep: 0.34 })
 
-  // Outboard bars, 60 tall as in the original, with the corners eased off.
-  for (const dir of [-1, 1]) {
-    const x0 = dir > 0 ? 26 : -30.5
-    ctx.beginPath()
-    ctx.moveTo(x0 + 1.4, -30)
-    ctx.lineTo(x0 + 3.1, -30)
-    ctx.quadraticCurveTo(x0 + 4.5, -29, x0 + 4.5, -26)
-    ctx.lineTo(x0 + 4.5, 26)
-    ctx.quadraticCurveTo(x0 + 4.5, 29, x0 + 3.1, 30)
-    ctx.lineTo(x0 + 1.4, 30)
-    ctx.quadraticCurveTo(x0, 29, x0, 26)
-    ctx.lineTo(x0, -26)
-    ctx.quadraticCurveTo(x0, -29, x0 + 1.4, -30)
-    ctx.closePath()
-    shell(ctx, VOIDWALKER_PURPLE, -30, 30, { blur: 7, width: 0.9 })
-  }
-
-  // Hull: the 12-wide column, tapered to a nose and a tail.
-  ctx.beginPath()
-  ctx.moveTo(0, -23.5)
-  ctx.bezierCurveTo(4.2, -22.4, 6, -19.2, 6, -14)
-  ctx.lineTo(6, 17)
-  ctx.bezierCurveTo(6, 22, 4.2, 25, 2.4, 26.5)
-  ctx.lineTo(-2.4, 26.5)
-  ctx.bezierCurveTo(-4.2, 25, -6, 22, -6, 17)
-  ctx.lineTo(-6, -14)
-  ctx.bezierCurveTo(-6, -19.2, -4.2, -22.4, 0, -23.5)
-  ctx.closePath()
-  shell(ctx, VOIDWALKER_PURPLE, -23.5, 26.5, { blur: 10, width: 1.1 })
-
-  // Inner spine, standing in for the original's narrower centre column.
-  ctx.beginPath()
-  ctx.moveTo(0, -19)
-  ctx.bezierCurveTo(2, -18.2, 2.6, -16, 2.6, -12)
-  ctx.lineTo(2.6, 18)
-  ctx.lineTo(-2.6, 18)
-  ctx.lineTo(-2.6, -12)
-  ctx.bezierCurveTo(-2.6, -16, -2, -18.2, 0, -19)
-  ctx.closePath()
-  shell(ctx, VOIDWALKER_SILVER, -19, 18, { blur: 7, width: 0.7, deep: 0.55 })
-
-  // The two white sensor blocks.
-  ctx.fillStyle = rgba(WHITE, 0.97)
-  ctx.shadowColor = rgba(WHITE, 0.85)
-  ctx.shadowBlur = 9
-  ctx.fillRect(-1.9, -7.4, 3.8, 3.8)
-  ctx.fillRect(-1.9, 8.6, 3.8, 3.8)
+  // Accents are deliberately held back. In the original the white cells are a
+  // scatter of highlights through a purple hull; rendered at full brightness
+  // with a lifted gradient they take the craft over and it reads as a white
+  // ship with purple trim.
+  voidwalkerPlates(ctx, VOIDWALKER_ACCENT)
+  const a = ctx.createLinearGradient(0, -VW_CELL * 6, 0, VW_CELL * 7)
+  a.addColorStop(0, rgba([196, 204, 238], 0.88))
+  a.addColorStop(0.55, rgba([150, 158, 205], 0.82))
+  a.addColorStop(1, rgba([104, 110, 158], 0.7))
+  ctx.fillStyle = a
+  ctx.fill()
+  ctx.strokeStyle = rgba([214, 222, 255], 0.55)
+  ctx.lineWidth = 0.6
+  ctx.shadowColor = rgba(VOIDWALKER_SILVER, 0.4)
+  ctx.shadowBlur = 5
+  ctx.stroke()
   ctx.shadowBlur = 0
 }
 
