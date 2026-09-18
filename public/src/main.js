@@ -116,10 +116,10 @@ function render (alpha) {
   ctx.fillStyle = '#000000'
   ctx.fillRect(0, 0, DESIGN_WIDTH, DESIGN_HEIGHT)
 
-  starfield.draw(ctx)
+  starfield.draw(ctx, time)
 
   if (game.level) {
-    drawGate(ctx, game.level.gate, time)
+    drawGate(ctx, game.level.gate, time, game.transitFlare)
 
     for (const a of game.level.asteroids) if (a.active) drawAsteroid(ctx, a)
 
@@ -128,7 +128,11 @@ function render (alpha) {
     for (const s of game.level.stars) drawStar(ctx, s, time)
     for (const h of game.level.blackHoles) drawBlackHole(ctx, h)
 
-    if (game.state === STATE.PLAYING) {
+    // Drawn through the transit too: the craft flies out of the gate rather than
+    // being switched off the moment it touches it.
+    const showCraft = game.state === STATE.PLAYING ||
+      (game.state === STATE.COMPLETE && game.body.x < DESIGN_WIDTH + 120)
+    if (showCraft) {
       // Interpolate between fixed steps so motion is smooth regardless of the
       // gap between the last physics step and this frame.
       const x = game.prev.x + (game.body.x - game.prev.x) * alpha

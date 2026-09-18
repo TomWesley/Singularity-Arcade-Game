@@ -205,3 +205,42 @@ if (errors.length) process.exit(1)
   console.log(problems.length ? '  FAILED: ' + problems.join('; ') : '  Board opens clear and fills.')
   if (problems.length) process.exit(1)
 }
+
+// ── Gate transit ────────────────────────────────────────────────────────────
+// Crossing the gate used to switch state in the same frame the craft touched
+// it, so the hull stopped being drawn mid-flight and appeared to vanish. It
+// should keep flying out under its own momentum.
+{
+  const lvl = buildLevel(spec)
+  const game = new Game()
+  game.setLevel(lvl)
+  game.selectCraft(CRAFTS[0])
+
+  // Place it just short of the gate, moving right, and let it cross.
+  game.body.x = lvl.gate.x - lvl.gate.width / 2 - 8
+  game.body.y = lvl.gate.y
+  game.body.vx = 300
+  game.body.vy = 0
+
+  let crossedAt = null
+  const track = []
+  for (let i = 0; i < 260; i++) {
+    game.update(1 / 120, { x: lvl.gate.x, y: lvl.gate.y })
+    if (game.state === STATE.COMPLETE && crossedAt === null) crossedAt = game.body.x
+    if (game.state === STATE.COMPLETE && i % 40 === 0) {
+      track.push(`${game.phaseTime.toFixed(2)}s:x=${game.body.x.toFixed(0)}`)
+    }
+  }
+
+  const travelled = game.body.x - crossedAt
+  console.log('\nGate transit:')
+  console.log(`  crossed at x=${crossedAt?.toFixed(0)}, ended at x=${game.body.x.toFixed(0)} (travelled ${travelled.toFixed(0)}px)`)
+  console.log(`  ${track.join('  ')}`)
+
+  const problems = []
+  if (crossedAt === null) problems.push('never reached the gate')
+  else if (travelled < 120) problems.push(`craft only travelled ${travelled.toFixed(0)}px after crossing`)
+  if (game.state !== STATE.COMPLETE) problems.push('did not end in COMPLETE')
+  console.log(problems.length ? '  FAILED: ' + problems.join('; ') : '  Craft flies out through the gate.')
+  if (problems.length) process.exit(1)
+}

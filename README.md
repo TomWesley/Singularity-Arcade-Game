@@ -156,6 +156,15 @@ Canvas text does not trigger webfont loading the way DOM text does -- setting
 with nothing to correct it later. Every weight the game draws with is requested
 explicitly and awaited before the first frame.
 
+The starfield follows a power law: most stars sit near the threshold of
+visibility and a few carry the field, which is most of what makes a scatter of
+dots read as sky. Colour is white with only a whisper of warm or cool on a
+minority — real stellar colours are far less saturated than they are usually
+drawn. Each star twinkles on its own phase, faint ones shimmering more than
+bright ones, and the brightest carry a faint diffraction cross. Positions round
+to whole pixels at draw time, because a 1px dot on a half-pixel boundary
+antialiases across two columns and turns to mush.
+
 Colour belongs to the craft. The four hulls keep their 2019 shapes and their
 2019 palette exactly; only the rendering is new.
 

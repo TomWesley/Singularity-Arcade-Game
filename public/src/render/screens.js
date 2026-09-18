@@ -278,15 +278,20 @@ export function drawCraftLost (ctx, game) {
 }
 
 export function drawComplete (ctx, game) {
-  scrim(ctx, 0.55)
+  // Hold off until the craft has flown out, then fade in. Slamming the card up
+  // on the frame the gate is touched is what made the exit feel like a cut.
+  const k = Math.max(0, Math.min(1, (game.phaseTime - 0.85) / 0.45))
+  if (k <= 0) return
+
+  scrim(ctx, 0.55 * k)
   centred(ctx, 'Gate reached', 'title', 46, 316,
-    rgbaToCss(withAlpha(palette.secondary.core, 0.97)), 24)
+    rgbaToCss(withAlpha(palette.secondary.core, 0.97 * k)), 24)
   const kept = game.lives === 3 ? 'No craft lost' : `${game.lives} of 3 craft brought home`
   centred(ctx, kept, 'data', 15, 372,
-    rgbaToCss(withAlpha(palette.primary.core, 0.8)), 10)
+    rgbaToCss(withAlpha(palette.primary.core, 0.8 * k)), 10)
   const pulse = 0.5 + Math.sin(game.elapsed * 2.4) * 0.35
   centred(ctx, 'Click to fly again', 'label', 16, 462,
-    rgbaToCss(withAlpha(palette.primary.core, pulse)), 8)
+    rgbaToCss(withAlpha(palette.primary.core, pulse * k)), 8)
 }
 
 export function drawGameOver (ctx, game) {
@@ -314,7 +319,7 @@ export function drawGameOver (ctx, game) {
 // while the gate itself stays exactly where it was.
 const GATE_GLOW_REACH = 1.05      // multiple of the opening height
 
-export function drawGate (ctx, gate, time) {
+export function drawGate (ctx, gate, time, flare = 0) {
   const { x, y, width: w, height: h } = gate
   const top = y - h / 2
   const right = Math.min(x + w / 2, DESIGN_WIDTH)
@@ -325,12 +330,14 @@ export function drawGate (ctx, gate, time) {
   // horizontal bands. The banded version stepped visibly -- thirty strips of
   // uniform alpha over 216px is a 7px staircase -- and a single gradient is both
   // smooth and cheaper.
-  const breathe = 1 + Math.sin(time * 0.9) * 0.05
+  // The threshold blooms as a craft crosses it, then settles back.
+  const breathe = 1 + Math.sin(time * 0.9) * 0.05 + flare * 0.5
   const reach = h * GATE_GLOW_REACH * breathe
+  const boost = 1 + flare * 1.6
   const glow = ctx.createRadialGradient(right, y, 0, right, y, reach)
-  glow.addColorStop(0, rgbaToCss(withAlpha(palette.secondary.core, 0.5)))
-  glow.addColorStop(0.18, rgbaToCss(withAlpha(palette.secondary.core, 0.22)))
-  glow.addColorStop(0.5, rgbaToCss(withAlpha(palette.secondary.core, 0.06)))
+  glow.addColorStop(0, rgbaToCss(withAlpha(palette.secondary.core, Math.min(1, 0.5 * boost))))
+  glow.addColorStop(0.18, rgbaToCss(withAlpha(palette.secondary.core, Math.min(1, 0.22 * boost))))
+  glow.addColorStop(0.5, rgbaToCss(withAlpha(palette.secondary.core, Math.min(1, 0.06 * boost))))
   glow.addColorStop(1, rgbaToCss(withAlpha(palette.secondary.core, 0)))
   ctx.fillStyle = glow
   ctx.fillRect(right - reach, y - reach, reach, reach * 2)
@@ -342,9 +349,9 @@ export function drawGate (ctx, gate, time) {
   edge.addColorStop(0.5, rgbaToCss(withAlpha(palette.secondary.core, 0.98)))
   edge.addColorStop(1, rgbaToCss(withAlpha(palette.secondary.core, 0)))
   ctx.strokeStyle = edge
-  ctx.lineWidth = 2.6
+  ctx.lineWidth = 2.6 + flare * 3.5
   ctx.shadowColor = rgbaToCss(palette.secondary.glow)
-  ctx.shadowBlur = 16
+  ctx.shadowBlur = 16 + flare * 26
   ctx.beginPath()
   ctx.moveTo(right - 1.3, top)
   ctx.lineTo(right - 1.3, top + h)

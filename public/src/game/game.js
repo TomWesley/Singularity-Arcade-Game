@@ -24,6 +24,11 @@ const WAKE_INTERVAL = 1 / 60
 const WAKE_POINTS = 16
 const RESPAWN_SECONDS = 1.6
 const COMPLETE_SECONDS = 2.2
+// How long the craft keeps flying after it crosses the threshold, before the
+// completion card appears. Reaching the gate used to switch state in the same
+// frame the craft touched it, so the hull stopped being drawn mid-flight and
+// simply vanished. It flies out now.
+const TRANSIT_SECONDS = 1.15
 
 export class Game {
   constructor () {
@@ -146,6 +151,7 @@ export class Game {
         break
       case STATE.COMPLETE:
         this.phaseTime += dt
+        this.updateTransit(dt)
         break
       default:
         break
@@ -208,7 +214,49 @@ export class Game {
     if (this.level.gate.contains(this.body.x, this.body.y)) {
       this.state = STATE.COMPLETE
       this.phaseTime = 0
+      this.transitFrom = this.body.x
     }
+  }
+
+  /**
+   * The craft flying out through the gate.
+   *
+   * It keeps its momentum and the field keeps acting on it -- crossing a
+   * threshold does not suspend gravity -- with the engine held wide open
+   * straight ahead, which is what a pilot who has just made it would do. No
+   * steering: the run is over and the cursor should stop mattering the instant
+   * the gate is crossed.
+   */
+  updateTransit (dt) {
+    if (this.phaseTime > TRANSIT_SECONDS) return
+
+    this.prev.x = this.body.x
+    this.prev.y = this.body.y
+
+    gravityAt(this.body.x, this.body.y, this.level.holes, this.gravity)
+    const maxAccel = this.craft.thrust / this.craft.mass
+    integrate(
+      this.body,
+      this.gravity.x + maxAccel,
+      this.gravity.y,
+      dt,
+      this.craft.drag / this.craft.mass,
+      SYSTEM_SPEED_LIMIT
+    )
+
+    this.wakeClock += dt
+    if (this.wakeClock >= WAKE_INTERVAL) {
+      this.wakeClock -= WAKE_INTERVAL
+      this.wake.unshift({ x: this.body.x, y: this.body.y })
+      if (this.wake.length > WAKE_POINTS) this.wake.pop()
+    }
+    this.speed = Math.hypot(this.body.vx, this.body.vy)
+  }
+
+  /** 0..1 as the craft crosses the threshold, for the gate's flare. */
+  get transitFlare () {
+    if (this.state !== STATE.COMPLETE) return 0
+    return Math.max(0, 1 - this.phaseTime / 0.55)
   }
 
   // How far inside the point of no return we are, 0..1, for HUD warnings.
