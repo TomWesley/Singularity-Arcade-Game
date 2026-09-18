@@ -155,21 +155,19 @@ export function steer (craft, x, y, vx, vy, targetX, targetY, out = { x: 0, y: 0
 }
 
 /**
- * The board's own speed limit.
+ * The board's speed limit, and it is now genuinely the speed of light.
  *
- * Worth being straight about what this is and is not. The real speed of light,
- * carried through this game's length and time scales, works out at 379 px per
- * game-second -- and the craft already fly at 470 to 610, so the game is
- * comfortably superluminal in its own units and has been all along. That falls
- * out of wanting black holes big enough to read on a 1280px board *and*
- * accelerations slow enough to fly; the two constraints pin the scale, and c
- * lands where it lands.
+ * This used to be a house rule. Carried through the game's length and time
+ * scales, c worked out at 379 px per game-second while the craft flew at 470 to
+ * 610, so the game was superluminal in its own units and the cap had to be an
+ * invented number instead.
  *
- * So this is a house rule, not physics: a ceiling that keeps a slingshot
- * spectacular without letting a rock cross the board in three frames. It is
- * enforced the way relativity would, though -- see below.
+ * Lengthening the game-second to strengthen the field moved c with it -- it
+ * scales as T where gravity scales as T^2 -- and at the current scale c lands at
+ * 656 px/s, above every craft's top speed. So the limit is no longer a number
+ * picked to feel right; it is the real constant, converted.
  */
-export const SYSTEM_SPEED_LIMIT = 1500
+export const SYSTEM_SPEED_LIMIT = (C * SECONDS_PER_GAME_SECOND) / METERS_PER_PIXEL
 
 /**
  * Advance one body by dt using semi-implicit (symplectic) Euler: velocity is

@@ -60,12 +60,20 @@ while acceleration across it is untouched, so a body approaches the limit
 asymptotically instead of hitting a clamp. A hole can still whip a rock through
 a hairpin at full speed; it just cannot keep adding speed.
 
-Worth being straight that this is a house rule, not physics. The real speed of
-light carried through this game's length and time scales is **379 px per
-game-second** — and the craft fly at 470–610, so the game is comfortably
-superluminal in its own units and always has been. That falls out of wanting
-black holes big enough to read on a 1280px board *and* accelerations slow enough
-to fly; those two constraints pin the scale, and `c` lands where it lands.
+That limit is the real `c`, converted — not a number picked to feel right. It
+used to be a house rule: at the original time scale `c` worked out at 379 px per
+game-second while the craft flew at 470–610, so the game was superluminal in its
+own units. Lengthening the game-second to strengthen the field moved `c` with it
+(gravity scales as `T²`, `c` as `T`), and it now lands at **656 px/s** — above
+every craft's top speed. Nothing on the board outruns light.
+
+### Tuning the field without resizing the holes
+
+Horizon radius is `r_s / METERS_PER_PIXEL` and has no time term; gravitational
+acceleration carries a `T²`. So `SECONDS_PER_GAME_SECOND` is the one dial that
+changes how hard the wells pull while every hole stays exactly the size it was.
+It was raised by `√3` to triple the field — a 22 M☉ hole's escape limit went
+from 137px to 173px with its horizon unchanged at 88px.
 
 ### Orbits
 

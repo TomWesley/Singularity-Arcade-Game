@@ -1,6 +1,6 @@
 // Game state, simulation and rules. Knows nothing about drawing.
 
-import { gravityAt, steer, integrate, escapeLimit } from './physics.js'
+import { gravityAt, steer, integrate, escapeLimit, SYSTEM_SPEED_LIMIT } from './physics.js'
 import { CRAFTS } from './crafts.js'
 import { DESIGN_WIDTH, DESIGN_HEIGHT } from '../core/viewport.js'
 
@@ -171,12 +171,16 @@ export class Game {
       this.thrust
     )
 
+    // The craft is held to the same limit as everything else. It rarely binds --
+    // top speeds are 0.72c to 0.93c -- but a deep gravity well can accelerate a
+    // hull past its own engine, and nothing on this board should outrun light.
     integrate(
       this.body,
       this.gravity.x + this.thrust.x,
       this.gravity.y + this.thrust.y,
       dt,
-      this.craft.drag
+      this.craft.drag,
+      SYSTEM_SPEED_LIMIT
     )
 
     // Walls are solid and bleed off the perpendicular velocity rather than
