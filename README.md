@@ -54,6 +54,8 @@ neared it, and a GRAV bar in the corner reading the field strength. Both were th
 wrong kind of help: one turned a thing the player is meant to develop a feel for
 into a boundary they could read off the screen, the other into a number.
 
+The HUD is down to two things: a row of the ship you are flying in the bottom
+left, the way an arcade cabinet has always shown lives, and the capture banner.
 What is left has to be interpreted. The aura falls off with the field, and the
 craft starts going soft on the cursor as thrust loses to the pull — that last one
 is the real teacher, since you feel the steering give before anything else tells

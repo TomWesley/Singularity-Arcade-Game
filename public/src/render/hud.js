@@ -1,38 +1,41 @@
 // What is left of the HUD: ships remaining, and the warning that fires once the
 // field has beaten the engine.
 //
+// Lives are a row of the actual ship you are flying, bottom left, the way an
+// arcade cabinet has always done it. A panel with a title and a row of abstract
+// tokens was three pieces of furniture doing what three small silhouettes do on
+// their own, and the silhouettes carry information the tokens never did -- you
+// can see at a glance which hull you picked.
+//
 // The velocity and gravity gauges are gone. They were the last numeric readout
 // of a thing the player is meant to feel -- how hard the pull is right now --
 // and a bar climbing in the corner answers that question so you do not have to
 // learn it. What remains is indirect: the aura, the craft going soft on the
 // cursor, and the banner once it is already too late.
 
-import {
-  theme, palette, drawPanel, drawIcon,
-  canvasFont, rgbaToCss, withAlpha
-} from './theme.js'
-import { DESIGN_WIDTH } from '../core/viewport.js'
+import { palette, canvasFont, rgbaToCss, withAlpha } from './theme.js'
+import { drawCraft } from './craft.js'
+import { DESIGN_WIDTH, DESIGN_HEIGHT } from '../core/viewport.js'
+
+// Icon size relative to the selection-card art, and how far apart they sit.
+const SHIP_SCALE = 0.4
+const SHIP_GAP = 42
 
 export function drawHud (ctx, game) {
-  // ── Right: ships remaining ──
-  drawPanel(ctx, theme, {
-    x: DESIGN_WIDTH - 246, y: 14, width: 230, height: 78,
-    title: 'SHIPS REMAINING', cornerSize: 10, bgOpacity: 0.05
-  })
-
-  // A diamond reads as a token rather than a picture of the thing it counts --
-  // the panel title already says what is being counted, and repeating it in the
-  // icon just competes with the actual ship on the board.
-  for (let i = 0; i < 3; i++) {
-    const filled = i < game.lives
-    drawIcon(
-      ctx, 'diamond',
-      DESIGN_WIDTH - 186 + i * 46, 62, 26,
-      withAlpha(filled ? palette.secondary.core : palette.primary.dim, filled ? 0.95 : 0.22)
-    )
-  }
+  drawShipsRemaining(ctx, game)
 
   if (game.nearestHoleDanger > 0.02) drawCaptureWarning(ctx, game)
+}
+
+function drawShipsRemaining (ctx, game) {
+  const craft = game.craft
+  const scale = craft.cardScale * SHIP_SCALE
+  const y = DESIGN_HEIGHT - 38
+
+  for (let i = 0; i < game.lives; i++) {
+    // Nose-up and engines cold: these are ships on the shelf, not in flight.
+    drawCraft(ctx, craft.id, 34 + i * SHIP_GAP, y, -Math.PI / 2, 0, 0, scale)
+  }
 }
 
 // Fires when the craft crosses inside the radius where its own thrust can no
