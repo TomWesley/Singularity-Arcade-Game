@@ -52,7 +52,6 @@ export class Game {
     this.gravity = { x: 0, y: 0 }
     this.thrust = { x: 0, y: 0 }
     this.speed = 0
-    this.gForce = 0
     this.nearestHoleDanger = 0   // 0..1, how deep into a capture zone we are
 
     this._accel = { x: 0, y: 0 }
@@ -206,7 +205,6 @@ export class Game {
     }
 
     this.speed = Math.hypot(this.body.vx, this.body.vy)
-    this.gForce = Math.hypot(this.gravity.x, this.gravity.y)
     this.nearestHoleDanger = this.dangerLevel()
 
     if (this.checkHazards()) return

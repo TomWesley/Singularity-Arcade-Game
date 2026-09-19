@@ -1,39 +1,19 @@
-// Flight instruments. Built from the engine's panel and gauge components so the
-// readouts match the rest of Wesley Arcade, and fed from the live simulation so
-// they are telemetry rather than decoration.
+// What is left of the HUD: ships remaining, and the warning that fires once the
+// field has beaten the engine.
+//
+// The velocity and gravity gauges are gone. They were the last numeric readout
+// of a thing the player is meant to feel -- how hard the pull is right now --
+// and a bar climbing in the corner answers that question so you do not have to
+// learn it. What remains is indirect: the aura, the craft going soft on the
+// cursor, and the banner once it is already too late.
 
 import {
-  theme, palette, drawPanel, drawBarGauge, drawIcon,
+  theme, palette, drawPanel, drawIcon,
   canvasFont, rgbaToCss, withAlpha
 } from './theme.js'
 import { DESIGN_WIDTH } from '../core/viewport.js'
 
-const GRAVITY_FULL_SCALE = 2600   // px/s^2 — roughly one craft's thrust budget
-
 export function drawHud (ctx, game) {
-  const craft = game.craft
-
-  // ── Left: flight telemetry ──
-  drawPanel(ctx, theme, {
-    x: 16, y: 14, width: 232, height: 96,
-    title: craft.name, cornerSize: 10, bgOpacity: 0.05
-  })
-
-  drawBarGauge(ctx, theme, {
-    x: 28, y: 52, width: 208, height: 13,
-    value: Math.min(1, game.speed / craft.maxSpeed),
-    label: 'VEL', showValue: false
-  })
-
-  // Gravity load. Turns red as the field starts to win.
-  const gLoad = Math.min(1, game.gForce / GRAVITY_FULL_SCALE)
-  drawBarGauge(ctx, theme, {
-    x: 28, y: 78, width: 208, height: 13,
-    value: gLoad,
-    label: 'GRAV', showValue: false,
-    color: gLoad > 0.66 ? palette.danger.core : palette.primary.core
-  })
-
   // ── Right: ships remaining ──
   drawPanel(ctx, theme, {
     x: DESIGN_WIDTH - 246, y: 14, width: 230, height: 78,

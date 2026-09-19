@@ -48,12 +48,17 @@ Two consequences worth knowing before you fly:
   goes as `1/r_s`, so a 3 M☉ hole 12 px across has a fiercer well than a 22 M☉
   one at 88 px. The big ones are terrain; the small ones are ambushes.
 
-Nothing marks where the pull becomes unwinnable. There used to be a ring at the
-craft-specific escape radius, drawn in red as you neared it, and it was the wrong
-kind of help — it turned a thing the player is meant to develop a feel for into a
-boundary they could read off the screen. The aura falls off with the field, the
-GRAV gauge climbs, and the craft starts refusing the cursor. Learning where that
-adds up to "too close" is the game.
+Nothing marks where the pull becomes unwinnable, and nothing measures it either.
+There used to be a ring at the craft-specific escape radius drawn in red as you
+neared it, and a GRAV bar in the corner reading the field strength. Both were the
+wrong kind of help: one turned a thing the player is meant to develop a feel for
+into a boundary they could read off the screen, the other into a number.
+
+What is left has to be interpreted. The aura falls off with the field, and the
+craft starts going soft on the cursor as thrust loses to the pull — that last one
+is the real teacher, since you feel the steering give before anything else tells
+you. The only explicit signal is the capture banner, and it fires once you are
+already past saving, so it narrates rather than warns.
 
 ### The board's speed limit
 

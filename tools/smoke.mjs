@@ -75,7 +75,7 @@ for (const craft of CRAFTS) {
     if (!Number.isFinite(game.body.x) || !Number.isFinite(game.body.y)) {
       throw new Error(`${craft.name}: non-finite position at step ${i}`)
     }
-    if (!Number.isFinite(game.speed) || !Number.isFinite(game.gForce)) {
+    if (!Number.isFinite(game.speed)) {
       throw new Error(`${craft.name}: non-finite telemetry at step ${i}`)
     }
     if (game.state === STATE.COMPLETE) { completed++; break }
