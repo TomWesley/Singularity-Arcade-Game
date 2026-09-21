@@ -7,7 +7,7 @@ import { startLoop } from './core/loop.js'
 import { Input } from './core/input.js'
 import { PauseController } from './core/pause.js'
 import { Game, STATE } from './game/game.js'
-import { loadLevel } from './game/level.js'
+import { loadLevel, loadManifest } from './game/level.js'
 import { CRAFTS } from './game/crafts.js'
 
 import { initTheme, ensureFonts } from './render/theme.js'
@@ -20,7 +20,7 @@ import { Impact } from './render/impact.js'
 import { drawHud } from './render/hud.js'
 import {
   drawTitle, drawCraftSelect, drawCraftLost, drawComplete, drawGameOver,
-  drawGate, craftAtPoint, drawPauseOverlay
+  drawGate, craftAtPoint, drawPauseOverlay, drawVictory
 } from './render/screens.js'
 
 const canvas = document.getElementById('stage')
@@ -43,6 +43,25 @@ let uiTime = 0
 
 let hoverCraft = -1
 
+// Guards the async level load so a double-click cannot advance twice.
+let advancing = false
+
+async function advance () {
+  if (advancing) return
+  advancing = true
+  try {
+    const next = game.levelIndex + 1
+    const level = await loadLevel(game.campaign.order[next])
+    game.setLevel(level, next)
+    game.beginRound()
+  } catch (err) {
+    console.error(err)
+    game.state = STATE.VICTORY      // fail to the end card rather than a dead board
+  } finally {
+    advancing = false
+  }
+}
+
 input.onClick((x, y) => {
   // A tap that lifts a pause must not also count as a game click, or the player
   // resumes and selects a craft with the same touch.
@@ -58,6 +77,11 @@ input.onClick((x, y) => {
       break
     }
     case STATE.COMPLETE:
+      // Lives and craft carry forward; only the board changes.
+      if (game.isFinalLevel) game.state = STATE.VICTORY
+      else advance()
+      break
+    case STATE.VICTORY:
     case STATE.GAME_OVER:
       game.restart()
       break
@@ -155,6 +179,7 @@ function render (alpha) {
     case STATE.PLAYING: drawHud(ctx, game); break
     case STATE.LOST: drawHud(ctx, game); drawCraftLost(ctx, game); break
     case STATE.COMPLETE: drawHud(ctx, game); drawComplete(ctx, game); break
+    case STATE.VICTORY: drawVictory(ctx, game); break
     case STATE.GAME_OVER: drawGameOver(ctx, game); break
   }
 
@@ -164,9 +189,13 @@ function render (alpha) {
   }
 }
 
-Promise.all([loadLevel('level1'), ensureFonts()])
+loadManifest()
+  .then(campaign => {
+    game.campaign = campaign
+    return Promise.all([loadLevel(campaign.order[0]), ensureFonts()])
+  })
   .then(([level]) => {
-    game.setLevel(level)
+    game.setLevel(level, 0)
     startLoop({ update, render })
   })
   .catch(err => {

@@ -265,6 +265,26 @@ so the matrix just ranks hitboxes and no high-thrust hull can ever win. When the
 field starts beating the engine it now turns radially outward — which is what a
 human does, and without it the measurement is not of the game people play.
 
+## Levels
+
+`levels/manifest.json` sets the order and the intended length of the campaign:
+
+```json
+{ "target": 15, "order": ["level1"] }
+```
+
+An explicit manifest rather than scanning for `level1..levelN` — the order is a
+design decision, and a run of files on disk cannot express "this one comes third"
+without renaming everything after it. `target` is the campaign's intended length,
+so the clear card can say *1 of 15* before all fifteen exist.
+
+Lives and craft choice carry across levels; only `restart()` puts you back at the
+beginning. Clearing the last level in `order` ends the run rather than trying to
+load the next one.
+
+Adding a level is two steps: drop the JSON in `levels/`, add its id to `order`.
+The five archetypes in `npm run balance` are already valid level specs.
+
 ## Portrait and pause
 
 The board is authored at 1280x720 and letterboxed, so in portrait it collapses to
@@ -279,7 +299,7 @@ the rotate prompt is always what the player sees.
 ## Running it
 
 ```bash
-npm start                  # http://localhost:3000 — zero dependencies
+npm start                  # http://localhost:3210 — zero dependencies
 npm run physics            # geometry table for a range of black hole masses
 npm run simulate           # autopilot balance report for levels/level1.json
 npm run speeds             # asteroid speed distribution, for tuning the tails

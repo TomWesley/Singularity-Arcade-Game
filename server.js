@@ -3,7 +3,7 @@
 // levels/ into the arcade's dist and Firebase Hosting serves them at
 // wesleyarcade.com/singularity/.
 //
-//   npm start        -> http://localhost:3000
+//   npm start        -> http://localhost:3210
 //
 // Serves public/ at the root and levels/ at /levels, mirroring the deployed
 // layout exactly so a path that works here works there.
@@ -14,7 +14,10 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const root = path.dirname(fileURLToPath(import.meta.url))
-const port = Number(process.env.PORT) || 3000
+// 3210 rather than 3000: sibling projects in this workspace also default to
+// 3000, and a server bound to ::1 wins 'localhost' over one bound to *, so a
+// clash silently serves someone else's page to the screenshot tooling.
+const port = Number(process.env.PORT) || 3210
 
 const TYPES = {
   '.html': 'text/html; charset=utf-8',

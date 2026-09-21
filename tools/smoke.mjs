@@ -244,3 +244,38 @@ if (errors.length) process.exit(1)
   console.log(problems.length ? '  FAILED: ' + problems.join('; ') : '  Craft flies out through the gate.')
   if (problems.length) process.exit(1)
 }
+
+// ── Campaign progression ────────────────────────────────────────────────────
+// Lives and craft choice have to survive a level change, and the last level has
+// to end the run rather than trying to load level sixteen.
+{
+  const game = new Game()
+  game.campaign = { order: ['a', 'b', 'c'], target: 15 }
+  game.setLevel(buildLevel(spec), 0)
+  game.selectCraft(CRAFTS[2])
+  game.lives = 2
+
+  const checks = []
+  checks.push(['level 1 is not final', game.isFinalLevel === false])
+  checks.push(['levelNumber is 1-based', game.levelNumber === 1])
+
+  game.setLevel(buildLevel(spec), 2)
+  checks.push(['level 3 of 3 is final', game.isFinalLevel === true])
+  checks.push(['levelNumber follows the index', game.levelNumber === 3])
+
+  // Advancing must not reset the run.
+  game.beginRound()
+  checks.push(['lives carry across levels', game.lives === 2])
+  checks.push(['craft carries across levels', game.craft.id === CRAFTS[2].id])
+  checks.push(['board opens clear on the new level',
+    game.level.asteroids.every(a => !(a.x > 0 && a.x < 1280 && a.y > 0 && a.y < 720))])
+
+  // restart() is the only thing that should put you back at the beginning.
+  game.restart()
+  checks.push(['restart returns to level 1', game.levelIndex === 0])
+  checks.push(['restart restores lives', game.lives === 3])
+
+  console.log('\nCampaign progression:')
+  for (const [label, ok] of checks) console.log(`  ${ok ? 'ok  ' : 'FAIL'} ${label}`)
+  if (checks.some(([, ok]) => !ok)) process.exit(1)
+}

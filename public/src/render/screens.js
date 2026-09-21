@@ -283,15 +283,35 @@ export function drawComplete (ctx, game) {
   const k = Math.max(0, Math.min(1, (game.phaseTime - 0.85) / 0.45))
   if (k <= 0) return
 
+  const last = game.isFinalLevel
   scrim(ctx, 0.55 * k)
-  centred(ctx, 'Gate reached', 'title', 46, 316,
+
+  centred(ctx, `Level ${game.levelNumber} cleared`, 'title', 42, 306,
     rgbaToCss(withAlpha(palette.secondary.core, 0.97 * k)), 24)
-  const kept = game.lives === 3 ? 'No craft lost' : `${game.lives} of 3 craft brought home`
-  centred(ctx, kept, 'data', 15, 372,
+
+  const kept = game.lives === 3 ? 'No craft lost' : `${game.lives} of 3 craft remaining`
+  centred(ctx, kept, 'data', 14, 356,
     rgbaToCss(withAlpha(palette.primary.core, 0.8 * k)), 10)
+
+  // Where you are in the campaign, while the campaign is still being built.
+  centred(ctx, `${game.levelNumber} of ${game.campaign.target}`, 'micro', 11, 392,
+    rgbaToCss(withAlpha(palette.primary.core, 0.45 * k)), 6)
+
   const pulse = 0.5 + Math.sin(game.elapsed * 2.4) * 0.35
-  centred(ctx, 'Click to fly again', 'label', 16, 462,
+  centred(ctx, last ? 'Click to finish' : 'Click for the next gate', 'label', 16, 466,
     rgbaToCss(withAlpha(palette.primary.core, pulse * k)), 8)
+}
+
+export function drawVictory (ctx, game) {
+  scrim(ctx, 0.7)
+  centred(ctx, 'All gates cleared', 'title', 48, 300,
+    rgbaToCss(withAlpha(palette.secondary.core, 0.98)), 26)
+  const n = game.campaign.order.length
+  centred(ctx, `${n} ${n === 1 ? 'level' : 'levels'} flown · ${game.lives} of 3 craft home`,
+    'data', 14, 352, rgbaToCss(withAlpha(palette.primary.core, 0.8)), 10)
+  const pulse = 0.5 + Math.sin(game.elapsed * 2.4) * 0.35
+  centred(ctx, 'Click to fly again', 'label', 16, 444,
+    rgbaToCss(withAlpha(palette.primary.core, pulse)), 8)
 }
 
 export function drawGameOver (ctx, game) {

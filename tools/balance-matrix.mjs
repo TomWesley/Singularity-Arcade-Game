@@ -161,10 +161,15 @@ console.log('\n' + 'average'.padEnd(w) + CRAFTS.map(c => {
 
 const avgs = CRAFTS.map(c => ARCHETYPES.reduce((s, a) => s + table[a.name][c.id], 0) / ARCHETYPES.length)
 const spread = Math.max(...avgs) - Math.min(...avgs)
-const leads = CRAFTS.filter(c =>
-  ARCHETYPES.some(a => table[a.name][c.id] === Math.max(...CRAFTS.map(k => table[a.name][k.id]))))
+// Counted with a tolerance. A strict maximum misreports a generalist: a hull
+// within a point of the leader everywhere is not failing to compete, and a
+// one-percent gap is inside this harness's noise anyway.
+const TIE = 1.0
+const contends = CRAFTS.filter(c =>
+  ARCHETYPES.some(a => table[a.name][c.id] >= Math.max(...CRAFTS.map(k => table[a.name][k.id])) - TIE))
 console.log(`\nspread of averages: ${spread.toFixed(1)} points`)
-console.log(`hulls that lead at least one archetype: ${leads.length}/${CRAFTS.length}` +
-  (leads.length < CRAFTS.length
-    ? ` -- ${CRAFTS.filter(c => !leads.includes(c)).map(c => c.name).join(', ')} never wins`
+console.log(`hulls contending (within ${TIE}pt of the lead) somewhere: ` +
+  `${contends.length}/${CRAFTS.length}` +
+  (contends.length < CRAFTS.length
+    ? ` -- ${CRAFTS.filter(c => !contends.includes(c)).map(c => c.name).join(', ')} never close`
     : ''))

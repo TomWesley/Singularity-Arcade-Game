@@ -71,7 +71,7 @@ try {
     headless: 'new', args: ['--no-sandbox', '--disable-gpu'], protocolTimeout: 240000
   })
   const p = await b.newPage()
-  await p.goto('http://localhost:3000/__metrics.html', { waitUntil: 'load', timeout: 30000 })
+  await p.goto('http://localhost:3210/__metrics.html', { waitUntil: 'load', timeout: 30000 })
   await p.waitForFunction(() => document.title !== '', { timeout: 40000 })
   const title = await p.title()
   await b.close()

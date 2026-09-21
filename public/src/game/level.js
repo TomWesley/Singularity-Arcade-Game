@@ -2,6 +2,25 @@ import { BlackHole, Star, Asteroid, Gate } from './entities.js'
 import { makeRng } from '../core/rng.js'
 import { DESIGN_WIDTH, DESIGN_HEIGHT } from '../core/viewport.js'
 
+/**
+ * The level order, loaded once at boot.
+ *
+ * An explicit manifest rather than scanning for level1..levelN: the order is a
+ * design decision, and a run of files on disk cannot express "this one comes
+ * third" without renaming everything after it. `target` is the intended length
+ * of the campaign, so the progression can say how far along you are before all
+ * fifteen exist.
+ */
+export async function loadManifest () {
+  const res = await fetch('levels/manifest.json')
+  if (!res.ok) throw new Error(`Level manifest failed to load (${res.status})`)
+  const m = await res.json()
+  if (!Array.isArray(m.order) || m.order.length === 0) {
+    throw new Error('Level manifest has no order')
+  }
+  return { order: m.order, target: m.target ?? m.order.length }
+}
+
 export async function loadLevel (name) {
   const res = await fetch(`levels/${name}.json`)
   if (!res.ok) throw new Error(`Level ${name} failed to load (${res.status})`)

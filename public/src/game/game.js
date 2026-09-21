@@ -10,7 +10,8 @@ export const STATE = {
   PLAYING: 'PLAYING',
   LOST: 'LOST',
   COMPLETE: 'COMPLETE',
-  GAME_OVER: 'GAME_OVER'
+  GAME_OVER: 'GAME_OVER',
+  VICTORY: 'VICTORY'
 }
 
 const START_LIVES = 3
@@ -34,6 +35,8 @@ export class Game {
   constructor () {
     this.state = STATE.TITLE
     this.level = null
+    this.levelIndex = 0
+    this.campaign = { order: ['level1'], target: 1 }
     this.craft = CRAFTS[0]
     this.lives = START_LIVES
     this.elapsed = 0        // wall clock for animation
@@ -57,9 +60,20 @@ export class Game {
     this._accel = { x: 0, y: 0 }
   }
 
-  setLevel (level) {
+  setLevel (level, index = 0) {
     this.level = level
+    this.levelIndex = index
     this.respawn()
+  }
+
+  /** True when the level just cleared was the last one built. */
+  get isFinalLevel () {
+    return this.levelIndex >= this.campaign.order.length - 1
+  }
+
+  /** 1-based, for display. */
+  get levelNumber () {
+    return this.levelIndex + 1
   }
 
   selectCraft (craft) {
@@ -118,6 +132,7 @@ export class Game {
   restart () {
     this.lives = START_LIVES
     this.runTime = 0
+    this.levelIndex = 0
     this.state = STATE.TITLE
     this.respawn()
   }
