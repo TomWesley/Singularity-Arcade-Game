@@ -13,11 +13,16 @@
 //   drag           velocity decay per second; low drag = long, loose drifts
 //   responsiveness how hard it corrects toward the requested velocity
 //   arrivalRadius  distance at which it starts easing onto the cursor
-//   hull           the craft's extent in design px. Walls clear by this, and
-//                  asteroids strike within half of it -- these silhouettes are
-//                  open frames, not solid discs, so a full-extent hitbox would
-//                  punish near-misses through gaps you can see straight through.
-//                  Measured from the art with tools/craft-bounds.mjs, not picked.
+//   hull           the craft's hitbox in design px. Walls clear by this, and
+//                  asteroids strike within half of it.
+//
+//                  Every hull now draws at the same overall size, so the hitbox
+//                  difference comes entirely from how much of that size each
+//                  silhouette actually fills. Measured by rasterising the art
+//                  and counting lit pixels, then taking the radius of a circle
+//                  of equal area: the Voidwalker's plate cluster fills 72% of
+//                  its box, the Compiler's thin swept wings only 45%. Two craft
+//                  the same size on screen, one a third easier to hit.
 //
 // Three axes, and each hull is strong on some and pays for it on the others:
 //
@@ -31,9 +36,9 @@
 // penalty in gravity -- acceleration does not depend on the mass being
 // accelerated -- but it divides thrust, so a light hull converts its engine more
 // efficiently while a heavy one needs a bigger engine to match.
-//   artScale       in-flight display scale. The hulls are deliberately
-//                  different sizes on the board -- that size is a balance axis,
-//                  see hull -- so this is not evened out.
+//   artScale       in-flight display scale, set so every hull draws at the same
+//                  overall size. Shape is what varies, and shape is what the
+//                  hitbox follows.
 //   cardScale      selection-card scale, independent of artScale: a card wants
 //                  all four filling the same box so the silhouettes can be
 //                  compared, while the board wants their true relative sizes.
@@ -44,56 +49,56 @@ export const CRAFTS = [
     name: 'Superbug',
     tagline: 'Even on all four. Nothing to learn around.',
     mass: 1.0,
-    thrust: 2950,
-    maxSpeed: 578,
+    thrust: 3720,
+    maxSpeed: 663,
     drag: 1.15,
     responsiveness: 7.0,
     arrivalRadius: 90,
-    hull: 12.8,
-    artScale: 1.34,
-    cardScale: 1.96
+    hull: 14.7,
+    artScale: 1.436,
+    cardScale: 2.002
   },
   {
     id: 'psych-bike',
     name: 'Psych Bike',
-    tagline: 'Highest ceiling, slowest to reach it. Lightest hull flying.',
+    tagline: 'Highest ceiling, slowest to reach it. Open frame, hard to hit.',
     mass: 0.62,
-    thrust: 1200,
-    maxSpeed: 585,
+    thrust: 1380,
+    maxSpeed: 680,
     drag: 1.15,
     responsiveness: 7.2,
     arrivalRadius: 70,
-    hull: 11.4,
-    artScale: 0.92,
-    cardScale: 1.62
+    hull: 12.3,
+    artScale: 1.74,
+    cardScale: 2.425
   },
   {
     id: 'compiler',
     name: 'The Compiler',
-    tagline: 'Instant thrust, widest target. Heavy: the pull sticks.',
+    tagline: 'Thin swept wings, small target. Heaviest flying: the pull sticks.',
     mass: 1.75,
-    thrust: 7100,
-    maxSpeed: 578,
+    thrust: 6500,
+    maxSpeed: 592,
     drag: 1.15,
     responsiveness: 7.0,
     arrivalRadius: 120,
-    hull: 15.4,
-    artScale: 0.65,
-    cardScale: 0.7
+    hull: 12.2,
+    artScale: 0.946,
+    cardScale: 1.319
   },
   {
     id: 'voidwalker',
     name: 'Voidwalker',
-    tagline: 'Hits its ceiling fast. The ceiling is low.',
+    tagline: 'Biggest engine, biggest target. Tops out early.',
     mass: 1.3,
-    thrust: 4900,
-    maxSpeed: 550,
+    thrust: 6100,
+    maxSpeed: 600,
     drag: 1.15,
     responsiveness: 7.1,
     arrivalRadius: 85,
-    hull: 14.0,
-    artScale: 0.8,
-    cardScale: 1.0
+    hull: 15.4,
+    artScale: 1.447,
+    cardScale: 2.018
   }
 ]
 

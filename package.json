@@ -10,7 +10,7 @@
     "physics": "node tools/physics-report.mjs",
     "simulate": "node tools/simulate.mjs",
     "balance": "node tools/balance-matrix.mjs",
-    "bounds": "node tools/craft-bounds.mjs",
+    "metrics": "node tools/craft-metrics.mjs",
     "speeds": "node tools/asteroid-speeds.mjs",
     "orbits": "node tools/orbit-audit.mjs",
     "spawns": "node tools/spawn-audit.mjs",

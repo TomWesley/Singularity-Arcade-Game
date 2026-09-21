@@ -202,10 +202,22 @@ and pays for it on the others:
 
 | Craft | hull | acceleration | top speed | mass | 0→top |
 |---|---|---|---|---|---|
-| Superbug | 12.6 | 2900 | 570 | 1.00 | 0.20s |
-| Psych Bike | 11.4 | 1903 | 605 | 0.62 | 0.32s |
-| The Compiler | 15.8 | 4743 | 560 | 1.75 | 0.12s |
-| Voidwalker | 13.4 | 3923 | 535 | 1.30 | 0.14s |
+| Superbug | 14.7 | 3720 | 663 | 1.00 | 0.18s |
+| Psych Bike | 12.3 | 2226 | 680 | 0.62 | 0.31s |
+| The Compiler | 12.2 | 3714 | 592 | 1.75 | 0.16s |
+| Voidwalker | 15.4 | 4692 | 600 | 1.30 | 0.13s |
+
+**Every hull draws at the same overall size** — 2.7% spread, checked by
+`npm run metrics`. The hitbox difference comes entirely from how much of that
+size each silhouette actually fills, measured by rasterising the art and counting
+lit pixels: the Voidwalker's plate cluster fills **78%** of its box, the
+Compiler's thin swept wings only **43%**. Two craft the same size on screen, one
+a third easier to hit.
+
+That measurement has to be a rasteriser. An earlier Node-side version tracked
+path coordinates through a stub context and was wrong in a way that mattered — a
+Bézier's control points sit well outside the curve they describe, so the
+curve-heavy Compiler measured 63px against a true 35.
 
 **Top speed and acceleration are separate traits**, and the roster is built on
 the difference. The Psych Bike has the highest ceiling and the weakest engine, so
