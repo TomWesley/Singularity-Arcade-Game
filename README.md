@@ -200,12 +200,21 @@ Gravity treats all four identically — acceleration does not depend on the mass
 being accelerated. What differs is three axes, and each hull is strong on some
 and pays for it on the others:
 
-| Craft | hull | acceleration | top speed | mass | 0→top |
+| Craft | hull | acceleration | top speed | fraction of c | 0→top |
 |---|---|---|---|---|---|
-| Superbug | 14.7 | 3720 | 663 | 1.00 | 0.18s |
-| Psych Bike | 12.3 | 2226 | 680 | 0.62 | 0.31s |
-| The Compiler | 12.2 | 3714 | 592 | 1.75 | 0.16s |
-| Voidwalker | 15.4 | 4692 | 600 | 1.30 | 0.13s |
+| Superbug | 10.0 | 3880 | 852 | 0.92c | 0.22s |
+| Psych Bike | 7.9 | 3710 | 882 | 0.95c | 0.24s |
+| The Compiler | 8.3 | 3943 | 788 | 0.85c | 0.20s |
+| Voidwalker | 10.5 | 5077 | 776 | 0.84c | 0.15s |
+
+Top speeds now run at 0.84c–0.95c, and that ceiling is real rather than chosen.
+`integrate` holds everything to `c`, so a hull asking for more than 928 px/s
+simply pins there — and if two hulls both ask for more, their top speeds become
+identical and the whole axis collapses. `c` cannot be raised independently
+either: horizon size fixes `METERS_PER_PIXEL`, field strength fixes
+`SECONDS_PER_GAME_SECOND`, and `c = c_SI · T / MPP` falls out of the two. The
+only way past this wall is to strengthen the field, since `c` scales as `T` while
+gravity scales as `T²` — 30% more speed would cost 69% more gravity.
 
 **Every hull draws at the same overall size** — 2.7% spread, checked by
 `npm run metrics`. The hitbox difference comes entirely from how much of that
