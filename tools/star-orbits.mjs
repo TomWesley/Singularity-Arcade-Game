@@ -96,8 +96,24 @@ console.log(`Simulated ${MINUTES} min at ${1 / STEP}Hz on a ${DESIGN_WIDTH}x${DE
 let fail = 0
 for (const tr of tracks) {
   const onBoard = tr.minX >= 0 && tr.maxX <= DESIGN_WIDTH && tr.minY >= 0 && tr.maxY <= DESIGN_HEIGHT
-  const clearsISCO = tr.rMin > host.isco
   const lap = mean(tr.laps)
+
+  // Stability is measured, not ruled on.
+  //
+  // This used to require periapsis outside the ISCO, which is the wrong test
+  // and cost a great deal of eccentricity. The ISCO is where *circular* orbits
+  // stop being stable; an eccentric orbit passes through its periapsis and
+  // climbs straight back out, and in this potential it can dive to about
+  // 0.77 ISCO -- roughly 2.3 Schwarzschild radii -- and still hold its shape
+  // indefinitely. Since the long ellipses are exactly the interesting ones,
+  // the rule was forbidding the best orbits on the board.
+  //
+  // What actually matters is whether the apsides stay where the level put
+  // them. If they do, the orbit is stable whatever radius it reaches.
+  const drift = Math.max(
+    Math.abs(tr.rMin - tr.s.orbit.periapsis * DESIGN_HEIGHT),
+    Math.abs(tr.rMax - tr.s.orbit.apoapsis * DESIGN_HEIGHT))
+  const stable = drift < 2 && tr.rMin > host.horizon
 
   // Apsidal precession: how far the periapsis direction moves per lap.
   //
@@ -120,7 +136,8 @@ for (const tr of tracks) {
   }
 
   console.log(`[${tr.i}] ${tr.label}`)
-  console.log(`     periapsis ${fmt(tr.rMin)}px (${(tr.rMin / host.isco).toFixed(2)}x ISCO)   apoapsis ${fmt(tr.rMax)}px`)
+  console.log(`     periapsis ${fmt(tr.rMin)}px (${(tr.rMin / host.isco).toFixed(2)}x ISCO, ${(tr.rMin / host.horizon).toFixed(2)}x r_s)   apoapsis ${fmt(tr.rMax)}px`)
+  console.log(`     eccentricity ${((tr.rMax - tr.rMin) / (tr.rMax + tr.rMin)).toFixed(3)}`)
   console.log(`     lap ${lap.toFixed(2)}s over ${tr.laps.length} laps   precession ${prec >= 0 ? '+' : ''}${prec.toFixed(1)} deg/lap`)
   console.log(`     swept x ${fmt(tr.minX)} .. ${fmt(tr.maxX)}   y ${fmt(tr.minY)} .. ${fmt(tr.maxY)}`)
 
@@ -138,8 +155,8 @@ for (const tr of tracks) {
               `full rotation in ${(rotate / 60).toFixed(1)} min`)
   console.log(`     ${onBoard ? 'on board now' : 'off board now'}   ` +
               `${fits ? 'fits in every orientation' : 'WILL LEAVE BOARD AS IT PRECESSES'}   ` +
-              `${clearsISCO ? 'clears ISCO' : 'INSIDE ISCO'}`)
-  if (!fits || !clearsISCO) fail++
+              `${stable ? `apsides hold (${drift.toFixed(2)}px drift)` : `DECAYING (${drift.toFixed(1)}px drift)`}`)
+  if (!fits || !stable) fail++
   console.log()
 }
 
@@ -151,6 +168,6 @@ for (let i = 0; i < level.stars.length; i++) {
   }
 }
 
-console.log(fail === 0 ? 'PASS: every orbit fits the board in any orientation and clears the ISCO'
+console.log(fail === 0 ? 'PASS: every orbit fits the board in any orientation and holds its apsides'
                        : `FAIL: ${fail} orbit(s) out of bounds`)
 process.exit(fail === 0 ? 0 : 1)

@@ -345,12 +345,21 @@ export class Asteroid {
     const v = apoapsisSpeed(host, rApo, rPeri)
     if (!Number.isFinite(v) || v <= 0) return false
 
-    // Purely tangential at apoapsis, direction chosen at random.
+    // Purely tangential at apoapsis, direction chosen at random -- and then the
+    // host's own velocity added on top.
+    //
+    // That last part is not a refinement, it is the difference between an orbit
+    // and a near miss. apoapsisSpeed() solves for the velocity that closes an
+    // ellipse in the *host's* rest frame; if the host is itself moving at two
+    // hundred pixels a second, a rock given only that velocity in board
+    // coordinates is not bound to it at all and simply watches it leave. The
+    // hosts were all stationary when this was written, so the term was zero and
+    // its absence cost nothing.
     const ux = dx / rApo
     const uy = dy / rApo
     const dir = rng() > 0.5 ? 1 : -1
-    this.vx = -uy * v * dir
-    this.vy = ux * v * dir
+    this.vx = -uy * v * dir + (host.vx ?? 0)
+    this.vy = ux * v * dir + (host.vy ?? 0)
     return true
   }
 
