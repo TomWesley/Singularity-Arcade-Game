@@ -1,3 +1,8 @@
 node_modules/
 .DS_Store
 .claude/
+
+# Source art: the full-resolution upscales live here so they are to hand,
+# but they must never ship -- public/ is the deploy root, and the gigapixel
+# source is 33MB against 512KB for the crop the game actually draws.
+public/assets/BIGGER*
