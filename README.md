@@ -352,6 +352,51 @@ than solve Kepler's equation for an arbitrary anomaly — an approximation anywa
 since these orbits are not closed — the orbit is simply run forward. Start the
 clock early and let the physics put the body where it belongs.
 
+### How big a black hole looks
+
+A hole is drawn at its **shadow**, not its horizon. Light passing within the
+photon capture radius `b = 3*sqrt(3)GM/c^2` spirals in and never comes back, so
+the dark disc an observer sees is that radius -- `3*sqrt(3)/2 = 2.598 r_s`. A
+black hole looks about two and a half times larger than its own horizon because
+it bends light around itself and presents a magnified image of itself. This is
+the number in the Event Horizon Telescope pictures: M87's shadow is 2.6 r_s
+across, not 1. Drawing the bare horizon, as this used to, is the more familiar
+picture and the wrong one; switching made every hole 2.6x bigger on screen
+without touching its mass or its pull by one part.
+
+It still **kills at the horizon**, though, which is not an inconsistency. The
+shadow is the hole's image, not a surface: a craft at 2 r_s is between you and
+the hole, lit, and alive -- drawn in front of the disc rather than inside
+anything. Killing at the disc would also fail at mass, since the shadow grows as
+`M` while `escapeLimit()` grows more slowly and the two cross near 7 solar
+masses, above which a craft could power out of the black disc. In practice the
+gap costs nothing: `escapeLimit()` sits outside the shadow at level 1's mass, so
+touching the disc means having already lost. `node tools/smoke.mjs` reports it.
+
+### Why asteroids orbit instead of raining in
+
+Whether a rock swings past a hole or goes straight down it is decided by one
+number, its angular momentum `L = v x r` about that hole -- and not at all by
+its mass, which cancels out of the equation of motion. Below a critical `L` the
+effective potential
+
+    f(r) = L^2 / 2r^2  -  mu / (r - r_s)
+
+has no local maximum, so there is no periapsis and no way past: the rock spirals
+in whatever its speed or angle. Setting `df/dr = 0` and minimising puts the
+marginal case at `r = 3 r_s`, the ISCO exactly, so `L_crit` is the angular
+momentum of a circular orbit there and scales with the hole's mass.
+
+With purely random lateral drift, 25 of level 1's 28 rocks sat under `L_crit`
+from the instant they spawned, and the board really was a vacuum. The fix is not
+to slow them or lighten them: it is `asteroids.swirl`, a lateral bias in px/s
+that makes debris from above drift one way and debris from below the other, so
+the field carries net circulation. That is what every real debris disc does, and
+why discs are discs rather than shells -- infalling material carries angular
+momentum it cannot shed, so it settles into rotation instead of raining straight
+in. With `swirl` and a lighter hole, 10 of 28 start doomed instead of 25, and
+rocks complete 88 full revolutions in four minutes instead of 8.
+
 ### Backdrop
 
 `"backdrop": "assets/backdrop.jpg"` puts one stationary image behind the board,
@@ -390,6 +435,7 @@ npm run simulate           # autopilot balance report for levels/level1.json
 npm run speeds             # asteroid speed distribution, for tuning the tails
 npm run stars              # star orbits: apsides, lap time, precession, envelope
 npm run paths              # renders the star orbits to a PNG, to look at
+npm run capture            # how often asteroids actually orbit the stars
 node tools/smoke.mjs       # headless wiring + physics assertions
 npm run vendor:engine      # re-copy the graphics engine from the sibling checkout
 ```

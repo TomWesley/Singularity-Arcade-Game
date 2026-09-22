@@ -67,8 +67,8 @@ export class Impact {
         // hole has a 12px horizon, and a cloud scaled only to that is over
         // before it can be seen. This gives every hole a debris field big
         // enough to watch wind in.
-        const inner = Math.max(hole.horizon * 1.8, 44)
-        const spread = Math.max(hole.horizon * 1.7, 58)
+        const inner = Math.max(hole.shadow * 1.3, 44)
+        const spread = Math.max(hole.shadow * 1.2, 58)
         const r = inner + rng() * spread
         const px0 = hole.x + Math.cos(a) * r
         const py0 = hole.y + Math.sin(a) * r
@@ -204,8 +204,8 @@ export class Impact {
     if (!h) return
 
     const ease = 1 - Math.pow(1 - k, 2)
-    const from = Math.max(h.isco * 0.8, h.horizon + 90)
-    const radius = from + (h.horizon - from) * ease
+    const from = Math.max(h.isco * 0.8, h.shadow + 90)
+    const radius = from + (h.shadow - from) * ease
     const alpha = (1 - k) * 0.7
     if (alpha > 0.02) {
       ctx.strokeStyle = `rgba(${bright[0]}, ${bright[1]}, ${bright[2]}, ${alpha})`
@@ -218,12 +218,12 @@ export class Impact {
     // The horizon flares as the wreck crosses it, then settles.
     const flare = Math.max(0, 1 - Math.abs(k - 0.62) / 0.3)
     if (flare > 0.01) {
-      const g = ctx.createRadialGradient(h.x, h.y, h.horizon * 0.9, h.x, h.y, h.horizon * 2.1)
+      const g = ctx.createRadialGradient(h.x, h.y, h.shadow * 0.9, h.x, h.y, h.shadow * 2.1)
       g.addColorStop(0, `rgba(${warm[0]}, ${warm[1]}, ${warm[2]}, ${0.42 * flare})`)
       g.addColorStop(1, `rgba(${warm[0]}, ${warm[1]}, ${warm[2]}, 0)`)
       ctx.fillStyle = g
       ctx.beginPath()
-      ctx.arc(h.x, h.y, h.horizon * 2.1, 0, Math.PI * 2)
+      ctx.arc(h.x, h.y, h.shadow * 2.1, 0, Math.PI * 2)
       ctx.fill()
     }
   }

@@ -12,18 +12,18 @@
     {
       "x": 0.5,
       "y": 0.5,
-      "solarMasses": 10
+      "solarMasses": 6
     }
   ],
   "stars": [
     {
       "kind": "white-dwarf",
       "solarMasses": 1.2,
-      "radius": 0.011111,
+      "radius": 0.008333,
       "orbit": {
         "host": 0,
-        "apoapsis": 0.486111,
-        "periapsis": 0.180556,
+        "apoapsis": 0.488889,
+        "periapsis": 0.141667,
         "argument": 0.62,
         "direction": 1,
         "lead": 0.0
@@ -32,11 +32,11 @@
     {
       "kind": "red-giant",
       "solarMasses": 2.0,
-      "radius": 0.038889,
+      "radius": 0.027778,
       "orbit": {
         "host": 0,
-        "apoapsis": 0.458333,
-        "periapsis": 0.275,
+        "apoapsis": 0.469444,
+        "periapsis": 0.281944,
         "argument": 0.87,
         "direction": -1,
         "lead": 2.4
@@ -45,11 +45,11 @@
     {
       "kind": "main-sequence",
       "solarMasses": 1.7,
-      "radius": 0.020833,
+      "radius": 0.015278,
       "orbit": {
         "host": 0,
-        "apoapsis": 0.472222,
-        "periapsis": 0.202778,
+        "apoapsis": 0.480556,
+        "periapsis": 0.181944,
         "argument": 0.4,
         "direction": 1,
         "lead": 3.1
@@ -58,11 +58,11 @@
     {
       "kind": "main-sequence",
       "solarMasses": 1.1,
-      "radius": 0.015278,
+      "radius": 0.011111,
       "orbit": {
         "host": 0,
-        "apoapsis": 0.481944,
-        "periapsis": 0.243056,
+        "apoapsis": 0.486111,
+        "periapsis": 0.233333,
         "argument": 0.15,
         "direction": -1,
         "lead": 1.6
@@ -71,8 +71,9 @@
   ],
   "asteroids": {
     "count": 28,
-    "orbiters": 5,
-    "speed": 0.42
+    "orbiters": 8,
+    "speed": 0.42,
+    "swirl": 85
   },
   "gate": {
     "x": 1.0,

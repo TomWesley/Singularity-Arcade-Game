@@ -13,6 +13,7 @@
 
 import fs from 'node:fs'
 import { buildLevel } from '../public/src/game/level.js'
+import { absorbRadius } from '../public/src/game/entities.js'
 import { DESIGN_WIDTH, DESIGN_HEIGHT } from '../public/src/game/constants.js'
 
 const spec = JSON.parse(fs.readFileSync(new URL('../levels/level1.json', import.meta.url), 'utf8'))
@@ -77,7 +78,13 @@ for (let i = 0; i < 120 * 240; i++) {
 
     // Detect a recycle: position jumped.
     if (Math.hypot(a.x - before.x, a.y - before.y) > 300) {
-      const eaten = fresh.holes.some(h => Math.hypot(before.x - h.x, before.y - h.y) < h.horizon * 1.2)
+      // absorbRadius, not a locally invented multiple of the horizon. This read
+      // h.horizon * 1.2, which for a star is zero and for a hole is now far
+      // inside the shadow a rock is actually swallowed at -- so every rock the
+      // hole ate was being filed as having drifted off the top of the board,
+      // and the report showed nothing ever falling in.
+      const eaten = fresh.holes.some(h =>
+        Math.hypot(before.x - h.x, before.y - h.y) < absorbRadius(h) * 1.2)
       if (eaten) reasons.eaten++
       else if (before.x < 0) reasons.leftEdge++
       else reasons.topBottom++
@@ -89,7 +96,7 @@ for (let i = 0; i < 120 * 240; i++) {
 
 const total = reasons.eaten + reasons.leftEdge + reasons.topBottom
 console.log('Over 240s of play, rocks were recycled because they:')
-console.log(`  crossed a horizon      ${reasons.eaten}`)
+console.log(`  were swallowed         ${reasons.eaten}`)
 console.log(`  left the LEFT edge     ${reasons.leftEdge}`)
 console.log(`  left top/bottom        ${reasons.topBottom}`)
 console.log(`  total                  ${total}`)

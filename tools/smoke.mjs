@@ -8,7 +8,7 @@ import fs from 'node:fs'
 import { Game, STATE } from '../public/src/game/game.js'
 import { buildLevel } from '../public/src/game/level.js'
 import { CRAFTS } from '../public/src/game/crafts.js'
-import { blackHoleGeometry } from '../public/src/game/physics.js'
+import { blackHoleGeometry, escapeLimit } from '../public/src/game/physics.js'
 
 let calls = 0
 const bad = []
@@ -107,6 +107,28 @@ if (Math.abs(g.photonSphere / g.horizon - 1.5) > 1e-9) errors.push('photon spher
 if (Math.abs(g.horizon - 40) > 0.02) errors.push(`10 M_sun horizon should be 40px, got ${g.horizon}`)
 console.log(errors.length ? 'PHYSICS CHECK FAILED: ' + errors.join('; ') : 'Physics ratios check out (ISCO = 3 r_s, photon sphere = 1.5 r_s).')
 if (errors.length) process.exit(1)
+
+// ── Touching the black disc should already mean losing ───────────────────────
+// The hole is drawn at its shadow, 2.598 r_s, but kills at its horizon, so
+// there is a gap where a craft is over the black disc and still alive. That is
+// physically right -- it is in front of the hole, not in it -- but it would
+// read as a bug if the gap were flyable. It is not, so long as escapeLimit(),
+// the radius at which full thrust exactly cancels the pull, sits outside the
+// shadow: a craft that has reached the disc has already lost, and only has to
+// finish falling. Reported rather than enforced, because the two cross around
+// 7 solar masses and a heavier hole is a legitimate thing for a level to want.
+{
+  const lvl = buildLevel(spec)
+  console.log('\nShadow vs the point of no return:')
+  for (const h of lvl.blackHoles) {
+    for (const craft of CRAFTS) {
+      const limit = escapeLimit(h, craft)
+      const ok = limit > h.shadow
+      console.log(`  ${h.solarMasses}Mo  ${craft.name.padEnd(14)}shadow ${h.shadow.toFixed(0)}px, ` +
+                  `thrust loses at ${limit.toFixed(0)}px  ${ok ? 'disc is already fatal' : 'note: disc is flyable here'}`)
+    }
+  }
+}
 
 // ── Wreck effect ─────────────────────────────────────────────────────────────
 // The two deaths must not behave alike: an asteroid strike throws debris away

@@ -31,11 +31,15 @@ const SS = 2
 const spriteCache = new Map()
 
 function staticSprite (hole) {
-  const key = hole.horizon.toFixed(2)
+  const key = hole.shadow.toFixed(2)
   const hit = spriteCache.get(key)
   if (hit) return hit
 
-  const auraOuter = Math.max(hole.photonSphere * 1.9, hole.horizon + 26)
+  // The aura is anchored to the shadow, not the horizon. What it stands for is
+  // the light piled up just outside the capture radius -- the photon ring --
+  // which is where a real image is brightest, so it has to start at the edge of
+  // the dark disc and fall away outward from there.
+  const auraOuter = Math.max(hole.shadow * 1.9, hole.shadow + 26)
   const reach = auraOuter + 4
   const size = Math.ceil(reach * 2 * SS)
   const cv = document.createElement('canvas')
@@ -45,9 +49,9 @@ function staticSprite (hole) {
   c.scale(SS, SS)
   c.translate(reach, reach)
 
-  // The aura. Brightest just outside the horizon, peaking at the photon sphere,
-  // gone by roughly twice the horizon radius.
-  const g = c.createRadialGradient(0, 0, hole.horizon * 0.94, 0, 0, auraOuter)
+  // The aura. Brightest right at the edge of the shadow and gone by roughly
+  // twice that radius.
+  const g = c.createRadialGradient(0, 0, hole.shadow * 0.94, 0, 0, auraOuter)
   g.addColorStop(0, 'rgba(255, 255, 255, 0.55)')
   g.addColorStop(0.16, 'rgba(255, 255, 255, 0.30)')
   g.addColorStop(0.45, 'rgba(255, 255, 255, 0.09)')
@@ -57,7 +61,7 @@ function staticSprite (hole) {
   c.arc(0, 0, auraOuter, 0, TAU)
   c.fill()
 
-  // The horizon itself: absolute black, punched back out of the aura.
+  // The shadow itself: absolute black, punched back out of the aura.
   //
   // The opaque fillStyle matters and is not tidying. `destination-out` scales
   // what it erases by the *source* alpha, and the fill style still in effect
@@ -71,7 +75,7 @@ function staticSprite (hole) {
   c.globalCompositeOperation = 'destination-out'
   c.fillStyle = '#000000'
   c.beginPath()
-  c.arc(0, 0, hole.horizon, 0, TAU)
+  c.arc(0, 0, hole.shadow, 0, TAU)
   c.fill()
   c.globalCompositeOperation = 'source-over'
 
@@ -92,7 +96,7 @@ function staticSprite (hole) {
   c.save()
   c.beginPath()
   c.rect(-reach, -reach, reach * 2, reach * 2)
-  c.arc(0, 0, hole.horizon, 0, TAU, true)   // reversed: leaves a donut
+  c.arc(0, 0, hole.shadow, 0, TAU, true)   // reversed: leaves a donut
   c.clip()
   c.strokeStyle = 'rgba(255, 255, 255, 0.92)'
   c.lineWidth = 1.6
@@ -100,7 +104,7 @@ function staticSprite (hole) {
   c.shadowBlur = 10
   c.beginPath()
   // Nudged outward by half a line width so the clip takes none of the hairline.
-  c.arc(0, 0, hole.horizon + 0.8, 0, TAU)
+  c.arc(0, 0, hole.shadow + 0.8, 0, TAU)
   c.stroke()
   c.restore()
 
@@ -116,7 +120,7 @@ export function drawBlackHole (ctx, hole) {
   // is behind it, so the disc is filled before the sprite lands on top.
   ctx.fillStyle = '#000000'
   ctx.beginPath()
-  ctx.arc(hole.x, hole.y, hole.horizon, 0, TAU)
+  ctx.arc(hole.x, hole.y, hole.shadow, 0, TAU)
   ctx.fill()
 
   ctx.drawImage(

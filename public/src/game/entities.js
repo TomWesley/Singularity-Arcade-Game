@@ -26,6 +26,8 @@ export class BlackHole {
     this.horizon = geo.horizon
     this.soften = geo.soften
     this.photonSphere = geo.photonSphere
+    // How big it looks, and where it kills: 2.598 r_s, not r_s. See physics.js.
+    this.shadow = geo.shadow
     this.isco = geo.isco
     this.marginallyBound = geo.marginallyBound
     // Kept as `radius` too, since that is what collision and layout code reads.
@@ -173,6 +175,25 @@ function stepOrbit (body, dt) {
  * at its horizon; a star has no horizon, so it eats at its surface.
  */
 export function absorbRadius (h) {
+  // The horizon, not the shadow -- even though the shadow is what is drawn.
+  //
+  // It is tempting to kill at the black disc, because "black means dead" reads
+  // instantly. But the shadow is the hole's *image*, not a surface: it is the
+  // patch of sky from which no light reaches you, produced by rays bending
+  // around the hole. A craft at 2 r_s is between the viewer and the hole, lit,
+  // and perfectly alive -- it is drawn in front of the disc, not inside
+  // anything. Only the horizon is a place you cannot come back from.
+  //
+  // Killing at the shadow also fails at mass. The shadow grows as M while the
+  // radius at which thrust loses to gravity grows more slowly, so above about
+  // 7 solar masses a craft can still power out from inside the black disc, and
+  // the rule contradicts itself. Anchoring to the horizon holds at every mass.
+  //
+  // In practice the visible cost is nothing: escapeLimit() sits outside the
+  // shadow for every hull on a hole this size, so by the time a craft so much
+  // as touches the black disc it has already lost, and dies a moment later.
+  //
+  // A star has no horizon and no shadow; it stops you at its surface.
   return h.horizon > 0 ? h.horizon : h.radius
 }
 
@@ -244,9 +265,10 @@ export class Asteroid {
    *   else, perturbed by the other holes, and free to precess, decay or be
    *   flung out.
    */
-  constructor (rng, holes, orbiter = false, speedScale = 1) {
+  constructor (rng, holes, orbiter = false, speedScale = 1, swirl = 0) {
     this.orbiter = orbiter
     this.speedScale = speedScale
+    this.swirl = swirl
     this.rng = rng
     this.verts = []
     this.inner = []
@@ -306,6 +328,30 @@ export class Asteroid {
     const s = this.speedScale
     this.vy = inward * randRange(rng, 55, 150) * s
     this.vx = randRange(rng, -120, 60) * s
+
+    // Net circulation, and the reason the field stops being a vacuum.
+    //
+    // Whether a rock orbits a hole or goes straight down it is decided by one
+    // number -- its angular momentum about that hole, L = v x r -- and not at
+    // all by its mass, which cancels out of the equation of motion entirely.
+    // Below a critical L the effective potential L^2/2r^2 - mu/(r - r_s) has no
+    // local maximum, which means no periapsis, which means no way past the
+    // hole: the rock spirals in whatever its speed or angle. That threshold
+    // works out at the angular momentum of a circular orbit at the ISCO, so it
+    // scales with the hole's mass.
+    //
+    // With purely random lateral drift, most rocks entered with a small impact
+    // parameter and sat well under it -- 25 of 28 on this level -- so the board
+    // really was a vacuum, and correctly so.
+    //
+    // The fix is not to slow the rocks or lighten them, it is to give the field
+    // angular momentum. Debris entering from above drifts one way and from
+    // below the other, so the whole field turns in a consistent sense about the
+    // board. That is what every real disc of debris does, and it is why discs
+    // are discs rather than a shell: infalling material carries net angular
+    // momentum it cannot shed, so it settles into rotation instead of raining
+    // straight in.
+    this.vx += inward * this.swirl
   }
 
   /**

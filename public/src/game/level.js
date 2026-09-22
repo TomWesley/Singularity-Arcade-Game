@@ -57,8 +57,10 @@ export function buildLevel (spec) {
   const total = spec.asteroids?.count ?? 0
   const orbiters = Math.min(total, spec.asteroids?.orbiters ?? 0)
   const speedScale = spec.asteroids?.speed ?? 1
+  // Net circulation of the debris field, px/s of lateral bias. See Asteroid.
+  const swirl = spec.asteroids?.swirl ?? 0
   for (let i = 0; i < total; i++) {
-    asteroids.push(new Asteroid(rng, holes, i < orbiters, speedScale))
+    asteroids.push(new Asteroid(rng, holes, i < orbiters, speedScale, swirl))
   }
 
   return {

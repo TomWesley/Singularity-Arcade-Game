@@ -109,6 +109,27 @@ export function blackHoleGeometry (solarMasses) {
     soften: rs * 0.02,
     /** Event horizon. Cross it and you are gone. */
     horizon: rs,
+    /**
+     * The shadow: how big the hole actually *looks*, and it is not the horizon.
+     *
+     * Light passing within the photon capture radius b = 3*sqrt(3)*GM/c^2 spirals
+     * in and never comes back out, so the dark disc an observer sees is that
+     * radius, not r_s. In units of r_s = 2GM/c^2 it works out at 3*sqrt(3)/2 =
+     * 2.598 -- the hole looks about two and a half times larger than its own
+     * horizon, because it bends the light around itself and presents a magnified
+     * image. This is the number in the Event Horizon Telescope pictures: M87's
+     * shadow is 2.6 r_s across, not 1.
+     *
+     * Drawing the bare horizon, as this did, is the more familiar picture and
+     * the wrong one. Using the shadow makes every hole two and a half times
+     * bigger on screen without touching its mass or its pull by one part.
+     *
+     * It is also where the board kills you, which is defensible rather than
+     * convenient: escapeLimit() puts the radius at which a craft's thrust loses
+     * to the pull *outside* the shadow for every hull in the roster, so anything
+     * that reaches the black disc had already lost.
+     */
+    shadow: (3 * Math.sqrt(3) / 2) * rs,
     /** Photon sphere, 1.5 r_s -- where light itself orbits. */
     photonSphere: 1.5 * rs,
     /** Innermost stable circular orbit, 3 r_s. No stable orbit exists inside. */
