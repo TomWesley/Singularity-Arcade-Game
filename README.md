@@ -369,15 +369,20 @@ firebase emulators:start
 
 ### Leaderboard data model
 
-- `users/{uid}` -- public profile (`displayName`, `photoURL`). Owner-writable.
-- `scores/{scoreId}` -- one document per completed run (`uid`, `displayName`,
-  `level`, `timeMs`, `ship`). Publicly readable, append-only: no updates or
-  deletes, by anyone.
+- `users/{uid}` — public profile (`displayName`, `photoURL`). Owner-writable.
+- `scores/{scoreId}` — one document per completed run (`uid`, `displayName`,
+  `levelsCleared`, `craftRemaining`, `craftId`). Publicly readable, append-only:
+  no updates or deletes, by anyone.
+
+**A survival score, not a time.** The run clock was removed from the game — this
+is about how far you get and what you have left when you stop, not how fast you
+got there — so a run ranks by levels cleared, with craft still in hand as the
+tiebreak.
 
 Scores are written straight from the client, so `firestore.rules` can validate
-their *shape* but not their *authenticity* -- a determined player can post a
-fabricated time. Closing that requires a Cloud Function, which requires the
-Blaze plan. Noted as a known tradeoff rather than an oversight.
+their *shape* but not their *authenticity* — a determined player can post a
+fabricated run. Closing that requires a Cloud Function, which requires the Blaze
+plan. Noted as a known tradeoff rather than an oversight.
 
 
 ## Version History

@@ -42,22 +42,31 @@ service cloud.firestore {
       allow delete: if isOwner(uid);
     }
 
-    // Leaderboard entries, one per completed run. Append-only: a run either
-    // happened or it didn't, so nothing may edit or remove it afterwards.
+    // Leaderboard entries, one per completed run.
+    //
+    // A survival score, not a time. The run clock was removed from the game --
+    // this is about how far you get and what you have left when you stop, not
+    // how fast you got there -- so a run is ranked by levels cleared, then by
+    // craft still in hand as the tiebreak.
+    //
+    // Append-only: a run either happened or it did not, so nothing may edit or
+    // remove it afterwards.
     match /scores/{scoreId} {
       allow read: if true;
 
       allow create: if isOwner(request.resource.data.uid)
-        && request.resource.data.keys().hasOnly(['uid', 'displayName', 'level', 'timeMs', 'ship', 'createdAt'])
+        && request.resource.data.keys().hasOnly(['uid', 'displayName', 'levelsCleared', 'craftRemaining', 'craftId', 'createdAt'])
         && isValidName(request.resource.data.displayName)
-        && request.resource.data.level is int
-        && request.resource.data.level >= 1
-        && request.resource.data.level <= 10
-        && request.resource.data.timeMs is int
-        && request.resource.data.timeMs > 0
-        && request.resource.data.timeMs < 3600000
-        && request.resource.data.ship is string
-        && request.resource.data.ship.size() <= 32
+        && request.resource.data.levelsCleared is int
+        && request.resource.data.levelsCleared >= 0
+        // Bounded well above the current campaign so adding levels does not
+        // require a rules deploy, but low enough to reject a fabricated number.
+        && request.resource.data.levelsCleared <= 50
+        && request.resource.data.craftRemaining is int
+        && request.resource.data.craftRemaining >= 0
+        && request.resource.data.craftRemaining <= 3
+        && request.resource.data.craftId is string
+        && request.resource.data.craftId.size() <= 32
         && request.resource.data.createdAt == request.time;
 
       allow update, delete: if false;

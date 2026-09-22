@@ -4,8 +4,9 @@
       "collectionGroup": "scores",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "level", "order": "ASCENDING" },
-        { "fieldPath": "timeMs", "order": "ASCENDING" }
+        { "fieldPath": "levelsCleared", "order": "DESCENDING" },
+        { "fieldPath": "craftRemaining", "order": "DESCENDING" },
+        { "fieldPath": "createdAt", "order": "ASCENDING" }
       ]
     },
     {
@@ -13,8 +14,8 @@
       "queryScope": "COLLECTION",
       "fields": [
         { "fieldPath": "uid", "order": "ASCENDING" },
-        { "fieldPath": "level", "order": "ASCENDING" },
-        { "fieldPath": "timeMs", "order": "ASCENDING" }
+        { "fieldPath": "levelsCleared", "order": "DESCENDING" },
+        { "fieldPath": "craftRemaining", "order": "DESCENDING" }
       ]
     }
   ],

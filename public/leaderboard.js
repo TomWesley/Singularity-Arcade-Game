@@ -76,39 +76,49 @@ function displayNameFor (user) {
   return (handle || 'Pilot').slice(0, 32)
 }
 
-export async function submitScore ({ level, timeMs, ship }) {
+/**
+ * Records a finished run.
+ *
+ * A survival score rather than a time: the run clock was removed because this is
+ * about how far you get and what you have left, not how fast. Ranked by levels
+ * cleared, with craft still in hand as the tiebreak -- clearing eight levels on
+ * your last craft beats clearing eight without losing one only if nobody did
+ * the latter.
+ */
+export async function submitScore ({ levelsCleared, craftRemaining, craftId }) {
   const user = auth.currentUser
   if (!user) throw new Error('Cannot submit a score while signed out')
 
   return addDoc(collection(db, 'scores'), {
     uid: user.uid,
     displayName: displayNameFor(user),
-    level,
-    timeMs: Math.round(timeMs),
-    ship,
+    levelsCleared: Math.max(0, Math.round(levelsCleared)),
+    craftRemaining: Math.max(0, Math.min(3, Math.round(craftRemaining))),
+    craftId,
     createdAt: serverTimestamp()
   })
 }
 
-export async function topScores (level, max = 10) {
+export async function topScores (max = 10) {
   const snap = await getDocs(query(
     collection(db, 'scores'),
-    where('level', '==', level),
-    orderBy('timeMs', 'asc'),
+    orderBy('levelsCleared', 'desc'),
+    orderBy('craftRemaining', 'desc'),
+    orderBy('createdAt', 'asc'),
     limit(max)
   ))
   return snap.docs.map(d => ({ id: d.id, ...d.data() }))
 }
 
-export async function personalBest (level) {
+export async function personalBest () {
   const user = auth.currentUser
   if (!user) return null
 
   const snap = await getDocs(query(
     collection(db, 'scores'),
     where('uid', '==', user.uid),
-    where('level', '==', level),
-    orderBy('timeMs', 'asc'),
+    orderBy('levelsCleared', 'desc'),
+    orderBy('craftRemaining', 'desc'),
     limit(1)
   ))
   return snap.empty ? null : { id: snap.docs[0].id, ...snap.docs[0].data() }
