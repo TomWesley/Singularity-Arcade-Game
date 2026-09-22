@@ -302,7 +302,7 @@ export class Asteroid {
   // from below, everything is visible for the length of its approach.
   reset (holes, initial = false) {
     const rng = this.rng
-    this.radius = randRange(rng, 3.06, 6.21)
+    this.radius = randRange(rng, 2.45, 4.97)
     this.spin = randRange(rng, 0, Math.PI * 2)
     this.spinRate = randRange(rng, -1.4, 1.4)
     this.trail.length = 0

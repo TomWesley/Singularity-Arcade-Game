@@ -18,8 +18,13 @@ import { drawCraft } from './craft.js'
 import { DESIGN_WIDTH, DESIGN_HEIGHT } from '../core/viewport.js'
 
 // Icon size relative to the selection-card art, and how far apart they sit.
-const SHIP_SCALE = 0.4
-const SHIP_GAP = 42
+//
+// These are a tally, not a display. Sized to be read at a glance out of the
+// corner of an eye already busy watching a gravity well, and no larger -- the
+// bottom-left is board the player still has to fly through, and three hulls
+// drawn at anything like their in-flight size sit in it like furniture.
+const SHIP_SCALE = 0.24
+const SHIP_GAP = 26
 
 export function drawHud (ctx, game) {
   drawShipsRemaining(ctx, game)
@@ -30,11 +35,11 @@ export function drawHud (ctx, game) {
 function drawShipsRemaining (ctx, game) {
   const craft = game.craft
   const scale = craft.cardScale * SHIP_SCALE
-  const y = DESIGN_HEIGHT - 38
+  const y = DESIGN_HEIGHT - 26
 
   for (let i = 0; i < game.lives; i++) {
     // Nose-up and engines cold: these are ships on the shelf, not in flight.
-    drawCraft(ctx, craft.id, 34 + i * SHIP_GAP, y, -Math.PI / 2, 0, 0, scale)
+    drawCraft(ctx, craft.id, 24 + i * SHIP_GAP, y, -Math.PI / 2, 0, 0, scale)
   }
 }
 
