@@ -455,9 +455,12 @@ export class Asteroid {
       const lit = (mx / ml) * LX + (my / ml) * LY
       // Floor the dark side well above black: on a black field a face that
       // goes to zero stops being a shadowed facet and becomes a hole in the
-      // rock, and the silhouette breaks up. Red needs a higher floor than the
-      // old blue did -- it has far less luminance to spend before it vanishes.
-      return Math.max(0.42, Math.min(1, base + lit * contrast + randRange(rng, -0.07, 0.07)))
+      // rock, and the silhouette breaks up. Ice can afford a lower floor than
+      // the old red could -- it starts from far more luminance, so the shadowed
+      // faces still read as lit surface at a shade that would have swallowed a
+      // crimson one, and the extra range buys back the sense of a solid body
+      // rather than a flat white chip.
+      return Math.max(0.32, Math.min(1, base + lit * contrast + randRange(rng, -0.07, 0.07)))
     }
 
     this.rimShade = []

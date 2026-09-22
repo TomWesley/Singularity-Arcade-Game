@@ -17,17 +17,51 @@ import { SYSTEM_SPEED_LIMIT } from '../game/physics.js'
 
 const MAX_TAIL = 62      // px; a long slingshot streak is capped here
 
-// Red only. A field of embers rather than sci-fi debris: the colour says how
-// fast a rock is moving and nothing else, so the eye reads the board as one
-// continuous temperature map instead of a set of categories.
+// Ice, not embers.
 //
-// Deep crimson at rest, brightening to hot ember at the speed limit. Ramping a
-// single hue by speed is what makes it hypnotic; two colours would make it
-// informational.
-const EMBER_COLD = [178, 36, 34]
-const EMBER_WARM = [236, 78, 48]
-const EMBER_HOT = [255, 150, 92]
-const SPECULAR = 'rgba(255, 226, 198, 0.72)'
+// One colour ramp driven by speed and nothing else, so the eye reads the board
+// as a single continuous scale rather than a set of categories -- but the scale
+// is now brightness rather than heat. Dim blue-grey ice at rest, climbing to
+// brilliant white at the board's speed limit.
+//
+// It is the better physical story as well as the better picture. These are not
+// glowing rocks: they are dirty ice on hard gravitational trajectories, and a
+// body of ice whipping through a gravity well is exactly the thing that brightens
+// -- it heats, it sublimates, and it throws off a coma. A comet is dark and
+// almost invisible out in the cold and spectacular near its periapsis, which is
+// the same relationship between speed and brightness this ramp already had,
+// only now it is the one that actually happens.
+const ICE_COLD = [150, 170, 196]
+const ICE_WARM = [206, 226, 246]
+const ICE_HOT = [255, 255, 255]
+const SPECULAR = 'rgba(255, 255, 255, 0.95)'
+
+// The coma: one cached white radial sprite, scaled and faded per rock.
+//
+// Cached because there are dozens of these on the board every frame and a
+// per-rock radial gradient is the kind of thing that turned this game into a
+// slideshow once already. One sprite, drawn additively, costs a blit.
+let comaSprite = null
+function coma () {
+  if (comaSprite) return comaSprite
+  const size = 128
+  const cv = document.createElement('canvas')
+  cv.width = size
+  cv.height = size
+  const c = cv.getContext('2d')
+  const h = size / 2
+  const g = c.createRadialGradient(h, h, 0, h, h, h)
+  // A tight white core falling off into a cold blue halo -- ice scatters short
+  // wavelengths, so the outer coma goes blue rather than simply dimmer.
+  g.addColorStop(0, 'rgba(255, 255, 255, 0.90)')
+  g.addColorStop(0.18, 'rgba(236, 246, 255, 0.46)')
+  g.addColorStop(0.45, 'rgba(198, 224, 255, 0.14)')
+  g.addColorStop(1, 'rgba(170, 206, 255, 0)')
+  c.fillStyle = g
+  c.fillRect(0, 0, size, size)
+  comaSprite = cv
+  return cv
+}
 
 function ramp (a, b, k) {
   return [
@@ -37,10 +71,10 @@ function ramp (a, b, k) {
   ]
 }
 
-/** Ember colour for a given speed, 0 at rest through 1 at the board's limit. */
-function emberAt (k) {
-  return k < 0.5 ? ramp(EMBER_COLD, EMBER_WARM, k / 0.5)
-    : ramp(EMBER_WARM, EMBER_HOT, (k - 0.5) / 0.5)
+/** Ice colour for a given speed, 0 at rest through 1 at the board's limit. */
+function iceAt (k) {
+  return k < 0.5 ? ramp(ICE_COLD, ICE_WARM, k / 0.5)
+    : ramp(ICE_WARM, ICE_HOT, (k - 0.5) / 0.5)
 }
 
 export function drawAsteroid (ctx, a) {
@@ -48,10 +82,20 @@ export function drawAsteroid (ctx, a) {
   // Normalised against the board's speed limit so the whole range of the ramp
   // is actually reachable.
   const heat = Math.min(1, Math.pow(speed / SYSTEM_SPEED_LIMIT, 0.42))
-  const rgb = emberAt(heat)
+  const rgb = iceAt(heat)
   const moving = speed > 1e-3
   const ux = moving ? a.vx / speed : Math.cos(a.spin)
   const uy = moving ? a.vy / speed : Math.sin(a.spin)
+
+  // Coma first, under everything, drawn additively so it reads as light thrown
+  // off rather than paint laid over. It grows and brightens with speed for the
+  // same reason the body does.
+  const cr = a.radius * (3.1 + heat * 2.6)
+  ctx.save()
+  ctx.globalCompositeOperation = 'lighter'
+  ctx.globalAlpha = 0.30 + heat * 0.52
+  ctx.drawImage(coma(), a.x - cr, a.y - cr, cr * 2, cr * 2)
+  ctx.restore()
 
   drawTail(ctx, a, rgb)
 
@@ -210,7 +254,7 @@ function drawTail (ctx, a, rgb) {
 
   // Hot core along the first stretch of the path.
   const cg = ctx.createLinearGradient(a.x, a.y, tip.x, tip.y)
-  cg.addColorStop(0, `rgba(255, 214, 178, ${head * 0.8})`)
+  cg.addColorStop(0, `rgba(255, 255, 255, ${head * 0.85})`)
   cg.addColorStop(0.45, `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${head * 0.30})`)
   cg.addColorStop(1, `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0)`)
   ctx.strokeStyle = cg
