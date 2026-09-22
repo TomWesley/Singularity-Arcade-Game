@@ -59,8 +59,11 @@ export function buildLevel (spec) {
   const speedScale = spec.asteroids?.speed ?? 1
   // Net circulation of the debris field, px/s of lateral bias. See Asteroid.
   const swirl = spec.asteroids?.swirl ?? 0
+  // Dissipation, per second. Small: it is there to make captures stick, not to
+  // slow rocks down. See Asteroid.update.
+  const drag = spec.asteroids?.drag ?? 0
   for (let i = 0; i < total; i++) {
-    asteroids.push(new Asteroid(rng, holes, i < orbiters, speedScale, swirl))
+    asteroids.push(new Asteroid(rng, holes, i < orbiters, speedScale, swirl, drag))
   }
 
   return {

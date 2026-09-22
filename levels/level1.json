@@ -73,7 +73,8 @@
     "count": 28,
     "orbiters": 8,
     "speed": 0.42,
-    "swirl": 85
+    "swirl": 85,
+    "drag": 0.05
   },
   "gate": {
     "x": 1.0,
