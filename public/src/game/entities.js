@@ -67,6 +67,15 @@ export class BlackHole {
 const TRAIL_INTERVAL = 1 / 45
 const TRAIL_POINTS = 14
 
+// How far clear of the gate's opening debris must enter. Anything closer reads
+// as having come out of the gate itself, and that is the one direction a player
+// committed to the run cannot dodge.
+const GATE_CLEARANCE = 70
+
+// Spread of entry angles either side of the authored deflection, in degrees.
+// Without it the whole field arrives on parallel lines and reads as a sheet.
+const FAN_DEGREES = 17
+
 // How far past the board a rock may travel before it counts as gone rather than
 // mid-orbit, and how long it may stay out there.
 const ORBIT_MARGIN = 900
@@ -265,10 +274,11 @@ export class Asteroid {
    *   else, perturbed by the other holes, and free to precess, decay or be
    *   flung out.
    */
-  constructor (rng, holes, orbiter = false, speedScale = 1, swirl = 0, drag = 0) {
+  constructor (rng, holes, gate, orbiter = false, speedScale = 1, deflection = 0, drag = 0) {
+    this.gate = gate
     this.orbiter = orbiter
     this.speedScale = speedScale
-    this.swirl = swirl
+    this.deflection = deflection
     this.drag = drag
     this.rng = rng
     this.verts = []
@@ -293,14 +303,21 @@ export class Asteroid {
     this.reset(holes, true)
   }
 
-  // Spawns from above the top edge or below the bottom edge, always off-screen.
+  // Spawns off the right edge, clear of the gate's mouth, always off-screen.
   //
   // Two rules drive this. Nothing may appear inside the board -- debris blinking
   // into existence in front of the player is not a hazard, it is a cheat. And
-  // nothing arrives from the right, because the gate sits on the right edge and
-  // a rock entering there closes on a player who is looking the other way at the
-  // exact moment they have committed to the run. Coming down from above or up
-  // from below, everything is visible for the length of its approach.
+  // nothing may come out of the gate, because that is the one place a player is
+  // committed to flying into and cannot dodge away from.
+  //
+  // Everything else arriving from the right is the point rather than a problem,
+  // and this reverses what was here before. The old rule sent debris in from
+  // above and below to keep it away from the gate -- but on a level with a hole
+  // in the middle the survivable lanes are the top and the bottom, so that put
+  // every rock's entry exactly where the player flies, appearing a hull's
+  // length away with no approach to read. Coming from the right, a rock crosses
+  // the whole board before it reaches anyone: the player is flying into it,
+  // watching it come, for the entire length of its run.
   reset (holes, initial = false) {
     const rng = this.rng
     this.radius = randRange(rng, 1.96, 3.98)
@@ -313,24 +330,41 @@ export class Asteroid {
 
     this.buildBody(rng)
 
-    // Entry point: off the top or the bottom, anywhere across a span a little
-    // wider than the board so rocks also drift in from the upper corners.
-    const fromTop = rng() > 0.5
-    this.x = randRange(rng, -DESIGN_WIDTH * 0.08, DESIGN_WIDTH * 1.08)
-    this.y = fromTop
-      ? -randRange(rng, 60, 240)
-      : DESIGN_HEIGHT + randRange(rng, 60, 240)
+    // Entry point: off the right edge, above or below the gate's band. The span
+    // runs past the top and bottom edges too, so rocks also come in around the
+    // corners rather than all entering on one vertical line.
+    const g = this.gate
+    const clearTop = g.y - g.height / 2 - GATE_CLEARANCE
+    const clearBottom = g.y + g.height / 2 + GATE_CLEARANCE
+    const fromAbove = rng() > 0.5
+    this.x = DESIGN_WIDTH + randRange(rng, 50, 280)
+    this.y = fromAbove
+      ? randRange(rng, -DESIGN_HEIGHT * 0.2, clearTop)
+      : randRange(rng, clearBottom, DESIGN_HEIGHT * 1.2)
 
-    if (this.orbiter && this.seedBoundEntry(rng, holes, fromTop)) return
+    if (this.orbiter && this.seedBoundEntry(rng, holes, fromAbove)) return
 
-    // Ordinary debris: crosses the board, with enough lateral drift that the
-    // field does not read as rain.
-    const inward = fromTop ? 1 : -1
+    // Ordinary debris: crosses the board leftward, fanned so the field arrives
+    // at a spread of angles rather than as a single sheet.
+    //
+    // Direction is built as an angle off due-left rather than as separate x and
+    // y velocities, because the deflection has to mean the same thing at every
+    // speed. Composed from components it does not: the deflection was tuned as a
+    // sideways nudge on rocks that were falling vertically, and the moment
+    // entry moved to the right edge that same 85px/s became a *vertical* nudge
+    // on rocks crossing at 23-63px/s, which swamped them -- the median rock
+    // left the edge 51 degrees off course and went straight out of the top or
+    // bottom without ever crossing the board.
     const s = this.speedScale
-    this.vy = inward * randRange(rng, 55, 150) * s
-    this.vx = randRange(rng, -120, 60) * s
+    const speed = randRange(rng, 55, 150) * s
+    // `toward` points at the midline: down from above, up from below. The
+    // deflection is applied against it, so debris fans outward.
+    const toward = fromAbove ? 1 : -1
+    const angle = (this.deflection + randRange(rng, -FAN_DEGREES, FAN_DEGREES)) * Math.PI / 180
+    this.vx = -Math.cos(angle) * speed
+    this.vy = -toward * Math.sin(angle) * speed
 
-    // Net circulation, and the reason the field stops being a vacuum.
+    // Angular momentum, and the reason the field stops being a vacuum.
     //
     // Whether a rock orbits a hole or goes straight down it is decided by one
     // number -- its angular momentum about that hole, L = v x r -- and not at
@@ -341,18 +375,26 @@ export class Asteroid {
     // works out at the angular momentum of a circular orbit at the ISCO, so it
     // scales with the hole's mass.
     //
-    // With purely random lateral drift, most rocks entered with a small impact
+    // With purely random drift, most rocks entered with a small impact
     // parameter and sat well under it -- 25 of 28 on this level -- so the board
     // really was a vacuum, and correctly so.
     //
-    // The fix is not to slow the rocks or lighten them, it is to give the field
-    // angular momentum. Debris entering from above drifts one way and from
-    // below the other, so the whole field turns in a consistent sense about the
-    // board. That is what every real disc of debris does, and it is why discs
-    // are discs rather than a shell: infalling material carries net angular
-    // momentum it cannot shed, so it settles into rotation instead of raining
-    // straight in.
-    this.vx += inward * this.swirl
+    // The fix is not to slow the rocks or lighten them, it is to throw the
+    // stream off a dead-centre aim. `deflection` is that angle, in degrees
+    // *away* from the horizontal midline, and the sign is the whole of it.
+    //
+    // Aiming debris inward looks like the natural choice and is exactly wrong.
+    // At the right-hand edge the two terms of L = x*vy - y*vx very nearly
+    // cancel for a rock angled toward the middle, so it arrives with almost no
+    // angular momentum and goes straight down the hole: 20 of 28 doomed before
+    // they had moved. Angled outward the terms add instead, and the same rocks
+    // pass above and below the hole with enough to swing right round it -- 2 of
+    // 28 doomed, and full revolutions better than doubled.
+    //
+    // The two streams end up counter-rotating, which is not a disc and is not
+    // meant to be. It is what a stream of debris does when a massive body
+    // splits it: what passes above carries angular momentum of one sign and
+    // what passes below the other.
   }
 
   /**
@@ -368,14 +410,14 @@ export class Asteroid {
    *
    * @returns true if a bound entry was found
    */
-  seedBoundEntry (rng, holes, fromTop) {
+  seedBoundEntry (rng, holes, fromAbove) {
     // Prefer a hole on the half of the board the rock is entering from, so the
     // ellipse actually reaches the well rather than skimming past it.
     // Current position, not the authored one: a host that orbits is not where
     // the level file put it, and picking by home would aim rocks at where a
     // star used to be.
     const candidates = holes.filter(h =>
-      fromTop ? h.y < DESIGN_HEIGHT * 0.62 : h.y > DESIGN_HEIGHT * 0.38)
+      fromAbove ? h.y < DESIGN_HEIGHT * 0.62 : h.y > DESIGN_HEIGHT * 0.38)
     const pool = candidates.length ? candidates : holes
     const host = pool[Math.floor(rng() * pool.length)]
 

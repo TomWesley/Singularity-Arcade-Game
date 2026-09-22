@@ -428,15 +428,33 @@ in whatever its speed or angle. Setting `df/dr = 0` and minimising puts the
 marginal case at `r = 3 r_s`, the ISCO exactly, so `L_crit` is the angular
 momentum of a circular orbit there and scales with the hole's mass.
 
-With purely random lateral drift, 25 of level 1's 28 rocks sat under `L_crit`
-from the instant they spawned, and the board really was a vacuum. The fix is not
-to slow them or lighten them: it is `asteroids.swirl`, a lateral bias in px/s
-that makes debris from above drift one way and debris from below the other, so
-the field carries net circulation. That is what every real debris disc does, and
-why discs are discs rather than shells -- infalling material carries angular
-momentum it cannot shed, so it settles into rotation instead of raining straight
-in. With `swirl` and a lighter hole, 10 of 28 start doomed instead of 25, and
-rocks complete 88 full revolutions in four minutes instead of 8.
+With purely random drift, 25 of level 1's 28 rocks sat under `L_crit` from the
+instant they spawned, and the board really was a vacuum. The fix is not to slow
+them or lighten them: it is `asteroids.deflection`, the angle in degrees that
+debris is thrown off a dead-centre aim, **away** from the horizontal midline.
+
+The sign is the whole thing. Debris enters from the right-hand edge, and angled
+*inward* the two terms of `L = x*vy - y*vx` very nearly cancel there, so a rock
+arrives with almost no angular momentum and goes straight down the hole -- 20 of
+28 doomed before they had moved. Angled outward the terms add instead, and the
+same rocks pass above and below the hole with enough to swing right round it: 2
+of 28. The two streams end up counter-rotating, which is not a disc and is not
+meant to be -- it is what a stream does when a massive body splits it.
+
+It is authored as an angle rather than a velocity because it has to mean the
+same thing at every speed. It was once a `swirl` in px/s, tuned as a sideways
+nudge on rocks falling vertically; the moment entry moved to the right edge the
+same 85px/s became a vertical nudge on rocks crossing at 23-63px/s and swamped
+them, sending the median rock out of the top or bottom without ever crossing the
+board.
+
+`asteroids.drag` is a separate and much smaller thing -- 0.05 on level 1, and
+not there to slow anything. Dissipation is what makes a capture *stick*: a clean
+two-body encounter conserves energy, so an unbound rock leaves unbound, and
+bleeding a little at closest approach turns a fly-by into several laps. It is
+why debris settles into discs at all. It must stay small: at 0.45 the rocks shed
+so much energy they spiral in before completing a lap and full revolutions
+collapse to zero.
 
 ### Backdrop
 

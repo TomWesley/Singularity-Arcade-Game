@@ -70,10 +70,10 @@
     }
   ],
   "asteroids": {
-    "count": 28,
+    "count": 34,
     "orbiters": 8,
-    "speed": 0.42,
-    "swirl": 85,
+    "speed": 0.95,
+    "deflection": 28,
     "drag": 0.05
   },
   "gate": {

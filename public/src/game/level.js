@@ -52,18 +52,22 @@ export function buildLevel (spec) {
     }
   }
 
+  // The gate is built before the debris, because the debris needs to know where
+  // its mouth is in order to stay clear of it.
+  const gate = new Gate(spec.gate)
+
   const rng = makeRng(spec.seed ?? 1)
   const asteroids = []
   const total = spec.asteroids?.count ?? 0
   const orbiters = Math.min(total, spec.asteroids?.orbiters ?? 0)
   const speedScale = spec.asteroids?.speed ?? 1
-  // Net circulation of the debris field, px/s of lateral bias. See Asteroid.
-  const swirl = spec.asteroids?.swirl ?? 0
+  // Entry angle away from the horizontal midline, in degrees. See Asteroid.
+  const deflection = spec.asteroids?.deflection ?? 0
   // Dissipation, per second. Small: it is there to make captures stick, not to
   // slow rocks down. See Asteroid.update.
   const drag = spec.asteroids?.drag ?? 0
   for (let i = 0; i < total; i++) {
-    asteroids.push(new Asteroid(rng, holes, i < orbiters, speedScale, swirl, drag))
+    asteroids.push(new Asteroid(rng, holes, gate, i < orbiters, speedScale, deflection, drag))
   }
 
   return {
@@ -76,7 +80,7 @@ export function buildLevel (spec) {
     stars: holes.filter(h => h instanceof Star),
     blackHoles: holes.filter(h => h instanceof BlackHole),
     asteroids,
-    gate: new Gate(spec.gate),
+    gate,
     spawn: {
       x: spec.spawn.x * DESIGN_WIDTH,
       y: spec.spawn.y * DESIGN_HEIGHT
