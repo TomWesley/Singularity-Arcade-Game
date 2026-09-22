@@ -274,6 +274,47 @@ so the matrix just ranks hitboxes and no high-thrust hull can ever win. When the
 field starts beating the engine it now turns radially outward — which is what a
 human does, and without it the measurement is not of the game people play.
 
+## The cursor is a throttle, not a destination
+
+The mouse is where the craft wants to go, but how far it sits from the hull also
+decides how much engine is available, and inside a dead zone of about two hull
+radii the engine is simply off.
+
+That second half exists because without it the craft could hover anywhere.
+`steer()` is arrival steering: it asks for a desired *velocity*, and with the
+cursor on the hull that desire is zero -- so the correction becomes
+`(0 - v) * responsiveness`, which is full braking at maximum power, and it
+cancels gravity exactly as happily as it cancels anything else. Parking the
+mouse did not cut the engine, it commanded a hover. The field only won inside
+`escapeLimit()`, a ring about ten pixels wider than the hole itself, and the
+rest of the board was gravitationally inert.
+
+The throttle *ramps* rather than only switching off inside the dead zone,
+because a bare dead zone is trivially gamed: park the cursor one pixel outside
+it and the full braking term comes back. Measured, with the ramp in place:
+
+```
+craft           thrust/mass   hands off   small nudge   pulling away
+Superbug           2771          712px        224px          84px
+Psych Bike         2644          632px        228px          84px
+The Compiler       2816          804px        224px          84px
+Voidwalker         3626          756px        200px          76px
+```
+
+Each column is the radius inside which that input still loses the craft. Doing
+nothing is fatal from most of the board; a twitch of the cursor is not enough to
+save you inside ~220px; committing fully buys you back everything outside ~84px.
+The gap between the first two is what closes the hover. The gap between the last
+two is the room to notice the mistake and fly out of it. `npm run authority`
+prints this for any hole mass.
+
+Note what mass does and does not do here. Gravitational acceleration does not
+depend on the mass being accelerated, so a heavy hull does not fall faster --
+see `gravityAt()`. Making the craft heavier makes them *more susceptible* only
+by dividing thrust: less authority to argue with a well, and a slower shed of
+the velocity the well has already given them. That is the whole mechanism, and
+it is why the masses went up 40% rather than gravity going up.
+
 ## Levels
 
 `levels/manifest.json` sets the order and the intended length of the campaign:
@@ -436,6 +477,7 @@ npm run speeds             # asteroid speed distribution, for tuning the tails
 npm run stars              # star orbits: apsides, lap time, precession, envelope
 npm run paths              # renders the star orbits to a PNG, to look at
 npm run capture            # how often asteroids actually orbit the stars
+npm run authority          # from how far out gravity beats each craft's engine
 node tools/smoke.mjs       # headless wiring + physics assertions
 npm run vendor:engine      # re-copy the graphics engine from the sibling checkout
 ```

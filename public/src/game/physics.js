@@ -179,6 +179,14 @@ export function gravityAt (x, y, holes, out = { x: 0, y: 0 }) {
 }
 
 /**
+ * Cursor dead zone, in hull radii, and the distance over which the throttle
+ * climbs from nothing to full once outside it. Together they make the last
+ * ~70px of cursor travel a throttle rather than a destination.
+ */
+const DEAD_ZONE_HULLS = 2.2
+const THROTTLE_RAMP = 55
+
+/**
  * The thrust the pilot is asking for, as an acceleration.
  *
  * Arrival steering: the craft wants to travel at `maxSpeed` toward the cursor,
@@ -195,6 +203,33 @@ export function steer (craft, x, y, vx, vy, targetX, targetY, out = { x: 0, y: 0
   const dy = targetY - y
   const dist = Math.hypot(dx, dy)
 
+  // Throttle. The cursor is a control stick, not only a destination: how far it
+  // sits from the hull decides how much engine is available, and inside a dead
+  // zone the engine is simply off.
+  //
+  // Without this the craft could hover anywhere. Arrival steering asks for a
+  // desired *velocity*, and with the cursor on the hull that desire is zero --
+  // so the correction term becomes (0 - v) * responsiveness, which is full
+  // braking at maximum power, and it cancels gravity exactly as happily as it
+  // cancels anything else. Parking the mouse did not cut the engine, it
+  // commanded a hover, and the field only won inside escapeLimit(): a ring
+  // about ten pixels wider than the hole itself. The rest of the board was
+  // gravitationally inert, which is a strange property for this game to have.
+  //
+  // Scaling the authority rather than only zeroing it inside the dead zone
+  // matters, because a bare dead zone is trivially gamed -- park the cursor one
+  // pixel outside it and the full braking term comes back. Ramping means a
+  // small nudge buys a small burn, and holding station next to a well requires
+  // pulling the cursor away from it and balancing thrust against pull, which is
+  // the thing flying near a black hole ought to feel like.
+  const dead = craft.hull * DEAD_ZONE_HULLS
+  const throttle = Math.max(0, Math.min(1, (dist - dead) / THROTTLE_RAMP))
+  if (throttle <= 0) {
+    out.x = 0
+    out.y = 0
+    return out
+  }
+
   let desiredVX = 0
   let desiredVY = 0
   if (dist > 1e-4) {
@@ -205,7 +240,7 @@ export function steer (craft, x, y, vx, vy, targetX, targetY, out = { x: 0, y: 0
     desiredVY = (dy / dist) * speed
   }
 
-  const maxAccel = craft.thrust / craft.mass
+  const maxAccel = (craft.thrust / craft.mass) * throttle
   let ax = (desiredVX - vx) * craft.responsiveness
   let ay = (desiredVY - vy) * craft.responsiveness
   const mag = Math.hypot(ax, ay)
