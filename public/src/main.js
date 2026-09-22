@@ -11,7 +11,7 @@ import { loadLevel, loadManifest } from './game/level.js'
 import { CRAFTS } from './game/crafts.js'
 
 import { initTheme, ensureFonts } from './render/theme.js'
-import { Starfield } from './render/starfield.js'
+import { Backdrop } from './render/backdrop.js'
 import { drawBlackHole } from './render/blackhole.js'
 import { drawStar } from './render/star.js'
 import { drawAsteroid } from './render/asteroid.js'
@@ -34,7 +34,7 @@ window.addEventListener('resize', () => viewport.resize())
 
 const input = new Input(canvas, viewport)
 const game = new Game()
-const starfield = new Starfield()
+const backdrop = new Backdrop()
 const impact = new Impact()
 const pause = new PauseController()
 let lastState = game.state
@@ -102,7 +102,6 @@ function update (dt) {
   pause.sync()
   if (pause.paused) return
 
-  starfield.update(dt)
   const target = game.state === STATE.PLAYING && input.hasPointer
     ? { x: input.x, y: input.y }
     : null
@@ -135,12 +134,10 @@ function render (alpha) {
 
   viewport.apply(ctx)
 
-  // The field is black. Not near-black with an undertone -- black. Everything
-  // that reads on this board reads because it is the only lit thing on it.
-  ctx.fillStyle = '#000000'
-  ctx.fillRect(0, 0, DESIGN_WIDTH, DESIGN_HEIGHT)
-
-  starfield.draw(ctx, time)
+  // The board is black, and everything that reads on it reads because it is the
+  // only lit thing on it. The backdrop owns that fill -- and the optional sky
+  // image that may one day sit behind it.
+  backdrop.draw(ctx, game.level?.backdrop ?? null)
 
   if (game.level) {
     drawGate(ctx, game.level.gate, time, game.transitFlare)

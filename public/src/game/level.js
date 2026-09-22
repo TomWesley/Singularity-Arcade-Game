@@ -38,6 +38,20 @@ export function buildLevel (spec) {
     ...(spec.blackHoles ?? []).map(h => new BlackHole(h)),
     ...(spec.stars ?? []).map(s => new Star(s))
   ]
+  // Orbits are bound after every attractor exists, because an orbit names its
+  // host by index into this list -- black holes first, then stars, which is the
+  // order they are written in the level file.
+  for (const b of holes) {
+    if (!b.orbit) continue
+    const host = holes[b.orbit.host ?? 0]
+    if (!host || host === b) {
+      throw new Error(`Level ${spec.id}: orbit host ${b.orbit.host} does not exist`)
+    }
+    if (!b.bindOrbit(host)) {
+      throw new Error(`Level ${spec.id}: orbit about host ${b.orbit.host} is not bound`)
+    }
+  }
+
   const rng = makeRng(spec.seed ?? 1)
   const asteroids = []
   const total = spec.asteroids?.count ?? 0
@@ -51,6 +65,8 @@ export function buildLevel (spec) {
     id: spec.id,
     name: spec.name,
     subtitle: spec.subtitle ?? '',
+    // Optional stationary sky image behind the board; null means black.
+    backdrop: spec.backdrop ?? null,
     holes,
     stars: holes.filter(h => h instanceof Star),
     blackHoles: holes.filter(h => h instanceof BlackHole),

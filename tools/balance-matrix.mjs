@@ -29,7 +29,9 @@ const ARCHETYPES = [
       blackHoles: [
         { x: 0.34, y: 0.0, solarMasses: 22 }, { x: 0.34, y: 1.0, solarMasses: 22 },
         { x: 0.62, y: 0.34, solarMasses: 3.5 },
-        { x: 0.74, y: 0.62, solarMasses: 3, orbit: { radius: 0.1, period: 8.5, phase: 0.6 } }
+        // Orbits the 3.5 solar-mass hole above it: apsides rather than a radius
+        // and a period, because an orbit is now flown rather than traced.
+        { x: 0.62, y: 0.34, solarMasses: 3, orbit: { host: 2, apoapsis: 0.30, periapsis: 0.18, argument: 0.1, direction: 1 } }
       ],
       asteroids: { count: 34, orbiters: 6 }, gate
     }
@@ -44,14 +46,19 @@ const ARCHETYPES = [
     }
   },
   {
-    name: 'three-body',
-    note: 'three equal masses in a triangle; chaotic field, thrust is king',
+    name: 'triple',
+    note: 'two holes on wide ellipses about a third; the field never repeats',
     spec: {
-      id: 'c', name: 'Three Body', seed: 909, spawn: { x: 0.06, y: 0.5 },
+      // Was three equal masses each tracing its own little circle, which is not
+      // a three-body system so much as three one-body systems drawn next to
+      // each other. A hierarchical triple -- companions orbiting a dominant
+      // primary -- is both the configuration real triples actually settle into
+      // and something the orbit code can express honestly.
+      id: 'c', name: 'Triple', seed: 909, spawn: { x: 0.06, y: 0.5 },
       blackHoles: [
-        { x: 0.4, y: 0.24, solarMasses: 7, orbit: { radius: 0.05, period: 13, phase: 0 } },
-        { x: 0.4, y: 0.76, solarMasses: 7, orbit: { radius: 0.05, period: 13, phase: 2.09 } },
-        { x: 0.7, y: 0.5, solarMasses: 7, orbit: { radius: 0.05, period: 13, phase: 4.19 } }
+        { x: 0.45, y: 0.5, solarMasses: 7 },
+        { x: 0.45, y: 0.5, solarMasses: 7, orbit: { host: 0, apoapsis: 0.32, periapsis: 0.20, argument: 0.0, direction: 1 } },
+        { x: 0.45, y: 0.5, solarMasses: 7, orbit: { host: 0, apoapsis: 0.44, periapsis: 0.26, argument: 0.5, direction: -1, lead: 2.5 } }
       ],
       asteroids: { count: 14, orbiters: 3 }, gate
     }

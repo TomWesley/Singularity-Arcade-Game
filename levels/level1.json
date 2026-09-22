@@ -1,58 +1,78 @@
 {
   "id": "level1",
-  "name": "Training Course",
-  "subtitle": "Thread the channel. The small ones bite hardest.",
-  "seed": 1337,
+  "name": "Four Suns",
+  "subtitle": "One well, and everything else falling around it.",
+  "seed": 20260922,
+  "backdrop": "assets/backdrop.jpg",
   "spawn": {
-    "x": 0.075,
+    "x": 0.06,
     "y": 0.5
   },
   "blackHoles": [
     {
-      "x": 0.34,
-      "y": 0.0,
-      "solarMasses": 22
-    },
-    {
-      "x": 0.34,
-      "y": 1.0,
-      "solarMasses": 22
-    },
-    {
-      "x": 0.62,
-      "y": 0.34,
-      "solarMasses": 3.5
-    },
-    {
-      "x": 0.74,
-      "y": 0.62,
-      "solarMasses": 3,
-      "orbit": {
-        "radius": 0.1,
-        "period": 8.5,
-        "phase": 0.6
-      }
+      "x": 0.5,
+      "y": 0.5,
+      "solarMasses": 8
     }
   ],
   "stars": [
     {
-      "x": 0.5,
-      "y": 0.13,
-      "solarMasses": 14,
-      "radius": 0.085,
-      "kind": "red-giant"
+      "kind": "white-dwarf",
+      "solarMasses": 0.9,
+      "radius": 0.018056,
+      "orbit": {
+        "host": 0,
+        "apoapsis": 0.291667,
+        "periapsis": 0.194444,
+        "argument": 0.62,
+        "direction": 1,
+        "lead": 0.0
+      }
     },
     {
-      "x": 0.845,
-      "y": 0.8,
-      "solarMasses": 2.4,
-      "radius": 0.022,
-      "kind": "white-dwarf"
+      "kind": "main-sequence",
+      "solarMasses": 0.8,
+      "radius": 0.025,
+      "orbit": {
+        "host": 0,
+        "apoapsis": 0.368056,
+        "periapsis": 0.208333,
+        "argument": 0.15,
+        "direction": -1,
+        "lead": 1.6
+      }
+    },
+    {
+      "kind": "red-giant",
+      "solarMasses": 1.8,
+      "radius": 0.069444,
+      "orbit": {
+        "host": 0,
+        "apoapsis": 0.423611,
+        "periapsis": 0.277778,
+        "argument": 0.87,
+        "direction": -1,
+        "lead": 2.4
+      }
+    },
+    {
+      "kind": "main-sequence",
+      "solarMasses": 1.4,
+      "radius": 0.036111,
+      "orbit": {
+        "host": 0,
+        "apoapsis": 0.416667,
+        "periapsis": 0.201389,
+        "argument": 0.4,
+        "direction": 1,
+        "lead": 3.1
+      }
     }
   ],
   "asteroids": {
-    "count": 34,
-    "orbiters": 6
+    "count": 24,
+    "orbiters": 0,
+    "speed": 0.42
   },
   "gate": {
     "x": 1.0,

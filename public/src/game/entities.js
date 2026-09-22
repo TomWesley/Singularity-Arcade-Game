@@ -1,8 +1,9 @@
 // Simulation entities. Rendering lives in src/render -- these carry state and
 // the rules that move it, nothing about how any of it looks.
 
-import { blackHoleGeometry, starGeometry, gravityAt, integrate, apoapsisSpeed, SYSTEM_SPEED_LIMIT } from './physics.js'
+import { blackHoleGeometry, starGeometry, gravityAt, integrate, apoapsisSpeed, circularOrbitSpeed, SYSTEM_SPEED_LIMIT } from './physics.js'
 import { makeRng, randRange } from '../core/rng.js'
+import { STEP } from '../core/loop.js'
 import { DESIGN_WIDTH, DESIGN_HEIGHT } from '../core/viewport.js'
 
 export class BlackHole {
@@ -10,8 +11,11 @@ export class BlackHole {
    * @param {object} spec level JSON entry, coordinates normalised 0..1
    */
   constructor (spec) {
-    this.homeX = spec.x * DESIGN_WIDTH
-    this.homeY = spec.y * DESIGN_HEIGHT
+    // A body in orbit has no authored position -- bindOrbit() places it from
+    // the orbit's own geometry -- so x and y are optional and only the centre
+    // of the board is used until then.
+    this.homeX = (spec.x ?? 0.5) * DESIGN_WIDTH
+    this.homeY = (spec.y ?? 0.5) * DESIGN_HEIGHT
 
     // A level authors a hole by its mass alone. Horizon, photon sphere and
     // ISCO all fall out of that mass and the real constants -- there is no
@@ -27,26 +31,24 @@ export class BlackHole {
     // Kept as `radius` too, since that is what collision and layout code reads.
     this.radius = geo.horizon
 
-    this.orbit = spec.orbit
-      ? {
-          radius: spec.orbit.radius * DESIGN_HEIGHT,
-          period: spec.orbit.period,
-          phase: spec.orbit.phase ?? 0
-        }
-      : null
+    // Resolved into a velocity by bindOrbit() once the host exists; see there.
+    this.orbit = spec.orbit ?? null
+    this.orbitField = null
 
     this.x = this.homeX
     this.y = this.homeY
+    this.vx = 0
+    this.vy = 0
     this.spin = 0
     this.diskPhase = randRange(makeRng(Math.round(this.homeX * 31 + this.homeY)), 0, Math.PI * 2)
   }
 
-  update (dt, elapsed) {
-    if (this.orbit) {
-      const a = this.orbit.phase + (elapsed / this.orbit.period) * Math.PI * 2
-      this.x = this.homeX + Math.cos(a) * this.orbit.radius
-      this.y = this.homeY + Math.sin(a) * this.orbit.radius
-    }
+  bindOrbit (host) {
+    return bindOrbit(this, host)
+  }
+
+  update (dt) {
+    if (this.orbitField) stepOrbit(this, dt)
     // Accretion disks rotate faster on smaller holes, as they should.
     this.spin += dt * (0.9 + 40 / this.horizon)
   }
@@ -69,6 +71,112 @@ const ORBIT_MARGIN = 900
 const OFF_BOARD_GRACE = 22
 
 /**
+ * Puts a body onto a real bound orbit about `host`, starting at apoapsis.
+ *
+ * The level authors the *shape* of the orbit -- how far out it swings, how
+ * close it comes back, and which way the long axis points -- and the physics
+ * supplies the speed. apoapsisSpeed() solves the two conserved quantities of
+ * the Paczynski-Wiita potential, specific energy and specific angular momentum,
+ * for the one velocity that closes an ellipse between those two radii. There is
+ * no period in the level file and no number chosen to look right: how long a
+ * lap takes falls out of Kepler's third law, which is why the inner bodies here
+ * are visibly quicker than the outer ones without anything saying so.
+ *
+ * After seeding, the body is integrated rather than animated. It falls through
+ * its host's field using the same symplectic step the asteroids and the craft
+ * use, so the ellipse is a consequence of the field rather than a curve traced
+ * out by a parameter. One thing follows from that which a traced curve could
+ * never give: the orbits precess. Only an exact inverse square closes an orbit,
+ * and Paczynski-Wiita is not one -- so the long axis rotates a little on every
+ * pass, fastest for the bodies that dive deepest. That is the pseudo-Newtonian
+ * stand-in for the relativistic perihelion advance, the effect Mercury is
+ * famous for, and here it means the four ellipses never quite repeat.
+ *
+ * One deliberate restriction: an orbiting body feels its host and nothing else.
+ * Four mutually attracting stars around a hole is a five-body problem, and
+ * five-body problems are chaotic -- the level would not be the same level
+ * twice, and a star would eventually be thrown into the player's lap by
+ * arithmetic rather than by design. The host outweighs each companion several
+ * times over, so the term being dropped is the small one. Every other body on
+ * the board -- craft, rock, wreckage -- feels all of them in full.
+ *
+ * @returns true if a bound orbit was found
+ */
+function bindOrbit (body, host) {
+  const spec = body.orbit
+  const rApo = spec.apoapsis * DESIGN_HEIGHT
+  const rPeri = (spec.periapsis ?? spec.apoapsis) * DESIGN_HEIGHT
+  // Argument of apoapsis, in turns: which way the long axis points. Turns
+  // rather than radians so a level file can say 0.5 for "out to the left".
+  const arg = (spec.argument ?? 0) * Math.PI * 2
+  const dir = spec.direction ?? 1
+
+  const v = rPeri < rApo
+    ? apoapsisSpeed(host, rApo, rPeri)
+    : circularOrbitSpeed(host, rApo)
+  if (!Number.isFinite(v) || v <= 0) return false
+
+  // Apoapsis lies on the long axis, and velocity there is purely tangential --
+  // that is what makes it apoapsis.
+  body.x = host.x + Math.cos(arg) * rApo
+  body.y = host.y + Math.sin(arg) * rApo
+  body.vx = -Math.sin(arg) * v * dir
+  body.vy = Math.cos(arg) * v * dir
+  body.orbitField = [host]
+
+  // Where on the ellipse the body should already be when the level opens.
+  // Rather than solve Kepler's equation for an arbitrary starting anomaly --
+  // which would be an approximation anyway, since Paczynski-Wiita orbits are
+  // not closed and have no exact anomaly to solve for -- the orbit is simply
+  // run forward. Start the clock early and let the physics put the body where
+  // it belongs. Deterministic, exact by construction, and it costs a few
+  // thousand steps once at load.
+  const lead = spec.lead ?? 0
+  for (let t = 0; t < lead; t += STEP) stepOrbit(body, STEP)
+
+  return true
+}
+
+// Scratch for the orbit integrator. Bodies are stepped one at a time on the
+// fixed step, so a single shared vector is enough and keeps the loop
+// allocation-free.
+const ORBIT_ACCEL = { x: 0, y: 0 }
+
+/**
+ * One step of an orbit. Note the absent speed limit, which is not an oversight.
+ *
+ * These orbits are genuinely relativistic -- a body circling at seven
+ * Schwarzschild radii is doing about a third of light speed, and that is the
+ * real number, not an artefact of the scale. But Paczynski-Wiita is already the
+ * relativistic correction: the whole point of the potential is to reproduce
+ * relativistic orbital dynamics inside a Newtonian integration. Layering
+ * integrate()'s longitudinal-inertia damping on top counts the same physics
+ * twice.
+ *
+ * And it does real damage when it does, because that damping is one-sided. It
+ * only fires when acceleration has a component along velocity, which on an
+ * ellipse means the infalling half of every lap and not the climbing half. The
+ * body is short-changed on the way down and charged in full on the way up, so
+ * it loses energy every orbit and spirals in. Four stars quietly fell into the
+ * hole over the first three minutes of the level before this was found.
+ *
+ * The limit stays on the craft and the asteroids, where it is doing its actual
+ * job: capping a body the field is still trying to accelerate.
+ */
+function stepOrbit (body, dt) {
+  gravityAt(body.x, body.y, body.orbitField, ORBIT_ACCEL)
+  integrate(body, ORBIT_ACCEL.x, ORBIT_ACCEL.y, dt, 0)
+}
+
+/**
+ * The radius at which an attractor consumes what touches it. A black hole eats
+ * at its horizon; a star has no horizon, so it eats at its surface.
+ */
+export function absorbRadius (h) {
+  return h.horizon > 0 ? h.horizon : h.radius
+}
+
+/**
  * A star. Same gravity law and the same mu as a black hole of equal mass -- what
  * changes is that it has a surface, so the field never gets the room to climb.
  *
@@ -79,8 +187,11 @@ const OFF_BOARD_GRACE = 22
  */
 export class Star {
   constructor (spec) {
-    this.homeX = spec.x * DESIGN_WIDTH
-    this.homeY = spec.y * DESIGN_HEIGHT
+    // A body in orbit has no authored position -- bindOrbit() places it from
+    // the orbit's own geometry -- so x and y are optional and only the centre
+    // of the board is used until then.
+    this.homeX = (spec.x ?? 0.5) * DESIGN_WIDTH
+    this.homeY = (spec.y ?? 0.5) * DESIGN_HEIGHT
     this.kind = spec.kind ?? 'main-sequence'
     this.solarMasses = spec.solarMasses
 
@@ -93,25 +204,23 @@ export class Star {
     // lethal boundary is its surface.
     this.isco = this.radius * 2.2
 
-    this.orbit = spec.orbit
-      ? {
-          radius: spec.orbit.radius * DESIGN_HEIGHT,
-          period: spec.orbit.period,
-          phase: spec.orbit.phase ?? 0
-        }
-      : null
+    // Resolved into a velocity by bindOrbit() once the host exists; see there.
+    this.orbit = spec.orbit ?? null
+    this.orbitField = null
 
     this.x = this.homeX
     this.y = this.homeY
+    this.vx = 0
+    this.vy = 0
     this.churn = 0
   }
 
-  update (dt, elapsed) {
-    if (this.orbit) {
-      const a = this.orbit.phase + (elapsed / this.orbit.period) * Math.PI * 2
-      this.x = this.homeX + Math.cos(a) * this.orbit.radius
-      this.y = this.homeY + Math.sin(a) * this.orbit.radius
-    }
+  bindOrbit (host) {
+    return bindOrbit(this, host)
+  }
+
+  update (dt) {
+    if (this.orbitField) stepOrbit(this, dt)
     this.churn += dt
   }
 
@@ -215,8 +324,11 @@ export class Asteroid {
   seedBoundEntry (rng, holes, fromTop) {
     // Prefer a hole on the half of the board the rock is entering from, so the
     // ellipse actually reaches the well rather than skimming past it.
+    // Current position, not the authored one: a host that orbits is not where
+    // the level file put it, and picking by home would aim rocks at where a
+    // star used to be.
     const candidates = holes.filter(h =>
-      fromTop ? h.homeY < DESIGN_HEIGHT * 0.62 : h.homeY > DESIGN_HEIGHT * 0.38)
+      fromTop ? h.y < DESIGN_HEIGHT * 0.62 : h.y > DESIGN_HEIGHT * 0.38)
     const pool = candidates.length ? candidates : holes
     const host = pool[Math.floor(rng() * pool.length)]
 
@@ -328,7 +440,11 @@ export class Asteroid {
       if (this.trail.length > TRAIL_POINTS) this.trail.pop()
     }
 
-    const eaten = holes.some(h => Math.hypot(this.x - h.x, this.y - h.y) < h.horizon)
+    // A star sweeping across the board is as solid as a hole is final, so a rock
+    // that reaches either one is gone. This used to test the horizon alone,
+    // which for a star is zero -- rocks sailed straight through the photosphere.
+    // Harmless when the stars were fixed scenery; not once they are in motion.
+    const eaten = holes.some(h => Math.hypot(this.x - h.x, this.y - h.y) < absorbRadius(h))
 
     // Generous bounds so a bound orbit can swing wide and come back. The old
     // box (x > -140, y within 160px of the board) destroyed exactly the rocks

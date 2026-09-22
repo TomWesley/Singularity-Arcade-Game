@@ -1,6 +1,7 @@
 // Game state, simulation and rules. Knows nothing about drawing.
 
 import { gravityAt, steer, integrate, escapeLimit, SYSTEM_SPEED_LIMIT } from './physics.js'
+import { absorbRadius } from './entities.js'
 import { CRAFTS } from './crafts.js'
 import { DESIGN_WIDTH, DESIGN_HEIGHT } from '../core/viewport.js'
 
@@ -285,8 +286,13 @@ export class Game {
 
   checkHazards () {
     for (const h of this.level.holes) {
-      if (Math.hypot(this.body.x - h.x, this.body.y - h.y) < h.horizon) {
-        this.loseCraft('CONSUMED', h)
+      if (Math.hypot(this.body.x - h.x, this.body.y - h.y) < absorbRadius(h)) {
+        // Two different deaths, because they are two different events. Crossing
+        // a horizon is a one-way passage and the wreck is drawn inward; reaching
+        // a photosphere is a collision with a surface, and the hull comes apart
+        // where it struck. A star has no horizon to cross.
+        if (h.horizon > 0) this.loseCraft('CONSUMED', h)
+        else this.loseCraft('BURN', null)
         return true
       }
     }

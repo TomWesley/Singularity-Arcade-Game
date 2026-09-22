@@ -57,21 +57,52 @@ function staticSprite (hole) {
   c.arc(0, 0, auraOuter, 0, TAU)
   c.fill()
 
-  // The horizon itself: absolute black, punched back out of the aura, with one
-  // clean white hairline defining the edge.
+  // The horizon itself: absolute black, punched back out of the aura.
+  //
+  // The opaque fillStyle matters and is not tidying. `destination-out` scales
+  // what it erases by the *source* alpha, and the fill style still in effect
+  // here is the aura gradient -- whose innermost stop is 0.55. Punching with it
+  // removed 55% of the aura and left 0.45 x 0.55 = 0.247 of white sitting
+  // inside the horizon. Measured at 63/255, which is that number exactly.
+  //
+  // Nothing revealed it while the board behind was black, because grey over
+  // black is grey and it read as the disc. Put a starfield back there and the
+  // horizon becomes a grey coin punched out of the sky.
   c.globalCompositeOperation = 'destination-out'
+  c.fillStyle = '#000000'
   c.beginPath()
   c.arc(0, 0, hole.horizon, 0, TAU)
   c.fill()
   c.globalCompositeOperation = 'source-over'
 
+  // The hairline that defines the edge, and its glow, clipped to the outside of
+  // the horizon.
+  //
+  // The clip is not a detail. A stroked circle's shadow spills both ways, and
+  // the inward half lands on the transparent disc that was just punched out --
+  // which fills the horizon with a soft grey wash. On a black background that
+  // was invisible; the moment a sky image went in behind the board the horizon
+  // turned into a grey coin. It was always wrong, only unseeable.
+  //
+  // And it is wrong in the one place this game cannot afford to be. Whatever
+  // else the render takes liberties with, the horizon is the surface nothing
+  // comes back out of, so it must be the blackest thing on the board -- blacker
+  // than the sky behind it, which at least has stars in it. The clip is the
+  // rule stated in code: light is drawn outside this radius and nowhere else.
+  c.save()
+  c.beginPath()
+  c.rect(-reach, -reach, reach * 2, reach * 2)
+  c.arc(0, 0, hole.horizon, 0, TAU, true)   // reversed: leaves a donut
+  c.clip()
   c.strokeStyle = 'rgba(255, 255, 255, 0.92)'
-  c.lineWidth = 1.3
+  c.lineWidth = 1.6
   c.shadowColor = 'rgba(255, 255, 255, 0.8)'
   c.shadowBlur = 10
   c.beginPath()
-  c.arc(0, 0, hole.horizon, 0, TAU)
+  // Nudged outward by half a line width so the clip takes none of the hairline.
+  c.arc(0, 0, hole.horizon + 0.8, 0, TAU)
   c.stroke()
+  c.restore()
 
   const sprite = { canvas: cv, reach }
   spriteCache.set(key, sprite)

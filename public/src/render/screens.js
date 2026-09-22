@@ -270,7 +270,9 @@ function wrap (ctx, text, cx, y, maxWidth, lineHeight) {
 export function drawCraftLost (ctx, game) {
   const t = Math.min(1, game.phaseTime / 0.45)
   scrim(ctx, 0.30 * t)
-  const label = game.lossCause === 'IMPACT' ? 'Hull breach' : 'Crossed the horizon'
+  const label = game.lossCause === 'IMPACT'
+    ? 'Hull breach'
+    : game.lossCause === 'BURN' ? 'Flew into a photosphere' : 'Crossed the horizon'
   centred(ctx, label, 'title', 44, 350,
     rgbaToCss(withAlpha(palette.danger.core, 0.95 * t)), 22)
   centred(ctx, `${game.lives} craft remaining`, 'label', 16, 396,

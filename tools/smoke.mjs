@@ -115,7 +115,12 @@ if (errors.length) process.exit(1)
 {
   const { Impact } = await import('../public/src/render/impact.js')
   const lvl = buildLevel(spec)
-  const hole = lvl.holes[2]
+  // Explicitly a black hole, not holes[2]. That index used to land on one, but
+  // `holes` interleaves stars and the level's composition decides the order --
+  // when level 1 became one hole and four stars it started picking a star, and
+  // a star has no horizon for debris to cross, so the test read 0/34 eaten and
+  // blamed the inspiral for a bug in its own bookkeeping.
+  const hole = lvl.blackHoles[0]
   let s = 7
   const rng = () => ((s = (s * 1664525 + 1013904223) >>> 0) / 4294967296)
 

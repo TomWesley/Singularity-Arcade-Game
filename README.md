@@ -294,6 +294,82 @@ load the next one.
 Adding a level is two steps: drop the JSON in `levels/`, add its id to `order`.
 The five archetypes in `npm run balance` are already valid level specs.
 
+### Orbiting stars and holes
+
+Any attractor can be put in orbit around any other. A level authors the *shape*
+of the orbit and nothing else:
+
+```json
+{
+  "kind": "red-giant", "solarMasses": 1.8, "radius": 0.069,
+  "orbit": {
+    "host": 0,            // index into blackHoles ++ stars, in file order
+    "apoapsis": 0.424,    // x DESIGN_HEIGHT -- furthest from the host
+    "periapsis": 0.278,   // x DESIGN_HEIGHT -- closest approach
+    "argument": 0.87,     // which way the long axis points, in turns
+    "direction": -1,      // +1 anticlockwise, -1 clockwise
+    "lead": 2.4           // seconds to run forward before the level opens
+  }
+}
+```
+
+There is no period, because a period is not a free parameter. `apoapsisSpeed()`
+solves the two conserved quantities of the Paczynski-Wiita potential for the one
+velocity that closes an ellipse between those radii, and how long a lap takes
+then falls out of Kepler's third law — which is why the inner bodies on level 1
+are visibly quicker than the outer ones without anything saying so.
+
+Seeded, the body is **integrated, not animated**. It falls through its host's
+field on the same symplectic step as the asteroids and the craft, so the ellipse
+is a consequence of the field rather than a curve traced by a parameter. Three
+things follow from that, and all three took finding:
+
+- **The orbits precess.** Only an exact inverse square closes an orbit, and
+  Paczynski-Wiita is not one, so the long axis turns a few degrees every pass —
+  the pseudo-Newtonian stand-in for the relativistic perihelion advance. It is
+  real, not integrator error: hold the step and it converges (2.897 deg/lap at
+  1/120, 2.972 at 1/30720), and the same orbit with the horizon term removed
+  precesses by 0.000. For level 1 it runs 34–135 deg/lap, which the weak-field
+  formula `6πGM/c²a(1−e²)` predicts to within about 10%.
+- **The board constraint is the annulus, not the snapshot.** Because the axis
+  reaches every orientation eventually, a body can occupy anywhere between its
+  apsides, and an orbit fits only if `apoapsis + radius` clears the nearest
+  edge. A level composed against a snapshot looks right at load and puts a star
+  off the top edge ten minutes later. `npm run stars` checks this.
+- **No speed limit on the orbit step.** These orbits are genuinely relativistic
+  — a body at seven Schwarzschild radii does about a third of light speed — but
+  Paczynski-Wiita *is* the relativistic correction, so `integrate()`'s
+  longitudinal damping on top counts the same physics twice. It also only fires
+  on the infalling half of each lap, so it bleeds energy, and the four stars
+  quietly fell into the hole over the first three minutes.
+
+An orbiting body feels its host and nothing else. Four mutually attracting stars
+is a five-body problem and five-body problems are chaotic — the level would not
+be the same level twice. Everything else on the board feels all of them in full.
+
+`lead` is how a level starts bodies at different points on their orbits. Rather
+than solve Kepler's equation for an arbitrary anomaly — an approximation anyway,
+since these orbits are not closed — the orbit is simply run forward. Start the
+clock early and let the physics put the body where it belongs.
+
+### Backdrop
+
+`"backdrop": "assets/backdrop.jpg"` puts one stationary image behind the board,
+cover-fit; omit it and the field is black. It is deliberately not a parallax
+starfield. A procedural scatter of dots never read as sky — a real night sky
+spans orders of magnitude of brightness, almost all of it below what one 8-bit
+pixel can hold, so it quantises into either sparse specks or grey dust — and
+drifting it put slow parallax behind a board whose whole subject is things
+falling. A captured sky carries the nebulosity and dust lanes that dots cannot.
+
+The image must be at least as wide as the canvas it will be drawn on to stay
+sharp: roughly 2560px for a 1440p display, 3840px for 4K.
+
+Note that a lit backdrop is unforgiving of translucency bugs. The black hole's
+horizon had been 24.7% white since it was written — `destination-out` scales
+what it erases by the source alpha, and the fill style still in effect was the
+aura gradient — which is invisible over black and a grey coin over a starfield.
+
 ## Portrait and pause
 
 The board is authored at 1280x720 and letterboxed, so in portrait it collapses to
@@ -312,6 +388,8 @@ npm start                  # http://localhost:3210 — zero dependencies
 npm run physics            # geometry table for a range of black hole masses
 npm run simulate           # autopilot balance report for levels/level1.json
 npm run speeds             # asteroid speed distribution, for tuning the tails
+npm run stars              # star orbits: apsides, lap time, precession, envelope
+npm run paths              # renders the star orbits to a PNG, to look at
 node tools/smoke.mjs       # headless wiring + physics assertions
 npm run vendor:engine      # re-copy the graphics engine from the sibling checkout
 ```
