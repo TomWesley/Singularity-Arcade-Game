@@ -17,6 +17,7 @@
 
 import fs from 'node:fs'
 import { buildLevel } from '../public/src/game/level.js'
+import { stepBodies } from '../public/src/game/entities.js'
 import { DESIGN_WIDTH, DESIGN_HEIGHT } from '../public/src/game/constants.js'
 
 const STEP = 1 / 120
@@ -42,7 +43,7 @@ const tracks = level.stars.map((s, i) => ({
 const total = MINUTES * 60
 let t = 0
 while (t < total) {
-  for (const h of level.holes) h.update(STEP, t)
+  stepBodies(level.holes, STEP, t)
   t += STEP
 
   for (const tr of tracks) {

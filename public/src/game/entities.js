@@ -33,9 +33,13 @@ export class BlackHole {
     // Kept as `radius` too, since that is what collision and layout code reads.
     this.radius = geo.horizon
 
-    // Resolved into a velocity by bindOrbit() once the host exists; see there.
+    // Resolved into a velocity once the other bodies exist: bindOrbit() for an
+    // ellipse about one host, the ring pair for a rotating central configuration.
     this.orbit = spec.orbit ?? null
+    this.ring = spec.ring ?? null
     this.orbitField = null
+    // Per body, not shared: stepBodies() reads every field before anything moves.
+    this.acc = { x: 0, y: 0 }
 
     this.x = this.homeX
     this.y = this.homeY
@@ -49,8 +53,8 @@ export class BlackHole {
     return bindOrbit(this, host)
   }
 
+  // Motion is handled by stepBodies(); this is the rest of the per-tick state.
   update (dt) {
-    if (this.orbitField) stepOrbit(this, dt)
     // Accretion disks rotate faster on smaller holes, as they should.
     this.spin += dt * (0.9 + 40 / this.horizon)
   }
@@ -143,15 +147,109 @@ function bindOrbit (body, host) {
   // it belongs. Deterministic, exact by construction, and it costs a few
   // thousand steps once at load.
   const lead = spec.lead ?? 0
-  for (let t = 0; t < lead; t += STEP) stepOrbit(body, STEP)
+  for (let t = 0; t < lead; t += STEP) {
+    gravityAt(body.x, body.y, body.orbitField, body.acc)
+    integrate(body, body.acc.x, body.acc.y, STEP, 0)
+  }
 
   return true
 }
 
-// Scratch for the orbit integrator. Bodies are stepped one at a time on the
-// fixed step, so a single shared vector is enough and keeps the loop
-// allocation-free.
-const ORBIT_ACCEL = { x: 0, y: 0 }
+/**
+ * Places a body on a ring of equal masses turning about a shared centre. Every
+ * body on every ring sharing that centre pulls on every other one -- these are
+ * real mutual orbits, not a figure being animated round a point.
+ *
+ * Two passes, because a body's speed cannot be known until every other body is
+ * placed: placeInRing() puts them down, bindRingVelocity() then measures the
+ * field each one actually sits in and hands it exactly the speed that turns
+ * that pull into a circle.
+ *
+ * Measuring rather than deriving matters. The closed forms for these
+ * configurations are Newtonian and this board is not -- Paczynski-Wiita runs
+ * stronger than an inverse square at these radii, by about 18% for level 2's
+ * inner pair. Seeding from the closed form would leave every body slightly
+ * under-speed and the whole figure would sag inward. Reading the acceleration
+ * out of the same gravityAt() the rest of the game uses is right whatever the
+ * law happens to be.
+ *
+ * ── Why level 2 is two pairs and not a triangle ──────────────────────────────
+ *
+ * The first attempt was the prettier idea: three equal holes at the corners of
+ * an equilateral triangle turning rigidly about a fourth, which is an exact
+ * solution -- Lagrange's, from 1772, with a central mass added. It seeds
+ * perfectly. Radii 215.00px each, sides 372.4px each, identical speeds.
+ *
+ * And it tears itself apart, which is also exactly right. Maxwell worked this
+ * out for Saturn's rings: a ring of fewer than about seven bodies is linearly
+ * unstable no matter how heavy you make the centre. Measured here, the figure
+ * held its shape to 5% for 6 seconds at a 1.7:1 mass ratio and still only 205
+ * seconds at 120:1, by which point the ring bodies are invisible specks. Exact
+ * is not the same as stable.
+ *
+ * So level 2 uses what nature uses. Real quadruple star systems are almost
+ * always "2+2" -- two tight binaries in a wide mutual orbit -- because a flat
+ * four-body system does precisely what that triangle did. A two-body orbit is
+ * exactly solvable and exactly stable, and a hierarchy of them inherits that.
+ */
+function placeInRing (body, centre, spec) {
+  const R = spec.radius * DESIGN_HEIGHT
+  const a = ((spec.index / spec.members) + (spec.phase ?? 0)) * Math.PI * 2
+  body.x = centre.x + Math.cos(a) * R
+  body.y = centre.y + Math.sin(a) * R
+  body.ringRadius = R
+  body.ringAngle = a
+}
+
+function bindRingVelocity (body, centre, others) {
+  const field = others
+  const acc = { x: 0, y: 0 }
+  gravityAt(body.x, body.y, field, acc)
+
+  // Only the component pointing at the centre can hold a circle. For a true
+  // central configuration the tangential part is zero by symmetry; taking the
+  // radial component explicitly means a level that is slightly out of symmetry
+  // still gets the best circular seed available rather than a silently wrong one.
+  const dx = centre.x - body.x
+  const dy = centre.y - body.y
+  const R = Math.hypot(dx, dy)
+  const inward = (acc.x * dx + acc.y * dy) / R
+  if (!(inward > 0)) return false
+
+  const v = Math.sqrt(inward * R)
+  const dir = body.ring.direction ?? 1
+  body.vx = -(dy / R) * v * dir
+  body.vy = (dx / R) * v * dir
+  body.orbitField = field
+  return true
+}
+
+/**
+ * Steps every attractor on the board for one fixed tick.
+ *
+ * The two phases are the whole point and are not an optimisation. Every body
+ * reads the field it is sitting in *before* any of them has moved, and only
+ * then do they all integrate. Step them one at a time instead and the second
+ * body of a pair computes its pull from where the first has already got to,
+ * which is a half-step of asymmetry injected into every tick -- momentum stops
+ * being conserved and a mutual orbit pumps itself apart.
+ *
+ * It does not show up at all while bodies only orbit something fixed: the
+ * source of their field is not moving, so reading it early or late is the same
+ * read. It shows up the instant two bodies orbit each other. A two-body
+ * circular orbit is exact, and measured over ten minutes it holds its
+ * separation to 1% stepped simultaneously and blows up by a factor of 10^4
+ * stepped sequentially.
+ */
+export function stepBodies (bodies, dt, elapsed = 0) {
+  for (const b of bodies) {
+    if (b.orbitField) gravityAt(b.x, b.y, b.orbitField, b.acc)
+  }
+  for (const b of bodies) {
+    if (b.orbitField) integrate(b, b.acc.x, b.acc.y, dt, 0)
+    b.update(dt, elapsed)
+  }
+}
 
 /**
  * One step of an orbit. Note the absent speed limit, which is not an oversight.
@@ -174,15 +272,14 @@ const ORBIT_ACCEL = { x: 0, y: 0 }
  * The limit stays on the craft and the asteroids, where it is doing its actual
  * job: capping a body the field is still trying to accelerate.
  */
-function stepOrbit (body, dt) {
-  gravityAt(body.x, body.y, body.orbitField, ORBIT_ACCEL)
-  integrate(body, ORBIT_ACCEL.x, ORBIT_ACCEL.y, dt, 0)
-}
+
 
 /**
  * The radius at which an attractor consumes what touches it. A black hole eats
  * at its horizon; a star has no horizon, so it eats at its surface.
  */
+export { placeInRing, bindRingVelocity }
+
 export function absorbRadius (h) {
   // The horizon, not the shadow -- even though the shadow is what is drawn.
   //
@@ -236,7 +333,9 @@ export class Star {
 
     // Resolved into a velocity by bindOrbit() once the host exists; see there.
     this.orbit = spec.orbit ?? null
+    this.ring = spec.ring ?? null
     this.orbitField = null
+    this.acc = { x: 0, y: 0 }
 
     this.x = this.homeX
     this.y = this.homeY
@@ -249,8 +348,8 @@ export class Star {
     return bindOrbit(this, host)
   }
 
+  // Motion is handled by stepBodies(); this is the rest of the per-tick state.
   update (dt) {
-    if (this.orbitField) stepOrbit(this, dt)
     this.churn += dt
   }
 

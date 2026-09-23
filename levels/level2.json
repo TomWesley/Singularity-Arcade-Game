@@ -1,0 +1,76 @@
+{
+  "id": "level2",
+  "name": "The Hierarchy",
+  "subtitle": "A pair holding each other, and a pair holding on to them.",
+  "seed": 20260923,
+  "backdrop": "assets/backdrop.jpg",
+  "spawn": {
+    "x": 0.05,
+    "y": 0.5
+  },
+  "blackHoles": [
+    {
+      "solarMasses": 3,
+      "ring": {
+        "x": 0.5,
+        "y": 0.5,
+        "radius": 0.065972,
+        "members": 2,
+        "index": 0,
+        "phase": 0.0,
+        "direction": 1
+      }
+    },
+    {
+      "solarMasses": 3,
+      "ring": {
+        "x": 0.5,
+        "y": 0.5,
+        "radius": 0.065972,
+        "members": 2,
+        "index": 1,
+        "phase": 0.0,
+        "direction": 1
+      }
+    },
+    {
+      "solarMasses": 3,
+      "ring": {
+        "x": 0.5,
+        "y": 0.5,
+        "radius": 0.4375,
+        "members": 2,
+        "index": 0,
+        "phase": 0.25,
+        "direction": 1,
+        "independent": true
+      }
+    },
+    {
+      "solarMasses": 3,
+      "ring": {
+        "x": 0.5,
+        "y": 0.5,
+        "radius": 0.4375,
+        "members": 2,
+        "index": 1,
+        "phase": 0.25,
+        "direction": 1,
+        "independent": true
+      }
+    }
+  ],
+  "asteroids": {
+    "count": 30,
+    "orbiters": 6,
+    "speed": 0.95,
+    "deflection": 28,
+    "drag": 0.05
+  },
+  "gate": {
+    "x": 1.0,
+    "y": 0.5,
+    "width": 0.055,
+    "height": 0.3
+  }
+}

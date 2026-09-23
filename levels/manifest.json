@@ -1,4 +1,7 @@
 {
   "target": 15,
-  "order": ["level1"]
+  "order": [
+    "level1",
+    "level2"
+  ]
 }

@@ -1,7 +1,7 @@
 // Game state, simulation and rules. Knows nothing about drawing.
 
 import { gravityAt, steer, integrate, escapeLimit, SYSTEM_SPEED_LIMIT } from './physics.js'
-import { absorbRadius } from './entities.js'
+import { absorbRadius, stepBodies } from './entities.js'
 import { CRAFTS } from './crafts.js'
 import { DESIGN_WIDTH, DESIGN_HEIGHT } from '../core/viewport.js'
 
@@ -144,7 +144,7 @@ export class Game {
 
     // Holes and asteroids keep moving on every screen -- the menus are played
     // over a live simulation, which is most of why the title screen feels alive.
-    for (const h of this.level.holes) h.update(dt, this.elapsed)
+    stepBodies(this.level.holes, dt, this.elapsed)
     for (const a of this.level.asteroids) {
       if (a.active) a.update(dt, this.level.holes, this._accel)
     }

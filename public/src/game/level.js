@@ -1,4 +1,4 @@
-import { BlackHole, Star, Asteroid, Gate } from './entities.js'
+import { BlackHole, Star, Asteroid, Gate, placeInRing, bindRingVelocity } from './entities.js'
 import { makeRng } from '../core/rng.js'
 import { DESIGN_WIDTH, DESIGN_HEIGHT } from '../core/viewport.js'
 
@@ -38,6 +38,62 @@ export function buildLevel (spec) {
     ...(spec.blackHoles ?? []).map(h => new BlackHole(h)),
     ...(spec.stars ?? []).map(s => new Star(s))
   ]
+  // A ring is placed before anything is bound, because each vertex's speed
+  // depends on where all the other vertices ended up. Members are grouped by
+  // the host they turn about.
+  // Rings are grouped by the point they turn about, and every body sharing a
+  // centre pulls on every other one -- so an inner pair and an outer pair
+  // written about the same point form one hierarchy rather than two unrelated
+  // figures. A ring may name a `host` body to orbit, or give its own centre.
+  const rings = new Map()
+  for (const b of holes) {
+    if (!b.ring) continue
+    const r = b.ring
+    const host = r.host === undefined ? null : holes[r.host]
+    if (r.host !== undefined && (!host || host === b)) {
+      throw new Error(`Level ${spec.id}: ring host ${r.host} does not exist`)
+    }
+    const cx = host ? host.x : (r.x ?? 0.5) * DESIGN_WIDTH
+    const cy = host ? host.y : (r.y ?? 0.5) * DESIGN_HEIGHT
+    const key = `${cx.toFixed(3)},${cy.toFixed(3)}|${r.radius}`
+    placeInRing(b, { x: cx, y: cy }, r)
+    if (!rings.has(key)) {
+      rings.set(key, { centre: { x: cx, y: cy }, host, radius: r.radius, members: [] })
+    }
+    rings.get(key).members.push(b)
+  }
+
+  // A ring feels its own members, whatever it is orbiting, and every ring
+  // *inside* it about the same centre -- and deliberately nothing outside.
+  //
+  // That is the hierarchy, and it is the only arrangement of four bodies that
+  // survives. Lump them all into one field and they are a flat four-body
+  // system, which tears itself apart in about a second however carefully it is
+  // seeded. Real quadruple stars are nearly always two tight binaries in a wide
+  // mutual orbit for exactly this reason: each pair is a two-body problem,
+  // which is exact, and the far-away pair is a small perturbation rather than
+  // an equal partner. Dropping that perturbation is the same restriction the
+  // rest of the game's orbits already run under.
+  const groups = [...rings.values()].sort((a, b) => a.radius - b.radius)
+  for (let i = 0; i < groups.length; i++) {
+    const { centre, host, members } = groups[i]
+    const inner = groups.slice(0, i).flatMap(g => g.members)
+    // `independent` members share an orbit but not a field: each one feels only
+    // what it is orbiting. That is the right model for two bodies on the same
+    // wide circumbinary orbit -- at 600px apart their pull on each other is 6%
+    // of what holds them on it, while including it couples them into a
+    // four-body problem that comes apart in seconds. Naming it in the level
+    // file keeps the approximation visible instead of implied.
+    const solo = groups[i].members[0].ring.independent === true
+    for (const b of members) {
+      const field = solo ? [...inner] : [...members.filter(m => m !== b), ...inner]
+      if (host) field.push(host)
+      if (!bindRingVelocity(b, centre, field)) {
+        throw new Error(`Level ${spec.id}: a ring body has nothing holding it on a circle`)
+      }
+    }
+  }
+
   // Orbits are bound after every attractor exists, because an orbit names its
   // host by index into this list -- black holes first, then stars, which is the
   // order they are written in the level file.

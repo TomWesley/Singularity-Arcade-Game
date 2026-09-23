@@ -11,6 +11,7 @@
 
 import fs from 'node:fs'
 import { buildLevel } from '../public/src/game/level.js'
+import { stepBodies } from '../public/src/game/entities.js'
 import { Game, STATE } from '../public/src/game/game.js'
 import { CRAFTS } from '../public/src/game/crafts.js'
 import { DESIGN_WIDTH, DESIGN_HEIGHT } from '../public/src/game/constants.js'
@@ -34,7 +35,7 @@ function fly (spec, craft, waypoints, phase = 0) {
   const game = new Game()
   const level = buildLevel(spec)
   for (let t = 0; t < phase; t += STEP) {
-    for (const h of level.holes) h.update(STEP, t)
+    stepBodies(level.holes, STEP, t)
   }
   game.setLevel(level)
   game.craft = craft

@@ -456,6 +456,56 @@ why debris settles into discs at all. It must stay small: at 0.45 the rocks shed
 so much energy they spiral in before completing a lap and full revolutions
 collapse to zero.
 
+### Four black holes: why level 2 is two pairs
+
+Four black holes cannot simply be placed on a board. A flat four-body system
+tears itself apart in about a second however carefully it is seeded, and level 2
+is the configuration that survives: a tight binary with two bodies on a wide
+circumbinary orbit around it. Real quadruple stars are nearly always this "2+2"
+shape for exactly the same reason.
+
+Three things were measured getting there, and each is worth keeping.
+
+**The pretty idea does not work.** Three equal holes at the corners of an
+equilateral triangle turning rigidly about a fourth is an exact solution --
+Lagrange's, from 1772, with a central mass added -- and it seeds perfectly:
+radii 215.00px each, sides 372.4px each, identical speeds. Then it comes apart.
+Maxwell worked this out for Saturn's rings: a ring of fewer than about seven
+bodies is linearly unstable no matter how heavy the centre is. Measured, the
+figure held its shape to 5% for 6 seconds at a 1.7:1 mass ratio and still only
+205 seconds at 120:1, by which point the ring bodies are invisible specks.
+Exact is not the same as stable.
+
+**Mutual orbits need a simultaneous step.** Every body has to read the field it
+is sitting in *before* any of them moves. Stepped one at a time, the second body
+of a pair computes its pull from where the first has already got to -- half a
+step of asymmetry injected into every tick, momentum stops being conserved, and
+a mutual orbit pumps itself apart. A two-body circular orbit is exact, and over
+ten minutes it holds its separation to 1% stepped simultaneously and blows up by
+a factor of 10^4 stepped sequentially. It is invisible while bodies only orbit
+something fixed, which is why it survived all of level 1. `stepBodies()`.
+
+**The circumbinary bound falls out on its own.** A body orbiting a binary is
+only bound outside roughly 2.3x the binary's separation; inside that the orbit
+is chaotic. Nothing in the code knows that, and it reproduces it:
+
+```
+ binary sep   outer radius   ratio   outer orbit over 15 min
+      120px          300px     2.5   escapes to 137,942px
+      110px          315px     2.9   holds, 257-317px
+       95px          315px     3.3   holds, 274-315px
+       80px          320px     4.0   holds, 293-320px
+```
+
+Level 2 sits at 3.3. `npm run rings` checks it, along with whether the whole
+figure stays on the board.
+
+One restriction is named rather than implied: `ring.independent` marks bodies
+that share an orbit but not a field, so each feels only what it is orbiting. For
+level 2's outer pair, 600px apart, their pull on each other is 6% of what holds
+them on the orbit -- while including it couples all four into the flat four-body
+problem that comes apart in seconds.
+
 ### Backdrop
 
 `"backdrop": "assets/backdrop.jpg"` puts one stationary image behind the board,
@@ -496,6 +546,7 @@ npm run stars              # star orbits: apsides, lap time, precession, envelop
 npm run paths              # renders the star orbits to a PNG, to look at
 npm run capture            # how often asteroids actually orbit the stars
 npm run authority          # from how far out gravity beats each craft's engine
+npm run rings              # does a level's mutually-orbiting system hold together
 node tools/smoke.mjs       # headless wiring + physics assertions
 npm run vendor:engine      # re-copy the graphics engine from the sibling checkout
 ```

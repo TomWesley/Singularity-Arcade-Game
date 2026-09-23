@@ -13,7 +13,7 @@
 
 import fs from 'node:fs'
 import { buildLevel } from '../public/src/game/level.js'
-import { absorbRadius } from '../public/src/game/entities.js'
+import { absorbRadius, stepBodies } from '../public/src/game/entities.js'
 import { DESIGN_WIDTH, DESIGN_HEIGHT } from '../public/src/game/constants.js'
 
 const spec = JSON.parse(fs.readFileSync(new URL('../levels/level1.json', import.meta.url), 'utf8'))
@@ -57,7 +57,7 @@ const sweeps = []
 const track = fresh.asteroids.map(a => ({ sweep: 0, lastAngle: null, life: 0 }))
 
 for (let i = 0; i < 120 * 240; i++) {
-  for (const h of fresh.holes) h.update(STEP, i * STEP)
+  stepBodies(fresh.holes, STEP, i * STEP)
   fresh.asteroids.forEach((a, idx) => {
     const before = { x: a.x, y: a.y }
     const t = track[idx]

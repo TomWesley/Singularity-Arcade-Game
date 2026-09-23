@@ -3,6 +3,7 @@
 // slingshots make that range much wider than the spawn values suggest.
 import fs from 'node:fs'
 import { buildLevel } from '../public/src/game/level.js'
+import { stepBodies } from '../public/src/game/entities.js'
 
 const spec = JSON.parse(fs.readFileSync(new URL('../levels/level1.json', import.meta.url), 'utf8'))
 const level = buildLevel(spec)
@@ -11,7 +12,7 @@ const STEP = 1 / 120
 const speeds = []
 
 for (let i = 0; i < 120 * 40; i++) {
-  for (const h of level.holes) h.update(STEP, i * STEP)
+  stepBodies(level.holes, STEP, i * STEP)
   for (const a of level.asteroids) {
     a.update(STEP, level.holes, accel)
     if (i % 10 === 0) speeds.push(Math.hypot(a.vx, a.vy))

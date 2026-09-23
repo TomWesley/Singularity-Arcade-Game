@@ -22,6 +22,7 @@
 
 import fs from 'node:fs'
 import { buildLevel } from '../public/src/game/level.js'
+import { stepBodies } from '../public/src/game/entities.js'
 import { DESIGN_HEIGHT } from '../public/src/game/constants.js'
 
 const STEP = 1 / 120
@@ -43,7 +44,7 @@ const live = new Map()
 let t = 0
 const total = MINUTES * 60
 while (t < total) {
-  for (const h of level.holes) h.update(STEP, t)
+  stepBodies(level.holes, STEP, t)
   for (const a of level.asteroids) if (a.active) a.update(STEP, level.holes, accel)
   t += STEP
 

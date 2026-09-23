@@ -11,6 +11,7 @@
 import fs from 'node:fs'
 import zlib from 'node:zlib'
 import { buildLevel } from '../public/src/game/level.js'
+import { stepBodies } from '../public/src/game/entities.js'
 import { DESIGN_WIDTH, DESIGN_HEIGHT } from '../public/src/game/constants.js'
 
 const SECONDS = Number(process.argv[2] ?? 30)
@@ -72,7 +73,7 @@ disc(Math.round(level.spawn.x), Math.round(level.spawn.y), 5, 255, 255, 255, 0.9
 let t = 0
 const marks = level.stars.map(() => [])
 while (t < SECONDS) {
-  for (const h of level.holes) h.update(STEP, t)
+  stepBodies(level.holes, STEP, t)
   t += STEP
   level.stars.forEach((s, i) => {
     const [r, g, b] = COLORS[i]
