@@ -341,10 +341,14 @@ export function drawGameOver (ctx, game) {
 // while the gate itself stays exactly where it was.
 const GATE_GLOW_REACH = 1.05      // multiple of the opening height
 
-export function drawGate (ctx, gate, time, flare = 0) {
+export function drawGate (ctx, gate, time, flare = 0, worldWidth = DESIGN_WIDTH) {
   const { x, y, width: w, height: h } = gate
   const top = y - h / 2
-  const right = Math.min(x + w / 2, DESIGN_WIDTH)
+  // Clamped to the edge of the *world*, which is where the gate sits. It used
+  // to clamp to DESIGN_WIDTH because the two were the same thing; on a level
+  // four screens wide that put the threshold 3840px to the left of the gate and
+  // drew the glow as a slab across open space at the start of the run.
+  const right = Math.min(x + w / 2, worldWidth)
 
   ctx.save()
 

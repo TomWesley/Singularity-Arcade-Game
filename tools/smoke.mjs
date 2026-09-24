@@ -70,7 +70,7 @@ for (const craft of CRAFTS) {
   game.setLevel(buildLevel(spec))
   game.selectCraft(craft)
 
-  for (let i = 0; i < 1200; i++) {
+  for (let i = 0; i < 120 * 90; i++) {
     game.update(STEP, { x: level.gate.x, y: level.gate.y })
     if (!Number.isFinite(game.body.x) || !Number.isFinite(game.body.y)) {
       throw new Error(`${craft.name}: non-finite position at step ${i}`)

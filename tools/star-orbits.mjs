@@ -92,11 +92,11 @@ const mean = xs => xs.reduce((a, b) => a + b, 0) / (xs.length || 1)
 const fmt = n => n.toFixed(1).padStart(7)
 
 console.log(`Host: ${host.solarMasses} Mo, horizon ${host.horizon.toFixed(0)}px, ISCO ${host.isco.toFixed(0)}px`)
-console.log(`Simulated ${MINUTES} min at ${1 / STEP}Hz on a ${DESIGN_WIDTH}x${DESIGN_HEIGHT} board\n`)
+console.log(`Simulated ${MINUTES} min at ${1 / STEP}Hz on a ${level.world.width}x${DESIGN_HEIGHT} world\n`)
 
 let fail = 0
 for (const tr of tracks) {
-  const onBoard = tr.minX >= 0 && tr.maxX <= DESIGN_WIDTH && tr.minY >= 0 && tr.maxY <= DESIGN_HEIGHT
+  const onBoard = tr.minX >= 0 && tr.maxX <= level.world.width && tr.minY >= 0 && tr.maxY <= DESIGN_HEIGHT
   const lap = mean(tr.laps)
 
   // Stability is measured, not ruled on.
@@ -149,7 +149,9 @@ for (const tr of tracks) {
   // outer edge of that annulus does. A level composed against a snapshot would
   // look correct at load and put a star off the top edge ten minutes later.
   const reach = tr.rMax + tr.s.radius
-  const room = Math.min(host.x, DESIGN_WIDTH - host.x, host.y, DESIGN_HEIGHT - host.y)
+  // Half the *height* is almost always what binds: the camera travels sideways
+  // so the world can be any width, but it never travels up.
+  const room = Math.min(host.x, level.world.width - host.x, host.y, DESIGN_HEIGHT - host.y)
   const fits = reach <= room
   const rotate = prec !== 0 ? Math.abs(360 / prec) * lap : Infinity
   console.log(`     annulus reach ${fmt(reach)}px vs ${room.toFixed(0)}px of room   ` +

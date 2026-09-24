@@ -34,9 +34,10 @@ export function buildLevel (spec) {
   // sum, collision, the asteroid recycler, the orbit seeder -- cares only that a
   // thing has mu, a horizon and a lethal radius, and both satisfy that. Keeping
   // them separate would mean four places remembering to check two lists.
+  const worldWidth = (spec.width ?? 1) * DESIGN_WIDTH
   const holes = [
-    ...(spec.blackHoles ?? []).map(h => new BlackHole(h)),
-    ...(spec.stars ?? []).map(s => new Star(s))
+    ...(spec.blackHoles ?? []).map(h => new BlackHole(h, worldWidth)),
+    ...(spec.stars ?? []).map(s => new Star(s, worldWidth))
   ]
   // A ring is placed before anything is bound, because each vertex's speed
   // depends on where all the other vertices ended up. Members are grouped by
@@ -53,7 +54,7 @@ export function buildLevel (spec) {
     if (r.host !== undefined && (!host || host === b)) {
       throw new Error(`Level ${spec.id}: ring host ${r.host} does not exist`)
     }
-    const cx = host ? host.x : (r.x ?? 0.5) * DESIGN_WIDTH
+    const cx = host ? host.x : (r.x ?? 0.5) * worldWidth
     const cy = host ? host.y : (r.y ?? 0.5) * DESIGN_HEIGHT
     const key = `${cx.toFixed(3)},${cy.toFixed(3)}|${r.radius}`
     placeInRing(b, { x: cx, y: cy }, r)
@@ -108,9 +109,20 @@ export function buildLevel (spec) {
     }
   }
 
+  // The world may be wider than the view. `width` is in screenfuls: 1 is the
+  // classic single board, 4 is a level you sail along. Height is always one
+  // screen -- the camera only travels sideways.
+  const world = {
+    width: worldWidth,
+    height: DESIGN_HEIGHT,
+    // Left edge of the view in world coordinates, written by the game each tick
+    // so debris knows where the player can actually see.
+    viewX: 0
+  }
+
   // The gate is built before the debris, because the debris needs to know where
   // its mouth is in order to stay clear of it.
-  const gate = new Gate(spec.gate)
+  const gate = new Gate(spec.gate, world.width)
 
   const rng = makeRng(spec.seed ?? 1)
   const asteroids = []
@@ -123,7 +135,7 @@ export function buildLevel (spec) {
   // slow rocks down. See Asteroid.update.
   const drag = spec.asteroids?.drag ?? 0
   for (let i = 0; i < total; i++) {
-    asteroids.push(new Asteroid(rng, holes, gate, i < orbiters, speedScale, deflection, drag))
+    asteroids.push(new Asteroid(rng, holes, gate, world, i < orbiters, speedScale, deflection, drag))
   }
 
   return {
@@ -137,8 +149,9 @@ export function buildLevel (spec) {
     blackHoles: holes.filter(h => h instanceof BlackHole),
     asteroids,
     gate,
+    world,
     spawn: {
-      x: spec.spawn.x * DESIGN_WIDTH,
+      x: spec.spawn.x * world.width,
       y: spec.spawn.y * DESIGN_HEIGHT
     }
   }

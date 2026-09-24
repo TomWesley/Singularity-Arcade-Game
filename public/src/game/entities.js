@@ -10,11 +10,11 @@ export class BlackHole {
   /**
    * @param {object} spec level JSON entry, coordinates normalised 0..1
    */
-  constructor (spec) {
+  constructor (spec, worldWidth = DESIGN_WIDTH) {
     // A body in orbit has no authored position -- bindOrbit() places it from
     // the orbit's own geometry -- so x and y are optional and only the centre
     // of the board is used until then.
-    this.homeX = (spec.x ?? 0.5) * DESIGN_WIDTH
+    this.homeX = (spec.x ?? 0.5) * worldWidth
     this.homeY = (spec.y ?? 0.5) * DESIGN_HEIGHT
 
     // A level authors a hole by its mass alone. Horizon, photon sphere and
@@ -313,11 +313,11 @@ export function absorbRadius (h) {
  * contrast is the real astrophysics of stellar density, and it is free here.
  */
 export class Star {
-  constructor (spec) {
+  constructor (spec, worldWidth = DESIGN_WIDTH) {
     // A body in orbit has no authored position -- bindOrbit() places it from
     // the orbit's own geometry -- so x and y are optional and only the centre
     // of the board is used until then.
-    this.homeX = (spec.x ?? 0.5) * DESIGN_WIDTH
+    this.homeX = (spec.x ?? 0.5) * worldWidth
     this.homeY = (spec.y ?? 0.5) * DESIGN_HEIGHT
     this.kind = spec.kind ?? 'main-sequence'
     this.solarMasses = spec.solarMasses
@@ -373,8 +373,9 @@ export class Asteroid {
    *   else, perturbed by the other holes, and free to precess, decay or be
    *   flung out.
    */
-  constructor (rng, holes, gate, orbiter = false, speedScale = 1, deflection = 0, drag = 0) {
+  constructor (rng, holes, gate, world, orbiter = false, speedScale = 1, deflection = 0, drag = 0) {
     this.gate = gate
+    this.world = world
     this.orbiter = orbiter
     this.speedScale = speedScale
     this.deflection = deflection
@@ -436,7 +437,11 @@ export class Asteroid {
     const clearTop = g.y - g.height / 2 - GATE_CLEARANCE
     const clearBottom = g.y + g.height / 2 + GATE_CLEARANCE
     const fromAbove = rng() > 0.5
-    this.x = DESIGN_WIDTH + randRange(rng, 50, 280)
+    // Off the right of the *view*, not of the world. On a level four screens
+    // wide, spawning at the world's edge would put debris four thousand pixels
+    // from anyone and leave the board the player is actually looking at empty.
+    // The view is where the game is; the world is only how far it goes.
+    this.x = this.world.viewX + DESIGN_WIDTH + randRange(rng, 50, 280)
     this.y = fromAbove
       ? randRange(rng, -DESIGN_HEIGHT * 0.2, clearTop)
       : randRange(rng, clearBottom, DESIGN_HEIGHT * 1.2)
@@ -664,14 +669,18 @@ export class Asteroid {
     // Generous bounds so a bound orbit can swing wide and come back. The old
     // box (x > -140, y within 160px of the board) destroyed exactly the rocks
     // that were mid-orbit, which is why none were ever seen completing one.
+    // Bounds travel with the view for the same reason. A rock the player has
+    // long since left behind is not mid-orbit, it is scenery in an empty room.
+    const left = this.world.viewX
+    const right = left + DESIGN_WIDTH
     const wayOut =
-      this.x < -ORBIT_MARGIN || this.x > DESIGN_WIDTH + ORBIT_MARGIN ||
+      this.x < left - ORBIT_MARGIN || this.x > right + ORBIT_MARGIN ||
       this.y < -ORBIT_MARGIN || this.y > DESIGN_HEIGHT + ORBIT_MARGIN
 
     // A rock that has been off the board a long time is not orbiting, it has
     // left; recycle it so the field does not slowly empty.
     const onBoard =
-      this.x > -40 && this.x < DESIGN_WIDTH + 40 &&
+      this.x > left - 40 && this.x < right + 40 &&
       this.y > -40 && this.y < DESIGN_HEIGHT + 40
     if (onBoard) this.offBoardFor = 0
     else this.offBoardFor += dt
@@ -683,8 +692,8 @@ export class Asteroid {
 }
 
 export class Gate {
-  constructor (spec) {
-    this.x = spec.x * DESIGN_WIDTH
+  constructor (spec, worldWidth = DESIGN_WIDTH) {
+    this.x = spec.x * worldWidth
     this.y = spec.y * DESIGN_HEIGHT
     this.width = spec.width * DESIGN_WIDTH
     this.height = spec.height * DESIGN_HEIGHT

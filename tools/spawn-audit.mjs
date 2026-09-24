@@ -37,8 +37,11 @@ for (const a of level.asteroids) {
   for (let k = 0; k < 400; k++) {
     a.reset(level.holes)
     total++
-    if (a.x > 0 && a.x < DESIGN_WIDTH && a.y > 0 && a.y < DESIGN_HEIGHT) onScreen++
-    if (a.x <= DESIGN_WIDTH) notRight++
+    // Against the view, which on a wide level is a window that travels.
+    const left = level.world.viewX
+    const right = left + DESIGN_WIDTH
+    if (a.x > left && a.x < right && a.y > 0 && a.y < DESIGN_HEIGHT) onScreen++
+    if (a.x <= right) notRight++
     if (a.y > bandTop && a.y < bandBottom) outOfGate++
     if (a.y < gate.y) above++; else below++
     if (a.vx < 0) inward++
@@ -57,7 +60,7 @@ const q = p => spread[Math.floor(spread.length * p)]
 
 console.log(`spawns sampled: ${total}`)
 console.log(`  inside the board:      ${onScreen}   (must be 0)`)
-console.log(`  not off the right edge:${notRight}   (must be 0)`)
+console.log(`  not off the view's right:${notRight}   (must be 0)`)
 console.log(`  within the gate band:  ${outOfGate}   (must be 0 -- nothing comes out of the gate)`)
 console.log(`  entering above / below the gate: ${above} / ${below}`)
 console.log(`  travelling leftward:   ${inward} (${((inward / total) * 100).toFixed(0)}%; orbiters enter tangentially so this is not 100%)`)

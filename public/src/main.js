@@ -102,8 +102,12 @@ function update (dt) {
   pause.sync()
   if (pause.paused) return
 
+  // The cursor is read in view coordinates and the craft flies in world ones,
+  // so on a level wider than the screen the two only agree while the camera is
+  // at the left end. Everywhere else the offset is the whole difference between
+  // aiming where you are pointing and aiming a screen's width behind it.
   const target = game.state === STATE.PLAYING && input.hasPointer
-    ? { x: input.x, y: input.y }
+    ? { x: input.x + game.camera, y: input.y }
     : null
   game.update(dt, target)
 
@@ -140,7 +144,14 @@ function render (alpha) {
   backdrop.draw(ctx, game.level?.backdrop ?? null)
 
   if (game.level) {
-    drawGate(ctx, game.level.gate, time, game.transitFlare)
+    // Everything from here to restore() is drawn in world coordinates. The
+    // backdrop deliberately sits outside it: it is a sky, and a sky does not
+    // slide past when you travel. The HUD and the menus sit outside it too,
+    // because they belong to the screen rather than to the world.
+    ctx.save()
+    ctx.translate(-Math.round(game.camera), 0)
+
+    drawGate(ctx, game.level.gate, time, game.transitFlare, game.level.world.width)
 
     for (const a of game.level.asteroids) if (a.active) drawAsteroid(ctx, a)
 
@@ -152,7 +163,7 @@ function render (alpha) {
     // Drawn through the transit too: the craft flies out of the gate rather than
     // being switched off the moment it touches it.
     const showCraft = game.state === STATE.PLAYING ||
-      (game.state === STATE.COMPLETE && game.body.x < DESIGN_WIDTH + 120)
+      (game.state === STATE.COMPLETE && game.body.x < game.level.world.width + 120)
     if (showCraft) {
       // Interpolate between fixed steps so motion is smooth regardless of the
       // gap between the last physics step and this frame.
@@ -168,6 +179,8 @@ function render (alpha) {
     }
 
     impact.draw(ctx)
+
+    ctx.restore()
   }
 
   switch (game.state) {

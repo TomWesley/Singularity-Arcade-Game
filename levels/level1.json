@@ -1,29 +1,30 @@
 {
   "id": "level1",
   "name": "Four Suns",
-  "subtitle": "One well, and everything else falling around it.",
+  "subtitle": "Sail out far enough and you will find what everything here is falling around.",
   "seed": 20260922,
+  "width": 4,
   "backdrop": "assets/backdrop.jpg",
   "spawn": {
-    "x": 0.06,
+    "x": 0.022,
     "y": 0.5
   },
   "blackHoles": [
     {
       "x": 0.5,
       "y": 0.5,
-      "solarMasses": 6
+      "solarMasses": 13
     }
   ],
   "stars": [
     {
       "kind": "white-dwarf",
       "solarMasses": 1.2,
-      "radius": 0.008333,
+      "radius": 0.011111,
       "orbit": {
         "host": 0,
-        "apoapsis": 0.488889,
-        "periapsis": 0.141667,
+        "apoapsis": 0.465278,
+        "periapsis": 0.197222,
         "argument": 0.62,
         "direction": 1,
         "lead": 0.0
@@ -35,8 +36,8 @@
       "radius": 0.027778,
       "orbit": {
         "host": 0,
-        "apoapsis": 0.469444,
-        "periapsis": 0.281944,
+        "apoapsis": 0.447222,
+        "periapsis": 0.284722,
         "argument": 0.87,
         "direction": -1,
         "lead": 2.4
@@ -48,8 +49,8 @@
       "radius": 0.015278,
       "orbit": {
         "host": 0,
-        "apoapsis": 0.480556,
-        "periapsis": 0.181944,
+        "apoapsis": 0.458333,
+        "periapsis": 0.208333,
         "argument": 0.4,
         "direction": 1,
         "lead": 3.1
@@ -61,8 +62,8 @@
       "radius": 0.011111,
       "orbit": {
         "host": 0,
-        "apoapsis": 0.486111,
-        "periapsis": 0.233333,
+        "apoapsis": 0.469444,
+        "periapsis": 0.333333,
         "argument": 0.15,
         "direction": -1,
         "lead": 1.6

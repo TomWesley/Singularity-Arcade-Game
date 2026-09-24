@@ -4,6 +4,7 @@ import { gravityAt, steer, integrate, escapeLimit, SYSTEM_SPEED_LIMIT } from './
 import { absorbRadius, stepBodies } from './entities.js'
 import { CRAFTS } from './crafts.js'
 import { DESIGN_WIDTH, DESIGN_HEIGHT } from '../core/viewport.js'
+import { cameraX } from '../core/camera.js'
 
 export const STATE = {
   TITLE: 'TITLE',
@@ -59,12 +60,18 @@ export class Game {
     this.nearestHoleDanger = 0   // 0..1, how deep into a capture zone we are
 
     this._accel = { x: 0, y: 0 }
+    // Left edge of the view, in world coordinates. See core/camera.js.
+    this.camera = 0
   }
 
   setLevel (level, index = 0) {
     this.level = level
     this.levelIndex = index
     this.respawn()
+    // Settle the camera before the first frame is drawn, or the opening frame
+    // is composed against wherever the last level left it.
+    this.camera = cameraX(this.body.x, level.world.width)
+    level.world.viewX = this.camera
   }
 
   /** True when the level just cleared was the last one built. */
@@ -144,6 +151,12 @@ export class Game {
 
     // Holes and asteroids keep moving on every screen -- the menus are played
     // over a live simulation, which is most of why the title screen feels alive.
+    // The camera is part of the simulation, not of the renderer: debris spawns
+    // and retires against the view, so where the view is has to be settled
+    // before anything else moves.
+    this.camera = cameraX(this.body.x, this.level.world.width)
+    this.level.world.viewX = this.camera
+
     stepBodies(this.level.holes, dt, this.elapsed)
     for (const a of this.level.asteroids) {
       if (a.active) a.update(dt, this.level.holes, this._accel)
@@ -209,7 +222,8 @@ export class Game {
     // hitting something.
     const r = this.craft.hull
     if (this.body.x < r) { this.body.x = r; this.body.vx = Math.abs(this.body.vx) * 0.25 }
-    if (this.body.x > DESIGN_WIDTH - r) { this.body.x = DESIGN_WIDTH - r; this.body.vx = -Math.abs(this.body.vx) * 0.25 }
+    const W = this.level.world.width
+    if (this.body.x > W - r) { this.body.x = W - r; this.body.vx = -Math.abs(this.body.vx) * 0.25 }
     if (this.body.y < r) { this.body.y = r; this.body.vy = Math.abs(this.body.vy) * 0.25 }
     if (this.body.y > DESIGN_HEIGHT - r) { this.body.y = DESIGN_HEIGHT - r; this.body.vy = -Math.abs(this.body.vy) * 0.25 }
 

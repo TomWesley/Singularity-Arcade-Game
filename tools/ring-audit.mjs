@@ -37,7 +37,7 @@ for (const b of ringed) {
   groups.get(key).members.push(b)
 }
 const tiers = [...groups.values()].sort((a, b) => a.radius - b.radius)
-const centre = { x: (ringed[0].ring.x ?? 0.5) * DESIGN_WIDTH, y: (ringed[0].ring.y ?? 0.5) * DESIGN_HEIGHT }
+const centre = { x: (ringed[0].ring.x ?? 0.5) * level.world.width, y: (ringed[0].ring.y ?? 0.5) * DESIGN_HEIGHT }
 
 const track = tiers.map(t => ({
   t, rMin: Infinity, rMax: 0, sepMin: Infinity, sepMax: 0,
@@ -77,7 +77,7 @@ const innerSep = mean([track[0].sepMin, track[0].sepMax])
 track.forEach((k, i) => {
   const label = i === 0 ? 'inner pair' : `tier ${i + 1}`
   const reach = k.rMax + k.t.members[0].shadow
-  const onBoard = reach <= Math.min(centre.x, DESIGN_WIDTH - centre.x, centre.y, DESIGN_HEIGHT - centre.y)
+  const onBoard = reach <= Math.min(centre.x, level.world.width - centre.x, centre.y, DESIGN_HEIGHT - centre.y)
   const wobble = ((k.rMax - k.rMin) / mean([k.rMin, k.rMax])) * 100
   console.log(`${label}: ${k.t.members.length} x ${k.t.members[0].solarMasses} Mo`)
   console.log(`   radius ${k.rMin.toFixed(0)} .. ${k.rMax.toFixed(0)}px  (wobble ${wobble.toFixed(1)}%)   reach ${reach.toFixed(0)}px`)

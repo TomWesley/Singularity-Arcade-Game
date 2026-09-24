@@ -17,7 +17,7 @@ import { CRAFTS } from '../public/src/game/crafts.js'
 import { DESIGN_WIDTH, DESIGN_HEIGHT } from '../public/src/game/constants.js'
 
 const STEP = 1 / 120
-const MAX_SECONDS = 25
+const MAX_SECONDS = 90   // a level four screens wide is a long sail
 
 /**
  * @param phase seconds to run the level's orbits forward before the craft
@@ -62,7 +62,10 @@ const levelName = process.argv[2] ?? 'level1'
 const spec = JSON.parse(fs.readFileSync(new URL(`../levels/${levelName}.json`, import.meta.url), 'utf8'))
 
 const YS = [0.08, 0.2, 0.32, 0.44, 0.5, 0.56, 0.68, 0.8, 0.92].map(v => v * DESIGN_HEIGHT)
-const XS = [0.34, 0.5, 0.66].map(v => v * DESIGN_WIDTH)
+// Waypoints are fractions of the *world*, not of the screen, or every route on
+// a wide level would turn back before it had gone anywhere.
+const WORLD = (spec.width ?? 1) * DESIGN_WIDTH
+const XS = [0.34, 0.5, 0.66].map(v => v * WORLD)
 // Start offsets, in seconds. Deliberately not commensurate with any orbital
 // period on the board, so the four stars are caught in genuinely different
 // arrangements rather than the same one four times.
@@ -90,7 +93,7 @@ for (const craft of CRAFTS) {
   let tried = 0
   for (const ph of PHASES) for (const x1 of XS) for (const y1 of YS) for (const y2 of YS) {
     tried++
-    const r = fly(spec, craft, [[x1, y1], [DESIGN_WIDTH * 0.86, y2]], ph)
+    const r = fly(spec, craft, [[x1, y1], [WORLD * 0.86, y2]], ph)
     const t = r.time
     if (t !== null) times.push(t)
     else causes[r.cause ?? 'UNKNOWN'] = (causes[r.cause ?? 'UNKNOWN'] ?? 0) + 1
