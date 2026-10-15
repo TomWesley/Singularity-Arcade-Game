@@ -335,50 +335,89 @@ load the next one.
 Adding a level is two steps: drop the JSON in `levels/`, add its id to `order`.
 The five archetypes in `npm run balance` are already valid level specs.
 
-### Worlds wider than the screen
+### Worlds wider than the screen, and a camera with its own pace
 
-A level's `width` is in screenfuls: 1 is the classic single board, 4 is a level
-you sail along. The view stays 1280x720 -- that is the window -- and the camera
-slides sideways along the world, keeping the craft in the middle and clamping at
-both ends.
+A level's `width` is in screenfuls and its `sail` is how many seconds the camera
+takes to cross it. The view stays 1280x720 -- that is the window -- and the
+camera travels along the world *on its own*, from the moment the round begins.
+The craft is held inside the view it leaves behind: linger and the left edge
+carries you along, run ahead and the right edge holds you back.
 
-Clamping is what makes the ending work. Once the right edge of the world is on
-screen the camera has nowhere left to go, so it holds still and the craft flies
-the last stretch across a stationary view. **The gate coming into sight and the
-camera settling are the same event**, which is worth more than any announcement
-of it. At the other end the craft sits where it launched until it has earned the
-middle of the screen.
+Following the craft was tried first and was worse to fly. Centring the craft
+means the world slides whenever you do, so every judgement about a gap is made
+against scenery moving at your own speed, and four screens of level becomes four
+screens of the same sensation. A camera with its own pace gives the board a
+fixed frame to be read against.
 
-There is no smoothing. A lag would be kinder to the eye and worse to fly: the
-whole game is judging a gap against a gravity well, and a camera that arrives a
-moment after you do puts the thing you are judging somewhere it is not.
+It also decouples how long a level lasts from how fast a hull flies. Under a
+following camera the sail took eight seconds for everyone, because every hull
+here flies at a similar fraction of light speed; a level now takes exactly as
+long as its author says. `sail` is a duration rather than a speed so that
+widening a level does not silently make it longer to play.
 
-Three things move from board coordinates to world coordinates and are easy to
-miss:
+The far end is the whole design of the ending: the camera runs out of world,
+stops, and the last screenful stands still -- so the gate arriving and the
+pressure coming off are the same event, and the hardest part of a level is never
+the part you are being rushed through.
 
-- **The cursor.** It is read in view coordinates and the craft flies in world
-  ones, so they only agree while the camera is at the left end. Everywhere else
-  the offset is the whole difference between aiming where you are pointing and
-  aiming a screen's width behind it.
-- **Debris spawns against the view, not the world.** On a level four screens
-  wide, spawning at the world's right edge would put every rock four thousand
-  pixels from anyone and leave the board the player is looking at empty. Their
-  retirement bounds travel with the view too: a rock long since left behind is
-  not mid-orbit, it is scenery in an empty room.
-- **The gate glow clamps to the world's edge.** It used to clamp to
-  `DESIGN_WIDTH` because the two were the same thing; on a wide level that drew
-  the threshold as a slab of light across open space at the start of the run.
+A fresh craft restarts the sail. Carrying the camera on from where the last one
+died would cost a craft but no ground, and with three of them a forced scroll
+would finish itself.
+
+**A forced scroll demands a property a free camera did not: a lane must always
+exist.** You cannot wait for a gap, so if every route can be closed at once the
+level is not hard, it is a coin toss. That single requirement sets most of level
+1 by itself, and it chains:
+
+```
+forced scroll  ->  a permanent lane must exist
+               ->  star orbits must stay inside ~200px of the hole
+               ->  the hole's ISCO must be smaller than that
+               ->  the hole can be at most ~10 solar masses
+```
+
+Measured, 11 solar masses starts eating the orbits and 10 holds all of them.
+Level 1's stars reach 194px, leaving 166px of permanently clear sky top and
+bottom. The hole is 104px across -- still far larger than the 62px it was on a
+single-screen board, just not the 135px that briefly looked possible.
+
+Four coordinate assumptions move from the board to the world, and three are easy
+to miss. The cursor is read in view coordinates while the craft flies in world
+ones. Debris spawns against the view, not the world -- at the world's right edge
+every rock would be four thousand pixels from anyone. And the gate glow clamped
+to `DESIGN_WIDTH`, which used to be the board's right edge and is now 3840px
+short of the gate, so it drew the threshold as a slab of light across open space
+at the start of the run.
 
 The backdrop deliberately does *not* scroll. It is a sky, and a sky does not
 slide past when you travel.
 
 **The height is what limits orbits, not the width.** The camera only travels
-sideways, so a body's orbit still has to fit inside half the screen height --
-and because the apsidal line precesses through every orientation, that is the
-whole annulus, not just the ellipse as authored. Making a level four times wider
-buys room for more *features* along its length; it buys nothing at all for the
-size of an orbit. Genuinely bigger ellipses would need a taller world and a
-camera that climbs.
+sideways, so an orbit still has to fit inside half the screen height -- and
+since the apsidal line precesses through every orientation, that is the whole
+annulus. Widening buys room for more features along a level's length and nothing
+at all for the size of an ellipse.
+
+### The pilot in `npm run simulate`
+
+It has to actually dodge now, and it did not used to have to. When a route was
+two seconds of crossing a single board, aiming at a couple of waypoints was a
+fair stand-in for a person. Under a travelling camera a route is thirty seconds
+long and the craft is held inside the view, so a waypoint far down the world is
+not somewhere it can go -- it leans on the right-hand edge and holds one height
+until something hits it. Measured that way every level looks impossible: level 1
+scored 1%, which said nothing about the level.
+
+It now holds a lane, keeps station in the view, runs from a well whose pull is a
+serious fraction of what the engine can answer, slides aside for anything
+closing, and holds back when a well sits squarely on the line ahead. That last
+one matters: sliding aside is only half of flying past something, and a pilot
+that only moved up and down walked into the middle of level 2's binary every
+time.
+
+It is still crude. **The number to read is the share of lanes that survive and
+how the two levels compare to each other, not the absolute figure** -- and the
+figures are not comparable to anything measured before the pilot changed.
 
 ### Orbiting stars and holes
 

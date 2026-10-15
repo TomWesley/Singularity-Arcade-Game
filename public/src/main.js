@@ -97,6 +97,10 @@ window.addEventListener('keydown', e => {
   }
 })
 
+// Exposed for the headless harnesses to read the camera and state. Harmless
+// in a browser and far cheaper than instrumenting the render path.
+window.__game = game
+
 function update (dt) {
   uiTime += dt
   pause.sync()

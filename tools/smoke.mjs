@@ -9,6 +9,7 @@ import { Game, STATE } from '../public/src/game/game.js'
 import { buildLevel } from '../public/src/game/level.js'
 import { CRAFTS } from '../public/src/game/crafts.js'
 import { blackHoleGeometry, escapeLimit } from '../public/src/game/physics.js'
+import { cameraTravel } from '../public/src/core/camera.js'
 
 let calls = 0
 const bad = []
@@ -242,6 +243,12 @@ if (errors.length) process.exit(1)
   const game = new Game()
   game.setLevel(lvl)
   game.selectCraft(CRAFTS[0])
+
+  // The gate is only reachable once the camera has run out of world, so put it
+  // there first -- otherwise the craft is held inside a view that is still four
+  // thousand pixels short of the threshold.
+  game.camera = cameraTravel(lvl.world.width)
+  lvl.world.viewX = game.camera
 
   // Place it just short of the gate, moving right, and let it cross.
   game.body.x = lvl.gate.x - lvl.gate.width / 2 - 8

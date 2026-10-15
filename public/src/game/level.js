@@ -115,6 +115,10 @@ export function buildLevel (spec) {
   const world = {
     width: worldWidth,
     height: DESIGN_HEIGHT,
+    // How long the camera takes to walk the whole world, in seconds. The level
+    // authors the duration and the speed falls out of it, so widening a level
+    // does not silently make it longer to play.
+    sail: spec.sail ?? 30,
     // Left edge of the view in world coordinates, written by the game each tick
     // so debris knows where the player can actually see.
     viewX: 0

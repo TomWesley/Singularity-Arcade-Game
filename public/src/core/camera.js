@@ -2,36 +2,49 @@
 //
 // The view stays 1280x720 -- that is the window onto the world, and everything
 // drawn in screen space (menus, the HUD, the backdrop) still works in it. A
-// level's *world* can be wider, and the camera slides along it.
+// level's *world* can be wider, and the camera travels along it.
 //
-// The rule is the oldest one in side-scrolling: keep the craft in the middle,
-// and stop at the ends. Clamping at the far end is what makes the gate arrive
-// rather than being chased -- once the right edge of the world is on screen the
-// camera has nowhere left to go, so it holds still and the craft flies the last
-// stretch across a stationary view. The gate coming into sight and the camera
-// settling are the same event, which is worth more than any announcement of it.
+// It travels on its own. Not following the craft: moving at its own steady pace
+// from the moment the round begins, and the craft is held inside the view it
+// leaves behind. Linger and the left edge carries you along; run ahead and the
+// right edge holds you back.
 //
-// Clamping at the near end does the same thing at the start: the craft sits
-// where it launched until it has earned the middle of the screen.
+// Following the craft was tried first and was worse to fly. Centring the craft
+// means the world slides whenever you do, so every judgement about a gap is
+// made against scenery that is itself moving at your speed, and a level four
+// screens wide becomes four screens of the same sensation. A camera with its
+// own pace gives the board a fixed frame to be read against, and it turns the
+// long middle of a level into something with rhythm -- the hazard arrives when
+// it arrives, and you deal with it in the time you are given.
 //
-// No smoothing. A lag would be kinder to the eye and worse to fly: the whole
-// game is judging a gap against a gravity well, and a camera that arrives a
-// moment after you do puts the thing you are judging somewhere it is not.
+// It also decouples how long a level lasts from how fast a hull flies. Under a
+// following camera the sail took eight seconds for everyone, because everyone
+// flies at roughly the speed of light here; a level now takes exactly as long
+// as its author says it does.
+//
+// The far end is the whole design of the ending. The camera runs out of world,
+// stops, and the last screenful stands still -- so the gate arrives and the
+// clock on reaching it comes off in the same instant, and the hardest part of
+// the level is never the part you are being rushed through.
 
 import { DESIGN_WIDTH } from '../game/constants.js'
 
+/** How far the camera can travel before the world's right edge is on screen. */
+export function cameraTravel (worldWidth) {
+  return Math.max(0, worldWidth - DESIGN_WIDTH)
+}
+
 /**
- * Left edge of the view, in world coordinates.
- *
- * @param focusX  what to centre on, in world coordinates
- * @param worldWidth  total width of the level
+ * Pixels per second that walks the camera the length of the world in `sail`
+ * seconds. A level authors the duration, not the speed: "this is a thirty
+ * second sail" survives a change of width, where a speed in px/s does not.
  */
-export function cameraX (focusX, worldWidth) {
-  const furthest = Math.max(0, worldWidth - DESIGN_WIDTH)
-  return Math.max(0, Math.min(furthest, focusX - DESIGN_WIDTH / 2))
+export function scrollSpeed (worldWidth, sailSeconds) {
+  if (!(sailSeconds > 0)) return 0
+  return cameraTravel(worldWidth) / sailSeconds
 }
 
 /** True once the camera has run out of world and stopped. */
 export function cameraFrozen (camX, worldWidth) {
-  return camX >= Math.max(0, worldWidth - DESIGN_WIDTH) - 0.5
+  return camX >= cameraTravel(worldWidth) - 0.5
 }

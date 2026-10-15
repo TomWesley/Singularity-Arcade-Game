@@ -4,7 +4,7 @@ import { gravityAt, steer, integrate, escapeLimit, SYSTEM_SPEED_LIMIT } from './
 import { absorbRadius, stepBodies } from './entities.js'
 import { CRAFTS } from './crafts.js'
 import { DESIGN_WIDTH, DESIGN_HEIGHT } from '../core/viewport.js'
-import { cameraX } from '../core/camera.js'
+import { scrollSpeed, cameraTravel, cameraFrozen } from '../core/camera.js'
 
 export const STATE = {
   TITLE: 'TITLE',
@@ -67,11 +67,9 @@ export class Game {
   setLevel (level, index = 0) {
     this.level = level
     this.levelIndex = index
+    this.camera = 0
+    level.world.viewX = 0
     this.respawn()
-    // Settle the camera before the first frame is drawn, or the opening frame
-    // is composed against wherever the last level left it.
-    this.camera = cameraX(this.body.x, level.world.width)
-    level.world.viewX = this.camera
   }
 
   /** True when the level just cleared was the last one built. */
@@ -123,6 +121,11 @@ export class Game {
 
   respawn () {
     if (!this.level) return
+    // A fresh craft restarts the sail. The alternative -- carrying the camera
+    // on from where the last one died -- costs a craft but no ground, and with
+    // three of them a forced scroll would then finish itself.
+    this.camera = 0
+    this.level.world.viewX = 0
     this.body.x = this.level.spawn.x
     this.body.y = this.level.spawn.y
     this.body.vx = 0
@@ -154,7 +157,16 @@ export class Game {
     // The camera is part of the simulation, not of the renderer: debris spawns
     // and retires against the view, so where the view is has to be settled
     // before anything else moves.
-    this.camera = cameraX(this.body.x, this.level.world.width)
+    //
+    // It only advances while a craft is actually flying. On the title and
+    // select screens, and through the pause after a wreck, the level runs on
+    // underneath but the view holds -- otherwise a player would lose ground to
+    // a menu.
+    if (this.state === STATE.PLAYING) {
+      const w = this.level.world
+      this.camera = Math.min(cameraTravel(w.width),
+        this.camera + scrollSpeed(w.width, w.sail) * dt)
+    }
     this.level.world.viewX = this.camera
 
     stepBodies(this.level.holes, dt, this.elapsed)
@@ -221,9 +233,16 @@ export class Game {
     // clamping position silently -- being pinned to an edge should feel like
     // hitting something.
     const r = this.craft.hull
-    if (this.body.x < r) { this.body.x = r; this.body.vx = Math.abs(this.body.vx) * 0.25 }
-    const W = this.level.world.width
-    if (this.body.x > W - r) { this.body.x = W - r; this.body.vx = -Math.abs(this.body.vx) * 0.25 }
+    // Sideways, the walls are the edges of the view and they are moving.
+    //
+    // The left one carries rather than bounces: it is the camera arriving, not
+    // the craft hitting something, and a craft that bounced off it would be
+    // flung forward every time it fell behind. Velocity is zeroed instead of
+    // reversed, so holding station against the scroll feels like being pushed.
+    const left = this.camera + r
+    const right = this.camera + DESIGN_WIDTH - r
+    if (this.body.x < left) { this.body.x = left; if (this.body.vx < 0) this.body.vx = 0 }
+    if (this.body.x > right) { this.body.x = right; if (this.body.vx > 0) this.body.vx = 0 }
     if (this.body.y < r) { this.body.y = r; this.body.vy = Math.abs(this.body.vy) * 0.25 }
     if (this.body.y > DESIGN_HEIGHT - r) { this.body.y = DESIGN_HEIGHT - r; this.body.vy = -Math.abs(this.body.vy) * 0.25 }
 

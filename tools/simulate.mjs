@@ -11,6 +11,8 @@
 
 import fs from 'node:fs'
 import { buildLevel } from '../public/src/game/level.js'
+import { gravityAt, escapeLimit } from '../public/src/game/physics.js'
+import { cameraFrozen } from '../public/src/core/camera.js'
 import { stepBodies } from '../public/src/game/entities.js'
 import { Game, STATE } from '../public/src/game/game.js'
 import { CRAFTS } from '../public/src/game/crafts.js'
@@ -31,6 +33,83 @@ const MAX_SECONDS = 90   // a level four screens wide is a long sail
  * screen and keeps running through a death, so no two attempts start alike.
  * Sweeping the phase is what makes the survival number mean something.
  */
+// ── The pilot ────────────────────────────────────────────────────────────────
+//
+// It has to actually dodge, and it did not used to have to.
+//
+// When a route was two seconds of crossing a single board, aiming at a couple
+// of waypoints was a fair enough stand-in for a person. Under a camera that
+// travels, a route is thirty seconds long and the craft is held inside the
+// view, so a waypoint far down the world is not somewhere it can go -- it just
+// leans on the right-hand edge and holds one height until something hits it.
+// Measured that way every level looks impossible: level 1 scored 1%, which
+// says nothing about the level and everything about the pilot.
+//
+// So: hold a lane, keep station in the view, run from a well whose pull is a
+// serious fraction of what the engine can answer, and slide aside for anything
+// closing in. Still a crude pilot -- the number to read is the *share* of lanes
+// that survive, not the absolute figure -- but it is a pilot rather than a
+// stationary target.
+const _g = { x: 0, y: 0 }
+const clampY = y => Math.max(40, Math.min(DESIGN_HEIGHT - 40, y))
+
+function pilot (game, laneY) {
+  const { body, level, craft } = game
+  const maxAccel = craft.thrust / craft.mass
+
+  // A well that is winning is the only thing worth doing anything about.
+  gravityAt(body.x, body.y, level.holes, _g)
+  const load = Math.hypot(_g.x, _g.y)
+  if (load > maxAccel * 0.35) {
+    const ux = -_g.x / load
+    const uy = -_g.y / load
+    return { x: body.x + ux * 500, y: clampY(body.y + uy * 500) }
+  }
+
+  // Otherwise hold the lane, sitting far enough forward in the view to see
+  // what is coming, and slide away from whatever is closing.
+  let dodge = 0
+  for (const h of level.holes) {
+    const dx = body.x - h.x
+    const dy = body.y - h.y
+    const reach = escapeLimit(h, craft) * 1.9
+    const d = Math.hypot(dx, dy)
+    if (d < reach && dx < reach) dodge += Math.sign(dy || 1) * ((reach - d) / reach)
+  }
+  for (const a of level.asteroids) {
+    if (!a.active) continue
+    const ahead = a.x - body.x
+    if (ahead < -50 || ahead > 320) continue
+    const dy = body.y - a.y
+    const near = 95
+    if (Math.abs(dy) < near) dodge += Math.sign(dy || 1) * ((near - Math.abs(dy)) / near) * 0.55
+  }
+
+  // Hold back while a well sits squarely on the line ahead. Sliding aside is
+  // only half of flying past something -- the other half is not arriving before
+  // you have finished sliding, and a pilot that only ever moved up and down
+  // walked into the middle of level 2's binary every time.
+  let blocked = false
+  for (const h of level.holes) {
+    const ahead = h.x - body.x
+    const off = Math.abs(h.y - body.y)
+    const reach = escapeLimit(h, craft) * 1.9
+    if (ahead > 0 && ahead < reach * 2.6 && off < reach) blocked = true
+  }
+
+  // While the camera is still travelling there is nowhere to hurry to, so sit
+  // forward in the view where the next hazard is visible. Once it has stopped,
+  // the gate is the only thing left and the run is on. A level with no travel
+  // at all -- a single-screen board -- is frozen from the first frame, which is
+  // exactly the old behaviour.
+  const tx = blocked
+    ? body.x - 60
+    : cameraFrozen(game.camera, level.world.width)
+      ? level.gate.x + 120
+      : game.camera + DESIGN_WIDTH * 0.58
+  return { x: tx, y: clampY(laneY + dodge * 165) }
+}
+
 function fly (spec, craft, waypoints, phase = 0) {
   const game = new Game()
   const level = buildLevel(spec)
@@ -43,15 +122,13 @@ function fly (spec, craft, waypoints, phase = 0) {
   game.state = STATE.PLAYING
   game.respawn()
 
-  let wi = 0
+  // Two lanes: one for the first half of the world, one for the second, so a
+  // route is still a decision about where to fly and not just a starting height.
+  const [laneA, laneB] = waypoints
+  const half = level.world.width / 2
   for (let t = 0; t < MAX_SECONDS / STEP; t++) {
-    const { x, y } = game.body
-    while (wi < waypoints.length && Math.hypot(waypoints[wi][0] - x, waypoints[wi][1] - y) < 55) wi++
-    const target = wi < waypoints.length
-      ? { x: waypoints[wi][0], y: waypoints[wi][1] }
-      : { x: game.level.gate.x, y: game.level.gate.y }
-
-    game.update(STEP, target)
+    const laneY = game.body.x < half ? laneA[1] : laneB[1]
+    game.update(STEP, pilot(game, laneY))
     if (game.state === STATE.COMPLETE) return { time: game.runTime, cause: null }
     if (game.state !== STATE.PLAYING) return { time: null, cause: game.lossCause }
   }
@@ -62,10 +139,7 @@ const levelName = process.argv[2] ?? 'level1'
 const spec = JSON.parse(fs.readFileSync(new URL(`../levels/${levelName}.json`, import.meta.url), 'utf8'))
 
 const YS = [0.08, 0.2, 0.32, 0.44, 0.5, 0.56, 0.68, 0.8, 0.92].map(v => v * DESIGN_HEIGHT)
-// Waypoints are fractions of the *world*, not of the screen, or every route on
-// a wide level would turn back before it had gone anywhere.
 const WORLD = (spec.width ?? 1) * DESIGN_WIDTH
-const XS = [0.34, 0.5, 0.66].map(v => v * WORLD)
 // Start offsets, in seconds. Deliberately not commensurate with any orbital
 // period on the board, so the four stars are caught in genuinely different
 // arrangements rather than the same one four times.
@@ -91,9 +165,13 @@ let overall = 0, overallTried = 0
 for (const craft of CRAFTS) {
   const times = []
   let tried = 0
-  for (const ph of PHASES) for (const x1 of XS) for (const y1 of YS) for (const y2 of YS) {
+  // A route is now a pair of lane heights -- one for each half of the world --
+  // and a start time. There used to be a third dimension of waypoint *x*, but
+  // the pilot flies the view rather than a path through the world, so it was
+  // multiplying the run time by three and changing nothing.
+  for (const ph of PHASES) for (const y1 of YS) for (const y2 of YS) {
     tried++
-    const r = fly(spec, craft, [[x1, y1], [WORLD * 0.86, y2]], ph)
+    const r = fly(spec, craft, [[0, y1], [0, y2]], ph)
     const t = r.time
     if (t !== null) times.push(t)
     else causes[r.cause ?? 'UNKNOWN'] = (causes[r.cause ?? 'UNKNOWN'] ?? 0) + 1

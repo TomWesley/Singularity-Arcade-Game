@@ -4,6 +4,7 @@
   "subtitle": "Sail out far enough and you will find what everything here is falling around.",
   "seed": 20260922,
   "width": 4,
+  "sail": 30,
   "backdrop": "assets/backdrop.jpg",
   "spawn": {
     "x": 0.022,
@@ -13,7 +14,7 @@
     {
       "x": 0.5,
       "y": 0.5,
-      "solarMasses": 13
+      "solarMasses": 10
     }
   ],
   "stars": [
@@ -23,8 +24,8 @@
       "radius": 0.011111,
       "orbit": {
         "host": 0,
-        "apoapsis": 0.465278,
-        "periapsis": 0.197222,
+        "apoapsis": 0.252778,
+        "periapsis": 0.163889,
         "argument": 0.62,
         "direction": 1,
         "lead": 0.0
@@ -36,8 +37,8 @@
       "radius": 0.027778,
       "orbit": {
         "host": 0,
-        "apoapsis": 0.447222,
-        "periapsis": 0.284722,
+        "apoapsis": 0.233333,
+        "periapsis": 0.173611,
         "argument": 0.87,
         "direction": -1,
         "lead": 2.4
@@ -49,31 +50,18 @@
       "radius": 0.015278,
       "orbit": {
         "host": 0,
-        "apoapsis": 0.458333,
-        "periapsis": 0.208333,
+        "apoapsis": 0.247222,
+        "periapsis": 0.155556,
         "argument": 0.4,
         "direction": 1,
         "lead": 3.1
       }
-    },
-    {
-      "kind": "main-sequence",
-      "solarMasses": 1.1,
-      "radius": 0.011111,
-      "orbit": {
-        "host": 0,
-        "apoapsis": 0.469444,
-        "periapsis": 0.333333,
-        "argument": 0.15,
-        "direction": -1,
-        "lead": 1.6
-      }
     }
   ],
   "asteroids": {
-    "count": 34,
+    "count": 14,
     "orbiters": 8,
-    "speed": 0.95,
+    "speed": 0.7,
     "deflection": 28,
     "drag": 0.05
   },
