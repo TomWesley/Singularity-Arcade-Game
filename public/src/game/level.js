@@ -35,9 +35,15 @@ export function buildLevel (spec) {
   // thing has mu, a horizon and a lethal radius, and both satisfy that. Keeping
   // them separate would mean four places remembering to check two lists.
   const worldWidth = (spec.width ?? 1) * DESIGN_WIDTH
+  // Planets are the same entity as stars -- mass, pull, a surface you die on --
+  // and differ only in emitting nothing, so they ride in the same list and the
+  // renderer decides. They are authored separately because `orbit.host` indexes
+  // this list, and a level file is much easier to read when the thing being
+  // orbited is written above the things orbiting it.
   const holes = [
     ...(spec.blackHoles ?? []).map(h => new BlackHole(h, worldWidth)),
-    ...(spec.stars ?? []).map(s => new Star(s, worldWidth))
+    ...(spec.stars ?? []).map(s => new Star(s, worldWidth)),
+    ...(spec.planets ?? []).map(p => new Star({ kind: 'planet', ...p }, worldWidth))
   ]
   // A ring is placed before anything is bound, because each vertex's speed
   // depends on where all the other vertices ended up. Members are grouped by

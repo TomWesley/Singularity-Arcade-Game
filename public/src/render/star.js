@@ -5,11 +5,21 @@
 // source. So it gets everything the holes deliberately refuse -- a lit surface,
 // limb darkening, a corona, a bloom that spills onto the field around it.
 //
-// Three kinds, and the difference is real astrophysics rather than palette
-// choice. A red giant is enormous, cool and diffuse; a white dwarf packs a
-// comparable mass into a body a fraction of the size and is correspondingly
+// Three kinds of star, and the difference is real astrophysics rather than
+// palette choice. A red giant is enormous, cool and diffuse; a white dwarf packs
+// a comparable mass into a body a fraction of the size and is correspondingly
 // fierce at its surface. The player should be able to read danger off the colour
 // and size the same way an astronomer does.
+//
+// And one kind that is not a star at all. A planet is the same entity as far as
+// the simulation is concerned -- it has mass, it pulls, you die if you hit it --
+// but it emits nothing. So it gets none of the above: no corona, no bloom, no
+// light spilled on the field. What it gets instead is a day side and a night
+// side, because the only light on it is the light from the star it orbits, and
+// the sprite is turned at draw time so the lit limb always faces that star.
+// Nothing else on this board is lit by anything in particular, and a body whose
+// shadow swings round as it goes is the cheapest possible way of saying that
+// the light has a source.
 
 const TAU = Math.PI * 2
 
@@ -34,6 +44,14 @@ const KINDS = {
     edge: [116, 170, 232],
     corona: [160, 206, 255],
     granule: 0.04
+  },
+  planet: {
+    core: [206, 194, 176],    // the sunward limb
+    mid: [128, 116, 104],
+    edge: [52, 46, 44],       // into the terminator
+    night: [10, 10, 12],      // the side with nothing on it
+    granule: 0.16,
+    dark: true
   }
 }
 
@@ -58,6 +76,8 @@ function sprite (star) {
   const c = cv.getContext('2d')
   c.scale(SS, SS)
   c.translate(reach, reach)
+
+  if (k.dark) return planetSprite(star, k, cv, c, reach)
 
   // Corona: the light that spills past the limb.
   const halo = c.createRadialGradient(0, 0, star.radius * 0.92, 0, 0, reach)
@@ -112,9 +132,72 @@ function sprite (star) {
   return out
 }
 
+// Lit from +x, so the caller only has to rotate the sprite to point that at
+// whatever the body is orbiting.
+function planetSprite (star, k, cv, c, reach) {
+  const r = star.radius
+
+  const day = c.createRadialGradient(r * 0.55, -r * 0.22, r * 0.05, 0, 0, r * 1.12)
+  day.addColorStop(0, rgba(k.core, 1))
+  day.addColorStop(0.36, rgba(k.mid, 1))
+  day.addColorStop(0.7, rgba(k.edge, 1))
+  day.addColorStop(1, rgba(k.night, 1))
+  c.fillStyle = day
+  c.beginPath()
+  c.arc(0, 0, r, 0, TAU)
+  c.fill()
+
+  // Surface mottling. Overlay, so it shows on the day side and is swallowed by
+  // the night side without needing to be masked.
+  let seed = Math.round(r * 131) + 7
+  const rnd = () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296)
+  c.save()
+  c.beginPath()
+  c.arc(0, 0, r, 0, TAU)
+  c.clip()
+  c.globalCompositeOperation = 'overlay'
+  for (let i = 0; i < 14; i++) {
+    const a = rnd() * TAU
+    const rr = Math.sqrt(rnd()) * r * 0.85
+    c.fillStyle = rgba(k.core, k.granule * (0.3 + rnd() * 0.7))
+    c.beginPath()
+    c.arc(Math.cos(a) * rr, Math.sin(a) * rr, r * (0.14 + rnd() * 0.22), 0, TAU)
+    c.fill()
+  }
+  c.restore()
+
+  // A bright limb on the sunward side only -- the thing that makes it read as a
+  // sphere in light rather than a disc with a gradient on it.
+  c.strokeStyle = rgba(k.core, 0.5)
+  c.lineWidth = 1.1
+  c.beginPath()
+  c.arc(0, 0, r, -Math.PI * 0.42, Math.PI * 0.42)
+  c.stroke()
+
+  const out = { canvas: cv, reach }
+  cache.set(`${star.kind}:${star.radius.toFixed(2)}`, out)
+  return out
+}
+
 export function drawStar (ctx, star, time) {
   const k = KINDS[star.kind] ?? KINDS['main-sequence']
   const s = sprite(star)
+
+  if (k.dark) {
+    // Point the day side at whatever this is in orbit around. Falling back to
+    // the board's standing light direction keeps a planet that orbits nothing
+    // from being lit from an arbitrary place.
+    const sun = star.orbitField?.[0]
+    const angle = sun
+      ? Math.atan2(sun.y - star.y, sun.x - star.x)
+      : Math.atan2(-0.83, -0.55)
+    ctx.save()
+    ctx.translate(star.x, star.y)
+    ctx.rotate(angle)
+    ctx.drawImage(s.canvas, -s.reach, -s.reach, s.reach * 2, s.reach * 2)
+    ctx.restore()
+    return
+  }
 
   // A slow breath on the corona. Stars are not static, and a completely still
   // light source on a moving board reads as a sticker.

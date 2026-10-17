@@ -12,7 +12,7 @@
   },
   "blackHoles": [
     {
-      "x": 0.5,
+      "x": 0.666667,
       "y": 0.5,
       "solarMasses": 14
     }
@@ -59,23 +59,10 @@
     },
     {
       "kind": "main-sequence",
-      "solarMasses": 1.4,
-      "radius": 0.030556,
-      "x": 0.286458,
-      "y": 0.7
-    },
-    {
-      "kind": "white-dwarf",
-      "solarMasses": 0.5,
-      "radius": 0.009722,
-      "orbit": {
-        "host": 4,
-        "apoapsis": 0.119444,
-        "periapsis": 0.072222,
-        "argument": 0.0,
-        "direction": 1,
-        "lead": 0.0
-      }
+      "solarMasses": 2.4,
+      "radius": 0.047222,
+      "x": 0.333333,
+      "y": 0.652778
     }
   ],
   "asteroids": {
@@ -90,5 +77,43 @@
     "y": 0.5,
     "width": 0.055,
     "height": 0.3
-  }
+  },
+  "planets": [
+    {
+      "solarMasses": 0.004,
+      "radius": 0.0125,
+      "orbit": {
+        "host": 4,
+        "apoapsis": 0.094444,
+        "periapsis": 0.072222,
+        "argument": 0.1,
+        "direction": 1,
+        "lead": 0.0
+      }
+    },
+    {
+      "solarMasses": 0.006,
+      "radius": 0.016667,
+      "orbit": {
+        "host": 4,
+        "apoapsis": 0.15,
+        "periapsis": 0.116667,
+        "argument": 0.55,
+        "direction": 1,
+        "lead": 1.1
+      }
+    },
+    {
+      "solarMasses": 0.003,
+      "radius": 0.011111,
+      "orbit": {
+        "host": 4,
+        "apoapsis": 0.208333,
+        "periapsis": 0.163889,
+        "argument": 0.8,
+        "direction": 1,
+        "lead": 2.6
+      }
+    }
+  ]
 }

@@ -52,6 +52,9 @@ const MAX_SECONDS = 90   // a level four screens wide is a long sail
 // stationary target.
 const _g = { x: 0, y: 0 }
 const clampY = y => Math.max(40, Math.min(DESIGN_HEIGHT - 40, y))
+// How far ahead a well is worth routing around. Roughly the time it takes to
+// cross the board vertically at cruising speed.
+const LOOKAHEAD = 520
 
 function pilot (game, laneY) {
   const { body, level, craft } = game
@@ -66,48 +69,49 @@ function pilot (game, laneY) {
     return { x: body.x + ux * 500, y: clampY(body.y + uy * 500) }
   }
 
-  // Otherwise hold the lane, sitting far enough forward in the view to see
-  // what is coming, and slide away from whatever is closing.
-  let dodge = 0
+  // Otherwise: look at what is in the way and aim at the nearest gap.
+  //
+  // Nudging sideways in proportion to how close something is was not enough and
+  // could not be. A 14 solar mass hole owns a 255px radius; the nudge was worth
+  // 165px, so a pilot on its centre line could never get far enough off it, sat
+  // holding back forever, and scored the level at 1%. A player does not nudge
+  // away from a wall, they find the gap and go to it.
+  const walls = []
   for (const h of level.holes) {
-    const dx = body.x - h.x
-    const dy = body.y - h.y
-    const reach = escapeLimit(h, craft) * 1.9
-    const d = Math.hypot(dx, dy)
-    if (d < reach && dx < reach) dodge += Math.sign(dy || 1) * ((reach - d) / reach)
+    const reach = (h.horizon > 0 ? escapeLimit(h, craft) : h.radius + craft.hull) * 1.3
+    const ahead = h.x - body.x
+    if (ahead < -reach || ahead > LOOKAHEAD) continue
+    walls.push([h.y - reach, h.y + reach])
   }
   for (const a of level.asteroids) {
     if (!a.active) continue
     const ahead = a.x - body.x
-    if (ahead < -50 || ahead > 320) continue
-    const dy = body.y - a.y
-    const near = 95
-    if (Math.abs(dy) < near) dodge += Math.sign(dy || 1) * ((near - Math.abs(dy)) / near) * 0.55
+    if (ahead < -40 || ahead > 300) continue
+    walls.push([a.y - 70, a.y + 70])
   }
 
-  // Hold back while a well sits squarely on the line ahead. Sliding aside is
-  // only half of flying past something -- the other half is not arriving before
-  // you have finished sliding, and a pilot that only ever moved up and down
-  // walked into the middle of level 2's binary every time.
-  let blocked = false
-  for (const h of level.holes) {
-    const ahead = h.x - body.x
-    const off = Math.abs(h.y - body.y)
-    const reach = escapeLimit(h, craft) * 1.9
-    if (ahead > 0 && ahead < reach * 2.6 && off < reach) blocked = true
+  const free = y => !walls.some(([lo, hi]) => y > lo && y < hi)
+  let aim = laneY
+  if (!free(aim)) {
+    aim = null
+    for (let d = 0; d <= DESIGN_HEIGHT && aim === null; d += 8) {
+      for (const cand of [laneY - d, laneY + d]) {
+        const y = clampY(cand)
+        if (free(y)) { aim = y; break }
+      }
+    }
   }
 
-  // While the camera is still travelling there is nowhere to hurry to, so sit
-  // forward in the view where the next hazard is visible. Once it has stopped,
-  // the gate is the only thing left and the run is on. A level with no travel
-  // at all -- a single-screen board -- is frozen from the first frame, which is
-  // exactly the old behaviour.
+  // Nothing anywhere is clear: hold station and let the gap come round.
+  const blocked = aim === null
+  if (blocked) aim = clampY(laneY)
+
   const tx = blocked
-    ? body.x - 60
+    ? body.x - 80
     : cameraFrozen(game.camera, level.world.width)
       ? level.gate.x + 120
       : game.camera + DESIGN_WIDTH * 0.58
-  return { x: tx, y: clampY(laneY + dodge * 165) }
+  return { x: tx, y: aim }
 }
 
 function fly (spec, craft, waypoints, phase = 0) {
