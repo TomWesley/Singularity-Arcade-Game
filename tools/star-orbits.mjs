@@ -29,10 +29,19 @@ const MINUTES = Number(process.argv[3] ?? 3)
 const spec = JSON.parse(fs.readFileSync(new URL(`../levels/${NAME}.json`, import.meta.url), 'utf8'))
 const level = buildLevel(spec)
 
+// Each body is measured against the thing it actually orbits. This used to
+// assume everything circled holes[0], which is fine until a level has a small
+// system of its own somewhere -- then the companion gets measured against a
+// black hole four thousand pixels away and reported as flying apart.
+const hostOf = s => level.holes[s.orbit.host ?? 0]
 const host = level.holes[0]
-const tracks = level.stars.map((s, i) => ({
+// A star may be fixed scenery rather than in orbit -- a small system's host, for
+// instance -- and there is nothing to audit about a body that does not move.
+const orbiting = level.stars.filter(s => s.orbit)
+const tracks = orbiting.map((s, i) => ({
   s,
   i,
+  host: hostOf(s),
   label: `${s.kind} ${s.solarMasses}Mo r=${s.radius.toFixed(0)}px`,
   minX: Infinity, maxX: -Infinity, minY: Infinity, maxY: -Infinity,
   rMin: Infinity, rMax: -Infinity,
@@ -52,8 +61,9 @@ while (t < total) {
 
   for (const tr of tracks) {
     const { s } = tr
-    const dx = s.x - host.x
-    const dy = s.y - host.y
+    const h = tr.host
+    const dx = s.x - h.x
+    const dy = s.y - h.y
     const r = Math.hypot(dx, dy)
     tr.minX = Math.min(tr.minX, s.x - s.radius); tr.maxX = Math.max(tr.maxX, s.x + s.radius)
     tr.minY = Math.min(tr.minY, s.y - s.radius); tr.maxY = Math.max(tr.maxY, s.y + s.radius)
@@ -95,6 +105,7 @@ while (t < total) {
 const mean = xs => xs.reduce((a, b) => a + b, 0) / (xs.length || 1)
 const fmt = n => n.toFixed(1).padStart(7)
 
+console.log(`${level.stars.length - orbiting.length} fixed star(s) skipped; ${orbiting.length} in orbit`)
 console.log(`Host: ${host.solarMasses} Mo, horizon ${host.horizon.toFixed(0)}px, ISCO ${host.isco.toFixed(0)}px`)
 console.log(`Simulated ${MINUTES} min at ${1 / STEP}Hz on a ${level.world.width}x${DESIGN_HEIGHT} world\n`)
 
@@ -118,7 +129,7 @@ for (const tr of tracks) {
   const drift = Math.max(
     Math.abs(tr.rMin - tr.s.orbit.periapsis * DESIGN_HEIGHT),
     Math.abs(tr.rMax - tr.s.orbit.apoapsis * DESIGN_HEIGHT))
-  const stable = drift < 2 && tr.rMin > host.horizon
+  const stable = drift < 2 && tr.rMin > tr.host.horizon
 
   // Apsidal precession: how far the periapsis direction moves per lap.
   //
@@ -141,7 +152,11 @@ for (const tr of tracks) {
   }
 
   console.log(`[${tr.i}] ${tr.label}`)
-  console.log(`     periapsis ${fmt(tr.rMin)}px (${(tr.rMin / host.isco).toFixed(2)}x ISCO, ${(tr.rMin / host.horizon).toFixed(2)}x r_s)   apoapsis ${fmt(tr.rMax)}px`)
+  const hv = tr.host
+  const ref = hv.horizon > 0
+    ? `${(tr.rMin / hv.isco).toFixed(2)}x ISCO, ${(tr.rMin / hv.horizon).toFixed(2)}x r_s`
+    : `${(tr.rMin / hv.radius).toFixed(2)}x its host's radius`
+  console.log(`     periapsis ${fmt(tr.rMin)}px (${ref})   apoapsis ${fmt(tr.rMax)}px`)
   console.log(`     eccentricity ${((tr.rMax - tr.rMin) / (tr.rMax + tr.rMin)).toFixed(3)}`)
   console.log(`     lap ${lap.toFixed(2)}s over ${tr.laps.length} laps   precession ${prec >= 0 ? '+' : ''}${prec.toFixed(1)} deg/lap`)
   console.log(`     swept x ${fmt(tr.minX)} .. ${fmt(tr.maxX)}   y ${fmt(tr.minY)} .. ${fmt(tr.maxY)}`)
@@ -155,7 +170,7 @@ for (const tr of tracks) {
   const reach = tr.rMax + tr.s.radius
   // Half the *height* is almost always what binds: the camera travels sideways
   // so the world can be any width, but it never travels up.
-  const room = Math.min(host.x, level.world.width - host.x, host.y, DESIGN_HEIGHT - host.y)
+  const room = Math.min(tr.host.x, level.world.width - tr.host.x, tr.host.y, DESIGN_HEIGHT - tr.host.y)
   const fits = reach <= room
   const rotate = prec !== 0 ? Math.abs(360 / prec) * lap : Infinity
   console.log(`     annulus reach ${fmt(reach)}px vs ${room.toFixed(0)}px of room   ` +
