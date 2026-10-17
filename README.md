@@ -365,9 +365,23 @@ died would cost a craft but no ground, and with three of them a forced scroll
 would finish itself.
 
 **A forced scroll demands a property a free camera did not: a lane must always
-exist.** You cannot wait for a gap, so if every route can be closed at once the
-level is not hard, it is a coin toss. That single requirement sets most of level
-1 by itself, and it chains:
+exist.** With a camera that followed the craft a player could hang back west of
+a hazard for as long as they liked and cross when a gap opened, so a level could
+close every route at once and it only meant "not yet". Under a forced scroll
+there is no "not yet" -- the camera delivers you on a fixed schedule, and
+whatever the geometry is doing when you arrive is what you get. If the terrain
+can span the full height at some instant, a player arriving then dies having
+done nothing wrong, and that is not difficulty, it is a toss decided before they
+acted.
+
+It is a claim about *terrain* -- the holes and stars, the things always there.
+Debris still flies through the clear bands and should; dodging rocks is the
+game. The point is that the rocks are something you can dodge *into somewhere*,
+which is only true if somewhere exists. `npm run lanes` measures it, using
+escapeLimit() rather than the visible disc, because a hole does not have to
+touch you to have you.
+
+The requirement chains all the way down and sets most of level 1 by itself:
 
 ```
 forced scroll  ->  a permanent lane must exist
@@ -631,6 +645,7 @@ npm run paths              # renders the star orbits to a PNG, to look at
 npm run capture            # how often asteroids actually orbit the stars
 npm run authority          # from how far out gravity beats each craft's engine
 npm run rings              # does a level's mutually-orbiting system hold together
+npm run lanes              # is there a route the terrain can never close
 node tools/smoke.mjs       # headless wiring + physics assertions
 npm run vendor:engine      # re-copy the graphics engine from the sibling checkout
 ```
