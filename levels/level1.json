@@ -3,11 +3,11 @@
   "name": "Four Suns",
   "subtitle": "Sail out far enough and you will find what everything here is falling around.",
   "seed": 20260922,
-  "width": 4,
-  "sail": 30,
+  "width": 2.4,
+  "sail": 14.0,
   "backdrop": "assets/backdrop.jpg",
   "spawn": {
-    "x": 0.022,
+    "x": 0.035807,
     "y": 0.5
   },
   "blackHoles": [
@@ -61,7 +61,7 @@
       "kind": "main-sequence",
       "solarMasses": 1.4,
       "radius": 0.030556,
-      "x": 0.17207,
+      "x": 0.286458,
       "y": 0.7
     },
     {
