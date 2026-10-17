@@ -364,31 +364,35 @@ A fresh craft restarts the sail. Carrying the camera on from where the last one
 died would cost a craft but no ground, and with three of them a forced scroll
 would finish itself.
 
-**A forced scroll demands a property a free camera did not: a lane must always
-exist.** With a camera that followed the craft a player could hang back west of
-a hazard for as long as they liked and cross when a gap opened, so a level could
-close every route at once and it only meant "not yet". Under a forced scroll
-there is no "not yet" -- the camera delivers you on a fixed schedule, and
-whatever the geometry is doing when you arrive is what you get. If the terrain
-can span the full height at some instant, a player arriving then dies having
-done nothing wrong, and that is not difficulty, it is a toss decided before they
-acted.
+**A forced scroll does not take away your control of the clock.** It is easy to
+think it does, and getting that wrong cost level 1 a lot. The camera sets the
+pace but not your position in it: hang back at the left edge and you reach a
+given longitude much later than if you ride the right edge. On level 1 that is a
+1259px view against a 128px/s scroll -- **9.8 seconds of latitude** over when you
+arrive, during which the star configuration cycles about five times. A player
+choosing when to commit has several different arrangements to pick from.
+
+So the fairness question is not "is a lane always open" but **"how long can
+every lane be shut at once"**. Half a second is something you ease back and wait
+out. Fifteen seconds is a wall you cannot be early or late enough to avoid, and
+that is the unfair case -- the one where arriving at the wrong moment kills a
+player who did nothing wrong. `npm run lanes` measures the longest shut-out
+against the latitude, using escapeLimit() rather than the visible disc, because
+a hole does not have to touch you to have you.
 
 It is a claim about *terrain* -- the holes and stars, the things always there.
-Debris still flies through the clear bands and should; dodging rocks is the
-game. The point is that the rocks are something you can dodge *into somewhere*,
-which is only true if somewhere exists. `npm run lanes` measures it, using
-escapeLimit() rather than the visible disc, because a hole does not have to
-touch you to have you.
+Debris still crosses the open lanes and should; dodging rocks is the game. The
+point is that a rock is something you can dodge *into somewhere*.
 
-The requirement chains all the way down and sets most of level 1 by itself:
+The first version of this demanded a band the terrain could **never** close, and
+that over-constrained everything downstream: it forced the star orbits inside
+200px, which forced the hole's ISCO below that, which capped the hole at 10
+solar masses. Measured against the real constraint, both levels never seal at
+all -- 0.0% of the time -- so there was a great deal of unused headroom. Level 1
+now runs a 14 solar mass hole with orbits reaching 318px: a 145px shadow against
+the 104px that rule allowed, orbits two thirds larger, laps slowed from 1.9s to
+4.2s, and the widest lane still 222px.
 
-```
-forced scroll  ->  a permanent lane must exist
-               ->  star orbits must stay inside ~200px of the hole
-               ->  the hole's ISCO must be smaller than that
-               ->  the hole can be at most ~10 solar masses
-```
 
 Measured, 11 solar masses starts eating the orbits and 10 holds all of them.
 Level 1's stars reach 194px, leaving 166px of permanently clear sky top and

@@ -14,7 +14,7 @@
     {
       "x": 0.5,
       "y": 0.5,
-      "solarMasses": 10
+      "solarMasses": 14
     }
   ],
   "stars": [
@@ -24,21 +24,21 @@
       "radius": 0.011111,
       "orbit": {
         "host": 0,
-        "apoapsis": 0.252778,
-        "periapsis": 0.163889,
+        "apoapsis": 0.430556,
+        "periapsis": 0.298611,
         "argument": 0.62,
         "direction": 1,
-        "lead": 0.0
+        "lead": 0
       }
     },
     {
       "kind": "red-giant",
-      "solarMasses": 2.0,
+      "solarMasses": 2,
       "radius": 0.027778,
       "orbit": {
         "host": 0,
-        "apoapsis": 0.233333,
-        "periapsis": 0.173611,
+        "apoapsis": 0.3875,
+        "periapsis": 0.352361,
         "argument": 0.87,
         "direction": -1,
         "lead": 2.4
@@ -50,8 +50,8 @@
       "radius": 0.015278,
       "orbit": {
         "host": 0,
-        "apoapsis": 0.247222,
-        "periapsis": 0.155556,
+        "apoapsis": 0.413333,
+        "periapsis": 0.274722,
         "argument": 0.4,
         "direction": 1,
         "lead": 3.1
@@ -66,7 +66,7 @@
     "drag": 0.05
   },
   "gate": {
-    "x": 1.0,
+    "x": 1,
     "y": 0.5,
     "width": 0.055,
     "height": 0.3

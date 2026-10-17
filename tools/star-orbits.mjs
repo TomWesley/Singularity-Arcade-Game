@@ -21,8 +21,12 @@ import { stepBodies } from '../public/src/game/entities.js'
 import { DESIGN_WIDTH, DESIGN_HEIGHT } from '../public/src/game/constants.js'
 
 const STEP = 1 / 120
-const MINUTES = Number(process.argv[2] ?? 3)
-const spec = JSON.parse(fs.readFileSync(new URL('../levels/level1.json', import.meta.url), 'utf8'))
+// Level name first, minutes second -- it used to take only the minutes and read
+// level1 whatever it was told, which quietly measured the wrong level for every
+// row of a sweep.
+const NAME = process.argv[2] ?? 'level1'
+const MINUTES = Number(process.argv[3] ?? 3)
+const spec = JSON.parse(fs.readFileSync(new URL(`../levels/${NAME}.json`, import.meta.url), 'utf8'))
 const level = buildLevel(spec)
 
 const host = level.holes[0]
