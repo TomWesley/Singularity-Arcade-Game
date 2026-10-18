@@ -138,14 +138,21 @@ export function buildLevel (spec) {
   const asteroids = []
   const total = spec.asteroids?.count ?? 0
   const orbiters = Math.min(total, spec.asteroids?.orbiters ?? 0)
-  const speedScale = spec.asteroids?.speed ?? 1
-  // Entry angle away from the horizontal midline, in degrees. See Asteroid.
-  const deflection = spec.asteroids?.deflection ?? 0
-  // Dissipation, per second. Small: it is there to make captures stick, not to
-  // slow rocks down. See Asteroid.update.
-  const drag = spec.asteroids?.drag ?? 0
+  // See Asteroid.reset for what each of these means.
+  //   speed      scales the whole speed distribution
+  //   fromRight  share entering from the leading edge; the rest from above and
+  //              below, always ahead of the craft
+  //   impact     [min, max] miss distance in px -- what decides whether a rock
+  //              swings round a well, grazes it, or sails past
+  //   drag       dissipation per second; small, and there to make captures stick
+  const opts = {
+    speed: spec.asteroids?.speed ?? 1,
+    fromRight: spec.asteroids?.fromRight ?? 0.55,
+    impact: spec.asteroids?.impact ?? [40, 420],
+    drag: spec.asteroids?.drag ?? 0
+  }
   for (let i = 0; i < total; i++) {
-    asteroids.push(new Asteroid(rng, holes, gate, world, i < orbiters, speedScale, deflection, drag))
+    asteroids.push(new Asteroid(rng, holes, gate, world, i < orbiters, opts))
   }
 
   return {

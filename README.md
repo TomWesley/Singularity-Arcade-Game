@@ -516,6 +516,40 @@ masses, above which a craft could power out of the black disc. In practice the
 gap costs nothing: `escapeLimit()` sits outside the shadow at level 1's mass, so
 touching the disc means having already lost. `node tools/smoke.mjs` reports it.
 
+### Where debris comes from
+
+Four principles, each of which replaced something that was quietly making the
+field look like one object repeated.
+
+**Nothing behind the craft.** The rule has twice been written as a fact about
+the right-hand edge -- first "never from the right" because the gate is there,
+then "always from the right" -- and both were groping at the same principle: a
+rock has to be visible for the length of its approach, so the player is flying
+into it rather than being caught by it. Any edge *ahead of the craft* satisfies
+that, which is what lets debris come down from above and up from below again.
+`asteroids.fromRight` weights the mix.
+
+**The gate band is about the gate.** It used to be applied at every spawn point
+rather than near the gate, which excluded 49% of the height everywhere and
+pinned the whole field into the top and bottom quarters. That was most of why
+level 1 read as a waterfall.
+
+**Aim by miss distance, not by angle.** A fixed deflection applied to every rock
+gives every rock the same trajectory shape. What actually decides whether one
+swings round a hole, grazes it or sails past is its impact parameter -- the
+distance by which it would miss -- because that is what sets its angular
+momentum, `L = v x b`. `asteroids.impact` is a `[min, max]` in pixels, and
+drawing from it gives a field where all three happen at once. It is also the
+same number whatever a level's layout happens to be.
+
+**Speed from a wide distribution.** Squaring the draw puts most of the field on
+a slow drift with a few genuinely quick ones through it. `npm run spawns`
+reports the p10-to-p90 spread; around 10x is healthy, and a narrow band makes
+everything move together.
+
+Measured on level 1 before and after: entry heights went from 2 of 9 bands in
+use to 9 of 9, and the speed spread from a 2.7x band to 23x.
+
 ### Why asteroids orbit instead of raining in
 
 Whether a rock swings past a hole or goes straight down it is decided by one

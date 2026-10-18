@@ -66,10 +66,14 @@
     }
   ],
   "asteroids": {
-    "count": 36,
+    "count": 30,
     "orbiters": 8,
-    "speed": 0.32,
-    "deflection": 28,
+    "speed": 0.35,
+    "fromRight": 0.55,
+    "impact": [
+      40,
+      420
+    ],
     "drag": 0.05
   },
   "gate": {

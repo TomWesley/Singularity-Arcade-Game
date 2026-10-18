@@ -76,9 +76,9 @@ const TRAIL_POINTS = 14
 // committed to the run cannot dodge.
 const GATE_CLEARANCE = 70
 
-// Spread of entry angles either side of the authored deflection, in degrees.
-// Without it the whole field arrives on parallel lines and reads as a sheet.
-const FAN_DEGREES = 17
+// How far ahead of the craft debris entering from above or below must appear.
+// Closer than this and it is not an approach to read, it is an ambush.
+const AHEAD_CLEARANCE = 420
 
 // How far past the board a rock may travel before it counts as gone rather than
 // mid-orbit, and how long it may stay out there.
@@ -373,13 +373,14 @@ export class Asteroid {
    *   else, perturbed by the other holes, and free to precess, decay or be
    *   flung out.
    */
-  constructor (rng, holes, gate, world, orbiter = false, speedScale = 1, deflection = 0, drag = 0) {
+  constructor (rng, holes, gate, world, orbiter = false, opts = {}) {
     this.gate = gate
     this.world = world
     this.orbiter = orbiter
-    this.speedScale = speedScale
-    this.deflection = deflection
-    this.drag = drag
+    this.speedScale = opts.speed ?? 1
+    this.fromRight = opts.fromRight ?? 0.55
+    this.impact = opts.impact ?? [40, 420]
+    this.drag = opts.drag ?? 0
     this.rng = rng
     this.verts = []
     this.inner = []
@@ -403,21 +404,34 @@ export class Asteroid {
     this.reset(holes, true)
   }
 
-  // Spawns off the right edge, clear of the gate's mouth, always off-screen.
+  // Where debris comes from, and how it is aimed.
   //
-  // Two rules drive this. Nothing may appear inside the board -- debris blinking
-  // into existence in front of the player is not a hazard, it is a cheat. And
-  // nothing may come out of the gate, because that is the one place a player is
-  // committed to flying into and cannot dodge away from.
+  // Four principles, each of which replaced something that was quietly making
+  // the field look like one object repeated.
   //
-  // Everything else arriving from the right is the point rather than a problem,
-  // and this reverses what was here before. The old rule sent debris in from
-  // above and below to keep it away from the gate -- but on a level with a hole
-  // in the middle the survivable lanes are the top and the bottom, so that put
-  // every rock's entry exactly where the player flies, appearing a hull's
-  // length away with no approach to read. Coming from the right, a rock crosses
-  // the whole board before it reaches anyone: the player is flying into it,
-  // watching it come, for the entire length of its run.
+  // 1. NOTHING BEHIND THE PLAYER. The rule was never really "from the right" --
+  //    it is that a rock must be visible for the length of its approach, so you
+  //    are flying into it rather than being caught by it. Entering ahead of the
+  //    craft satisfies that from any edge, which opens up the top and bottom
+  //    again without reintroducing the ambush.
+  //
+  // 2. THE GATE BAND IS ABOUT THE GATE. It used to be applied at every spawn x,
+  //    which excluded 49% of the height everywhere and pinned every rock into
+  //    the top and bottom quarters -- most of why the field read as two streams
+  //    pouring past. It is a fact about the gate's mouth and now applies only
+  //    within reach of it.
+  //
+  // 3. AIM BY MISS DISTANCE, NOT BY ANGLE. A fixed deflection applied to every
+  //    rock gives every rock the same trajectory shape. What actually decides
+  //    whether one swings round a hole, grazes it or sails past is its impact
+  //    parameter -- the distance by which it would miss -- because that is what
+  //    sets its angular momentum, L = v x b. Drawing b from a range gives a
+  //    field where all three happen at once, and it is the same number whatever
+  //    the level's layout.
+  //
+  // 4. SPEED FROM A WIDE DISTRIBUTION. A narrow band makes everything move
+  //    together. Squaring the draw puts most of the field on a slow drift with
+  //    a few genuinely quick ones through it.
   reset (holes, initial = false) {
     const rng = this.rng
     this.radius = randRange(rng, 1.96, 3.98)
@@ -430,75 +444,66 @@ export class Asteroid {
 
     this.buildBody(rng)
 
-    // Entry point: off the right edge, above or below the gate's band. The span
-    // runs past the top and bottom edges too, so rocks also come in around the
-    // corners rather than all entering on one vertical line.
+    const w = this.world
+    const viewL = w.viewX
+    const viewR = viewL + DESIGN_WIDTH
+    const ahead = Math.max(viewL, w.craftX ?? viewL) + AHEAD_CLEARANCE
+
+    if (rng() < this.fromRight) {
+      // Straight in from the leading edge, at any height.
+      this.x = viewR + randRange(rng, 40, 260)
+      this.y = randRange(rng, -DESIGN_HEIGHT * 0.12, DESIGN_HEIGHT * 1.12)
+    } else {
+      // Down from above or up from below, but always further along than the
+      // craft has reached, so it crosses the view in front of them.
+      const top = rng() > 0.5
+      this.x = randRange(rng, ahead, viewR + 220)
+      this.y = top
+        ? -randRange(rng, 40, 200)
+        : DESIGN_HEIGHT + randRange(rng, 40, 200)
+    }
+
+    // The gate's mouth, and only the mouth.
     const g = this.gate
-    const clearTop = g.y - g.height / 2 - GATE_CLEARANCE
-    const clearBottom = g.y + g.height / 2 + GATE_CLEARANCE
-    const fromAbove = rng() > 0.5
-    // Off the right of the *view*, not of the world. On a level four screens
-    // wide, spawning at the world's edge would put debris four thousand pixels
-    // from anyone and leave the board the player is actually looking at empty.
-    // The view is where the game is; the world is only how far it goes.
-    this.x = this.world.viewX + DESIGN_WIDTH + randRange(rng, 50, 280)
-    this.y = fromAbove
-      ? randRange(rng, -DESIGN_HEIGHT * 0.2, clearTop)
-      : randRange(rng, clearBottom, DESIGN_HEIGHT * 1.2)
+    if (Math.abs(this.x - g.x) < g.width / 2 + GATE_CLEARANCE &&
+        Math.abs(this.y - g.y) < g.height / 2 + GATE_CLEARANCE) {
+      const away = this.y < g.y ? -1 : 1
+      this.y = g.y + away * (g.height / 2 + GATE_CLEARANCE + randRange(rng, 10, 140))
+    }
 
-    if (this.orbiter && this.seedBoundEntry(rng, holes, fromAbove)) return
+    if (this.orbiter && this.seedBoundEntry(rng, holes, this.y < DESIGN_HEIGHT / 2)) return
 
-    // Ordinary debris: crosses the board leftward, fanned so the field arrives
-    // at a spread of angles rather than as a single sheet.
-    //
-    // Direction is built as an angle off due-left rather than as separate x and
-    // y velocities, because the deflection has to mean the same thing at every
-    // speed. Composed from components it does not: the deflection was tuned as a
-    // sideways nudge on rocks that were falling vertically, and the moment
-    // entry moved to the right edge that same 85px/s became a *vertical* nudge
-    // on rocks crossing at 23-63px/s, which swamped them -- the median rock
-    // left the edge 51 degrees off course and went straight out of the top or
-    // bottom without ever crossing the board.
-    const s = this.speedScale
-    const speed = randRange(rng, 55, 150) * s
-    // `toward` points at the midline: down from above, up from below. The
-    // deflection is applied against it, so debris fans outward.
-    const toward = fromAbove ? 1 : -1
-    const angle = (this.deflection + randRange(rng, -FAN_DEGREES, FAN_DEGREES)) * Math.PI / 180
-    this.vx = -Math.cos(angle) * speed
-    this.vy = -toward * Math.sin(angle) * speed
+    // Aim at a miss distance past whatever it is going to pass.
+    const target = this.aimPoint(holes, viewL)
+    const dx = target.x - this.x
+    const dy = target.y - this.y
+    const d = Math.hypot(dx, dy) || 1
+    const ux = dx / d
+    const uy = dy / d
+    const b = randRange(rng, this.impact[0], this.impact[1]) * (rng() > 0.5 ? 1 : -1)
 
-    // Angular momentum, and the reason the field stops being a vacuum.
-    //
-    // Whether a rock orbits a hole or goes straight down it is decided by one
-    // number -- its angular momentum about that hole, L = v x r -- and not at
-    // all by its mass, which cancels out of the equation of motion entirely.
-    // Below a critical L the effective potential L^2/2r^2 - mu/(r - r_s) has no
-    // local maximum, which means no periapsis, which means no way past the
-    // hole: the rock spirals in whatever its speed or angle. That threshold
-    // works out at the angular momentum of a circular orbit at the ISCO, so it
-    // scales with the hole's mass.
-    //
-    // With purely random drift, most rocks entered with a small impact
-    // parameter and sat well under it -- 25 of 28 on this level -- so the board
-    // really was a vacuum, and correctly so.
-    //
-    // The fix is not to slow the rocks or lighten them, it is to throw the
-    // stream off a dead-centre aim. `deflection` is that angle, in degrees
-    // *away* from the horizontal midline, and the sign is the whole of it.
-    //
-    // Aiming debris inward looks like the natural choice and is exactly wrong.
-    // At the right-hand edge the two terms of L = x*vy - y*vx very nearly
-    // cancel for a rock angled toward the middle, so it arrives with almost no
-    // angular momentum and goes straight down the hole: 20 of 28 doomed before
-    // they had moved. Angled outward the terms add instead, and the same rocks
-    // pass above and below the hole with enough to swing right round it -- 2 of
-    // 28 doomed, and full revolutions better than doubled.
-    //
-    // The two streams end up counter-rotating, which is not a disc and is not
-    // meant to be. It is what a stream of debris does when a massive body
-    // splits it: what passes above carries angular momentum of one sign and
-    // what passes below the other.
+    // Offset the aim perpendicular to the line of approach: that offset *is*
+    // the impact parameter.
+    let vx = (target.x - uy * b) - this.x
+    let vy = (target.y + ux * b) - this.y
+    const vl = Math.hypot(vx, vy) || 1
+
+    const u = rng()
+    const speed = this.speedScale * (24 + u * u * 260)
+    this.vx = (vx / vl) * speed
+    this.vy = (vy / vl) * speed
+  }
+
+  /** The nearest attractor it is heading toward, or the middle of the view. */
+  aimPoint (holes, viewL) {
+    let best = null
+    let bestD = Infinity
+    for (const h of holes) {
+      if (h.x > this.x + 120) continue          // behind it; it will never get there
+      const d = Math.hypot(h.x - this.x, h.y - this.y)
+      if (d < bestD) { bestD = d; best = h }
+    }
+    return best ?? { x: viewL + DESIGN_WIDTH * 0.35, y: DESIGN_HEIGHT / 2 }
   }
 
   /**

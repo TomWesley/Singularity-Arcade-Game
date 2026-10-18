@@ -168,6 +168,8 @@ export class Game {
         this.camera + scrollSpeed(w.width, w.sail) * dt)
     }
     this.level.world.viewX = this.camera
+    // Debris spawns ahead of the craft, so it needs to know where that is.
+    this.level.world.craftX = this.body.x
 
     stepBodies(this.level.holes, dt, this.elapsed)
     for (const a of this.level.asteroids) {
