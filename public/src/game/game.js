@@ -41,6 +41,10 @@ export class Game {
     this.campaign = { order: ['level1'], target: 1 }
     this.craft = CRAFTS[0]
     this.lives = START_LIVES
+    // Counted rather than inferred from `lives`. "No craft lost" used to be
+    // `lives === START_LIVES`, which stops being true the moment a run can be
+    // awarded a craft it did not start with.
+    this.craftLost = 0
     this.elapsed = 0        // wall clock for animation
     this.runTime = 0        // scored time for the current level attempt
     this.phaseTime = 0      // time inside LOST / COMPLETE
@@ -142,6 +146,7 @@ export class Game {
 
   restart () {
     this.lives = START_LIVES
+    this.craftLost = 0
     this.runTime = 0
     this.levelIndex = 0
     this.state = STATE.TITLE
@@ -348,6 +353,7 @@ export class Game {
     // The field goes with the craft: the wreck should play out against nothing.
     this.clearField()
     this.lives -= 1
+    this.craftLost += 1
     this.lossCause = cause
     this.lossHole = hole
     this.lossPoint = { x: this.body.x, y: this.body.y }

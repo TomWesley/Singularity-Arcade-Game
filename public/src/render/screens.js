@@ -291,7 +291,11 @@ export function drawComplete (ctx, game) {
   centred(ctx, `Level ${game.levelNumber} cleared`, 'title', 42, 306,
     rgbaToCss(withAlpha(palette.secondary.core, 0.97 * k)), 24)
 
-  const kept = game.lives === 3 ? 'No craft lost' : `${game.lives} of 3 craft remaining`
+  // Only ever the count, never "of N". A run can be awarded craft it did not
+  // start with, so there is no denominator that stays true.
+  const kept = game.craftLost === 0
+    ? 'No craft lost'
+    : `${game.lives} craft remaining`
   centred(ctx, kept, 'data', 14, 356,
     rgbaToCss(withAlpha(palette.primary.core, 0.8 * k)), 10)
 
@@ -309,7 +313,7 @@ export function drawVictory (ctx, game) {
   centred(ctx, 'All gates cleared', 'title', 48, 300,
     rgbaToCss(withAlpha(palette.secondary.core, 0.98)), 26)
   const n = game.campaign.order.length
-  centred(ctx, `${n} ${n === 1 ? 'level' : 'levels'} flown · ${game.lives} of 3 craft home`,
+  centred(ctx, `${n} ${n === 1 ? 'level' : 'levels'} flown · ${game.lives} craft home`,
     'data', 14, 352, rgbaToCss(withAlpha(palette.primary.core, 0.8)), 10)
   const pulse = 0.5 + Math.sin(game.elapsed * 2.4) * 0.35
   centred(ctx, 'Click to fly again', 'label', 16, 444,
