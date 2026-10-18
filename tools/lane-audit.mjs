@@ -46,8 +46,13 @@ const craft = CRAFTS.reduce((a, b) => (b.hull > a.hull ? b : a))
 const MIN_LANE = 40
 const lethalOf = h => (h.horizon > 0 ? escapeLimit(h, craft) : h.radius + craft.hull)
 
-const columns = [...new Set(level.holes.map(h => Math.round(h.homeX ?? h.x)))]
-  .sort((a, b) => a - b)
+// Where each body actually contests the height. A body on a ring has no
+// authored position -- placeInRing() puts it there -- so homeX falls back to
+// the middle of the world, and using it tested a column where nothing was while
+// missing the one the whole system sits on.
+const columnOf = h => Math.round(
+  h.ring ? (h.ring.x ?? 0.5) * level.world.width : (h.homeX ?? h.x))
+const columns = [...new Set(level.holes.map(columnOf))].sort((a, b) => a - b)
 
 const scroll = scrollSpeed(level.world.width, level.world.sail)
 const latitude = scroll > 0 ? (DESIGN_WIDTH - 2 * craft.hull) / scroll : Infinity

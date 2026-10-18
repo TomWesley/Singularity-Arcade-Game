@@ -1,7 +1,7 @@
 {
   "id": "level2",
   "name": "The Hierarchy",
-  "subtitle": "A pair holding each other, and a pair holding on to them.",
+  "subtitle": "Rogue worlds the whole way out, and four holes waiting at the gate.",
   "seed": 20260923,
   "width": 2.4,
   "sail": 14.0,
@@ -14,7 +14,7 @@
     {
       "solarMasses": 3,
       "ring": {
-        "x": 0.5,
+        "x": 0.791667,
         "y": 0.5,
         "radius": 0.065972,
         "members": 2,
@@ -26,7 +26,7 @@
     {
       "solarMasses": 3,
       "ring": {
-        "x": 0.5,
+        "x": 0.791667,
         "y": 0.5,
         "radius": 0.065972,
         "members": 2,
@@ -38,7 +38,7 @@
     {
       "solarMasses": 3,
       "ring": {
-        "x": 0.5,
+        "x": 0.791667,
         "y": 0.5,
         "radius": 0.4375,
         "members": 2,
@@ -51,7 +51,7 @@
     {
       "solarMasses": 3,
       "ring": {
-        "x": 0.5,
+        "x": 0.791667,
         "y": 0.5,
         "radius": 0.4375,
         "members": 2,
@@ -78,5 +78,37 @@
     "y": 0.5,
     "width": 0.055,
     "height": 0.3
-  }
+  },
+  "planets": [
+    {
+      "solarMasses": 0.036,
+      "radius": 0.044444,
+      "x": 0.136719,
+      "y": 0.277778
+    },
+    {
+      "solarMasses": 0.052,
+      "radius": 0.052778,
+      "x": 0.273438,
+      "y": 0.791667
+    },
+    {
+      "solarMasses": 0.026,
+      "radius": 0.038889,
+      "x": 0.410156,
+      "y": 0.319444
+    },
+    {
+      "solarMasses": 0.044,
+      "radius": 0.047222,
+      "x": 0.533854,
+      "y": 0.833333
+    },
+    {
+      "solarMasses": 0.06,
+      "radius": 0.058333,
+      "x": 0.647786,
+      "y": 0.458333
+    }
+  ]
 }
