@@ -57,7 +57,7 @@ const columns = [...new Set(level.holes.map(columnOf))].sort((a, b) => a - b)
 const scroll = scrollSpeed(level.world.width, level.world.sail)
 const latitude = scroll > 0 ? (DESIGN_WIDTH - 2 * craft.hull) / scroll : Infinity
 
-const state = new Map(columns.map(c => [c, { sealed: 0, longest: 0, open: 0, samples: 0, widest: 0 }]))
+const state = new Map(columns.map(c => [c, { sealed: 0, longest: 0, open: 0, samples: 0, tightest: Infinity }]))
 const blocked = new Uint8Array(DESIGN_HEIGHT + 1)
 
 let t = 0
@@ -81,7 +81,11 @@ while (t < MINUTES * 60) {
     }
     const s = state.get(c)
     s.samples++
-    s.widest = Math.max(s.widest, widest)
+    // The tightest the best available gap ever gets. Reporting the *widest*
+    // gap ever seen flatters every column: a drifting body that wanders off its
+    // own column for a moment leaves the full height clear, and the number then
+    // says 721px about a column that is blocked most of the time.
+    s.tightest = Math.min(s.tightest, widest)
     if (widest < MIN_LANE) {
       s.sealed += STEP
       s.open = 0
@@ -103,7 +107,7 @@ for (const c of columns) {
   const s = state.get(c)
   const pct = (s.sealed / (s.samples * STEP)) * 100
   worstSeal = Math.max(worstSeal, s.longest)
-  console.log(`  column x=${String(c).padStart(4)}   widest lane seen ${String(Math.round(s.widest)).padStart(3)}px   ` +
+  console.log(`  column x=${String(c).padStart(4)}   tightest gap ${String(Math.round(s.tightest)).padStart(3)}px   ` +
     `shut ${pct.toFixed(1)}% of the time   longest shut ${s.longest.toFixed(2)}s`)
 }
 

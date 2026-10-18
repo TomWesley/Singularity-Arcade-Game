@@ -337,6 +337,14 @@ export class Star {
     this.orbitField = null
     this.acc = { x: 0, y: 0 }
 
+    // How far a free body is allowed to wander from where it was placed, in px.
+    // Zero pins it. See drift() below.
+    this.driftRange = spec.drift ?? 0
+    // Its own stream, seeded from where it sits, so a level plays out the same
+    // way twice. Everything else on this board is deterministic and a body that
+    // wandered differently each run would be the only thing that was not.
+    this.driftRng = makeRng(Math.round(this.homeX * 7 + this.homeY * 13) + 101)
+
     this.x = this.homeX
     this.y = this.homeY
     this.vx = 0
@@ -351,6 +359,61 @@ export class Star {
   // Motion is handled by stepBodies(); this is the rest of the per-tick state.
   update (dt) {
     this.churn += dt
+    if (this.driftRange > 0 && !this.orbitField) this.drift(dt)
+  }
+
+  /**
+   * A slow wander for a body that orbits nothing.
+   *
+   * It is a random walk, but a mean-reverting one -- an Ornstein-Uhlenbeck
+   * velocity with a leash on how far it may stray. The plain version is no good
+   * here: an unbounded walk goes wherever it likes given long enough, and these
+   * levels run under the title screen and through every death, so "given long
+   * enough" happens. A planet that drifted out of its lane, or into another
+   * one, would quietly dismantle the thing the lane audit certifies.
+   *
+   * The damping is the mean reversion. Velocity decays toward nothing at
+   * THETA per second while random kicks keep feeding it, which is the standard
+   * model for anything being jostled -- it is Brownian motion with drag, and
+   * what it gives you is wandering rather than wandering *off*. The leash then
+   * only has to catch the rare long excursion.
+   *
+   * Nothing here pretends to be gravity. Real mutual pull between bodies this
+   * far apart is 0.3 px/s^2, invisible over a level; and if they felt the black
+   * holes at the far end they would simply fall into them -- 102 px/s^2 at that
+   * range, which is a planet gone in seconds. This is a motion model, said
+   * plainly, rather than physics bent until it produces the picture.
+   */
+  drift (dt) {
+    const THETA = 0.45          // 1/s: how fast a velocity forgets itself
+    const KICK = 5.5            // px/s^1.5: the jostling
+    const LEASH = 2.2           // 1/s^2 per px once past the range
+
+    const r = this.driftRng
+    // Cheap approximate normal: three uniforms, centred, unit variance.
+    const g = () => (r() + r() + r() - 1.5) * 2
+
+    // The noise scales as sqrt(dt), not dt, and that is not a detail. Random
+    // kicks accumulate in *variance*, so stepping them like an ordinary
+    // acceleration makes the whole wander proportional to the timestep: the
+    // same KICK gave 0.8px/s at 120Hz and would give something else entirely at
+    // any other rate. With sqrt(dt) the stationary speed is KICK/sqrt(2*THETA)
+    // -- about 5.8px/s here -- whatever the step happens to be.
+    const kick = KICK * Math.sqrt(dt)
+    this.vx += -THETA * this.vx * dt + kick * g()
+    this.vy += -THETA * this.vy * dt + kick * g()
+
+    const dx = this.x - this.homeX
+    const dy = this.y - this.homeY
+    const d = Math.hypot(dx, dy)
+    if (d > this.driftRange) {
+      const over = d - this.driftRange
+      this.vx -= (dx / d) * LEASH * over * dt
+      this.vy -= (dy / d) * LEASH * over * dt
+    }
+
+    this.x += this.vx * dt
+    this.y += this.vy * dt
   }
 
   contains (x, y) {

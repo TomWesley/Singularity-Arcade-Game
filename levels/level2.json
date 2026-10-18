@@ -1,7 +1,7 @@
 {
   "id": "level2",
   "name": "The Hierarchy",
-  "subtitle": "Rogue worlds the whole way out, and four holes waiting at the gate.",
+  "subtitle": "Rogue worlds drifting the whole way out, and four holes waiting at the gate.",
   "seed": 20260923,
   "width": 2.4,
   "sail": 14.0,
@@ -81,34 +81,67 @@
   },
   "planets": [
     {
-      "solarMasses": 0.036,
-      "radius": 0.044444,
-      "x": 0.136719,
-      "y": 0.277778
+      "solarMasses": 0.0191,
+      "radius": 0.023411,
+      "x": 0.123698,
+      "y": 0.5,
+      "drift": 56
     },
     {
-      "solarMasses": 0.052,
-      "radius": 0.052778,
-      "x": 0.273438,
-      "y": 0.791667
+      "solarMasses": 0.0193,
+      "radius": 0.023496,
+      "x": 0.192057,
+      "y": 0.624398,
+      "drift": 60
     },
     {
-      "solarMasses": 0.026,
-      "radius": 0.038889,
-      "x": 0.410156,
-      "y": 0.319444
+      "solarMasses": 0.0335,
+      "radius": 0.031385,
+      "x": 0.260417,
+      "y": 0.729155,
+      "drift": 45
     },
     {
-      "solarMasses": 0.044,
-      "radius": 0.047222,
+      "solarMasses": 0.027,
+      "radius": 0.02776,
+      "x": 0.328776,
+      "y": 0.797735,
+      "drift": 41
+    },
+    {
+      "solarMasses": 0.0135,
+      "radius": 0.0203,
+      "x": 0.397135,
+      "y": 0.819308,
+      "drift": 60
+    },
+    {
+      "solarMasses": 0.014,
+      "radius": 0.020534,
+      "x": 0.465495,
+      "y": 0.79047,
+      "drift": 39
+    },
+    {
+      "solarMasses": 0.0269,
+      "radius": 0.027747,
       "x": 0.533854,
-      "y": 0.833333
+      "y": 0.715773,
+      "drift": 53
     },
     {
-      "solarMasses": 0.06,
-      "radius": 0.058333,
-      "x": 0.647786,
-      "y": 0.458333
+      "solarMasses": 0.0165,
+      "radius": 0.021917,
+      "x": 0.602214,
+      "y": 0.60701,
+      "drift": 59
+    },
+    {
+      "solarMasses": 0.0262,
+      "radius": 0.027336,
+      "x": 0.670573,
+      "y": 0.481353,
+      "drift": 46
     }
   ]
 }
