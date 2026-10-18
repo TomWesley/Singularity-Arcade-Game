@@ -142,6 +142,19 @@ function render (alpha) {
 
   viewport.apply(ctx)
 
+  // Clip to the board.
+  //
+  // The letterbox bars are not board -- the craft is held inside 0..720 and
+  // cannot reach them -- but nothing was stopping the world being *drawn* into
+  // them. Debris legitimately spawns above and below the board and waits there
+  // to come in, and all of it was visible, hanging in the bars in a strip the
+  // player can watch but never fly into. The transform maps design space into
+  // the letterbox; it never confined anything to it.
+  ctx.save()
+  ctx.beginPath()
+  ctx.rect(0, 0, DESIGN_WIDTH, DESIGN_HEIGHT)
+  ctx.clip()
+
   // The board is black, and everything that reads on it reads because it is the
   // only lit thing on it. The backdrop owns that fill -- and the optional sky
   // image that may one day sit behind it.
@@ -196,6 +209,8 @@ function render (alpha) {
     case STATE.VICTORY: drawVictory(ctx, game); break
     case STATE.GAME_OVER: drawGameOver(ctx, game); break
   }
+
+  ctx.restore()
 
   if (pause.paused) {
     drawPauseOverlay(ctx, pause.reason, viewport.cssWidth, viewport.cssHeight,
