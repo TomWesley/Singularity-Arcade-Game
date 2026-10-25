@@ -19,9 +19,10 @@ export class BlackHole {
 
     // A level authors a hole by its mass alone. Horizon, photon sphere and
     // ISCO all fall out of that mass and the real constants -- there is no
-    // hand-placed radius to disagree with the physics.
+    // hand-placed radius to disagree with the physics. The exception is an
+    // authored `horizonScale`, which resizes the hole without touching its pull.
     this.solarMasses = spec.solarMasses
-    const geo = blackHoleGeometry(spec.solarMasses)
+    const geo = blackHoleGeometry(spec.solarMasses, spec.horizonScale ?? 1)
     this.mu = geo.mu
     this.horizon = geo.horizon
     this.soften = geo.soften

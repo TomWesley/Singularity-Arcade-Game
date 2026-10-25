@@ -91,11 +91,17 @@ export function starGeometry (solarMasses, radiusPx) {
  *
  * which folds the metres-per-pixel and seconds-per-game-second conversions into
  * a single multiply on the hot path.
+ *
+ * `horizonScale` is the one authored liberty: it shrinks (or grows) r_s and
+ * every radius derived from it -- shadow, photon sphere, ISCO -- while leaving
+ * mu, and so the pull at any distance that matters, exactly as the mass says.
+ * It exists for layout, when a level's orbits want more clearance from the
+ * black disc than the real horizon of that mass would leave them.
  */
-export function blackHoleGeometry (solarMasses) {
+export function blackHoleGeometry (solarMasses, horizonScale = 1) {
   const massKg = solarMasses * SOLAR_MASS
   const rsMeters = schwarzschildRadiusMeters(massKg)
-  const rs = rsMeters / METERS_PER_PIXEL
+  const rs = (rsMeters / METERS_PER_PIXEL) * horizonScale
 
   // GM in SI, then converted: metres/s^2 -> pixels/gamesecond^2 is
   // (1/METERS_PER_PIXEL) * SECONDS_PER_GAME_SECOND^2, and the r^2 in the

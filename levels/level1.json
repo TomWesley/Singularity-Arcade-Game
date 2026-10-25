@@ -14,7 +14,8 @@
     {
       "x": 0.666667,
       "y": 0.5,
-      "solarMasses": 14
+      "solarMasses": 14,
+      "horizonScale": 0.7
     }
   ],
   "stars": [
